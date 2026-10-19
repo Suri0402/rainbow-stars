@@ -619,6 +619,9 @@ async function showCreature(rec, {near=false, arrive=false}={}){
   if (world.has(rec.id)) return world.get(rec.id); world.set(rec.id, null);
   let c; try { c = await blobCanvas(rec.blob); } catch(e){ world.delete(rec.id); console.warn('Figurenbild nicht lesbar', e); return null; }
   if (!world.has(rec.id)) return null;   // in der Zwischenzeit entfernt
+  { const sw = Math.min(64, c.width), sh = Math.min(64, c.height), [, tx] = cnv(sw, sh); tx.drawImage(c, 0, 0, sw, sh); const a = tx.getImageData(0, 0, sw, sh).data; let n = 0;
+    for (let i=3;i<a.length;i+=4) if (a[i] > 128) n++;
+    if (n < sw*sh*.03){ world.delete(rec.id); console.warn('Figur ist (fast) unsichtbar'); return null; } }
   const w = Math.min(1.4, .95*c.width/c.height), ang = Math.random()*Math.PI*2;
   const pos = near ? st.pos.clone().addScaledVector(camRight(), (Math.random() < .5 ? -1 : 1)*1.9).add(new V3(Math.sin(az)*.6, 0, Math.cos(az)*.6))
                    : new V3(Math.cos(ang), 0, Math.sin(ang)).multiplyScalar(3 + Math.random()*8);
@@ -787,7 +790,8 @@ function cutout(src, r, sens, boost = true){
   const pad = Math.max(first.bw, first.bh)*.08, x0 = Math.max(r.x, first.bx - pad), y0 = Math.max(r.y, first.by - pad);
   const r2 = {x:x0, y:y0, w:Math.min(r.x + r.w, first.bx + first.bw + pad) - x0, h:Math.min(r.y + r.h, first.by + first.bh + pad) - y0};
   const fine = r2.w*r2.h < r.w*r.h*.8 ? cutPass(src, r2, sens, 1100, first) : null;
-  return finishCut(fine || first, boost);
+  const out = finishCut(fine || first, boost); if (out) out.stats = first.stats;   // Prüfwerte aus dem ganzen Ausschnitt
+  return out;
 }
 const erode = (m, W, H) => { const inv = new Uint8Array(m.length); for (let i=0;i<m.length;i++) inv[i] = m[i] ? 0 : 1; const d = dilate(inv, W, H); for (let i=0;i<m.length;i++) d[i] = d[i] ? 0 : 1; return d; };
 function cutPass(src, r, sens, maxSide, prior){
@@ -806,6 +810,7 @@ function cutPass(src, r, sens, maxSide, prior){
   const refC = Array.from({length:cells}, (_,i) => chroma(i)).sort((a,b) => a-b)[Math.floor(cells*.5)];
   for (let i=0;i<cells;i++) ok[i] = lum(i) >= refL*.62 && chroma(i) < refC + 22 ? 1 : 0;
   if (!ok.includes(1)) for (let i=0;i<cells;i++){ bg[i*3] = bg[i*3+1] = bg[i*3+2] = refL; ok[i] = 1; }
+  const paper = ok.slice(), tileOf = i => ((((i/W)|0)/CS)|0)*GX + (((i%W)/CS)|0);   // wo sieht das Foto nach Papier aus?
   // Kacheln, die ganz von der Figur bedeckt sind, bekommen die Papierfarbe ihrer Nachbarn
   for (let pass=0; pass<GX+GY && ok.includes(0); pass++){ const nk = ok.slice();
     for (let gy=0; gy<GY; gy++) for (let gx=0; gx<GX; gx++){ const i = gy*GX+gx; if (ok[i]) continue; const s = [0,0,0]; let m = 0;
@@ -821,7 +826,7 @@ function cutPass(src, r, sens, maxSide, prior){
         const v = Math.min(255, d[p+ch]/Math.max(40,b)*255); col[p+ch] = v; if (v < mn) mn = v; if (v > mx) mx = v; }
       const dark = 255 - mn, chr = mx - mn, i = y*W+x;
       ink[i] = dark > thD || chr > thC ? 1 : 0;
-      strong[i] = dark > thD + 28 || chr > thC + 18 ? 1 : 0;   // deutlich sichtbar (Schattenkanten sind das nie)
+      strong[i] = dark > 62 || chr > 42 ? 1 : 0;   // deutlich sichtbar, unabhängig vom Regler (Schattenkanten sind das nie)
       line[i] = dark > 55 && chr < 28 && dark > chr*2.5 ? 1 : 0;   // grauer Bleistift-/Filzstiftstrich
     } }
   // 3) Lücken im Umriss schließen, Papier von außen her fluten: alles, was nicht erreicht wird, gehört zur Figur (auch weiße Innenflächen)
@@ -830,13 +835,13 @@ function cutPass(src, r, sens, maxSide, prior){
   const outside = new Uint8Array(N), q = new Int32Array(N); let qh = 0, qt = 0;
   const border = []; for (let x=0;x<W;x++) border.push(x, (H-1)*W+x); for (let y=0;y<H;y++) border.push(y*W, y*W+W-1);
   // dunkle Flächen, die mehrere Bildränder berühren (Tisch, Papierkante), gehören zum Hintergrund
-  const seen = new Uint8Array(N);
+  const seen = new Uint8Array(N), tbl = new Uint8Array(N);
   for (const s of border){ if (!wall[s] || seen[s]) continue; let sides = 0; qh = qt = 0; seen[s] = 1; q[qt++] = s;
-    let onEdge = 0;
-    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; if (x===0 || x===W-1 || y===0 || y===H-1) onEdge++; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
+    let onEdge = 0, offPaper = 0, nearEdge = 0; const dB = 2*kc + 6;
+    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; if (x===0 || x===W-1 || y===0 || y===H-1) onEdge++; if (!paper[tileOf(i)]) offPaper++; if (x < dB || x >= W-dB || y < dB || y >= H-dB) nearEdge++; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
       if (x>0 && wall[i-1] && !seen[i-1]){ seen[i-1] = 1; q[qt++] = i-1; } if (x<W-1 && wall[i+1] && !seen[i+1]){ seen[i+1] = 1; q[qt++] = i+1; }
       if (y>0 && wall[i-W] && !seen[i-W]){ seen[i-W] = 1; q[qt++] = i-W; } if (y<H-1 && wall[i+W] && !seen[i+W]){ seen[i+W] = 1; q[qt++] = i+W; } }
-    if ((sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1) >= 2 && onEdge > border.length*.15) for (let k2=0;k2<qt;k2++) wall[q[k2]] = 0; }
+    if ((sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1) >= 2 && onEdge > border.length*.15 && (offPaper > qt*.5 || nearEdge > qt*.7)) for (let k2=0;k2<qt;k2++){ wall[q[k2]] = 0; tbl[q[k2]] = 1; } }   // Tisch = außerhalb des Papiers oder ein Streifen direkt am Rand; eine angeschnittene Zeichnung reicht weit ins Bild
   qh = qt = 0;
   const push = i => { if (!outside[i] && !wall[i]){ outside[i] = 1; q[qt++] = i; } };
   border.forEach(push);
@@ -865,7 +870,11 @@ function cutPass(src, r, sens, maxSide, prior){
   let a0=W, b0=H, a1=-1, b1=-1;
   for (let i=0;i<N;i++) if (fig[i]){ const x = i%W, y = (i/W)|0; if (x<a0) a0=x; if (x>a1) a1=x; if (y<b0) b0=y; if (y>b1) b1=y; }
   if (a1 < 0 || (a1-a0) < 10 || (b1-b0) < 10) return null;
-  return {W, H, col, fig, line, k, r, bx:r.x + a0/k, by:r.y + b0/k, bw:(a1-a0+1)/k, bh:(b1-b0+1)/k};
+  // Prüfwerte: wie viele der deutlichen Striche (ohne Tisch) stecken in der Figur? Stößt sie an den Rahmen? Wie groß ist sie?
+  let sTot = 0, sKeep = 0, ed = 0; for (let i=0;i<N;i++) if (strong[i] && !tbl[i]){ sTot++; if (fig[i]) sKeep++; }
+  for (const bi of border) if (fig[bi]) ed++;
+  const stats = {keep: sTot ? sKeep/sTot : 1, edge: ed/border.length, size: Math.max((a1-a0+1)/W, (b1-b0+1)/H)};
+  return {W, H, col, fig, line, k, r, stats, bx:r.x + a0/k, by:r.y + b0/k, bw:(a1-a0+1)/k, bh:(b1-b0+1)/k};
 }
 // Feinschliff: Linien kräftiger, Farben satter, weißer Sticker-Rand, auf den Inhalt zuschneiden
 function finishCut({W, H, col, fig, line}, boost){
@@ -930,11 +939,30 @@ function renderCut(){
   catch(err){ scanS.cut = null; scanFail('cut', 'Beim Ausschneiden ist ein Fehler passiert: ' + (err.message || err)); }
   const c = scanS.cut, x = cutC.getContext('2d');
   cutC.width = c ? c.width : 320; cutC.height = c ? c.height : 200; if (c) x.drawImage(c, 0, 0);
-  $('scanGo').disabled = !c;
-  $('scanNote').textContent = !c ? 'Keine Figur gefunden. Zieh den Rahmen enger um die Figur oder schieb den Regler nach rechts.'
+  const v = scanVerdict(c); scanS.verdict = v; showVerdict(v);
+  $('scanGo').disabled = v.level === 'bad';
+  $('scanGo').textContent = v.level === 'warn' ? 'Trotzdem in die Welt schicken' : 'In die Welt schicken ✦';
+  $('scanNote').textContent = !c ? ''
     : worldId !== 'home' ? 'Deine Figur zieht in die ' + (W[worldId].name || 'Welt') + ' ein und bleibt auf diesem Gerät.'
     : SHARE ? 'Deine Figur erscheint sofort bei dir. Für alle anderen erscheint sie, sobald sie freigegeben ist.'
     : 'Teilen ist noch nicht eingerichtet. Die Figur bleibt auf diesem Gerät.';
+}
+// Vorab-Prüfung: Ist das Ergebnis brauchbar, bevor es in die Welt geht?
+function scanVerdict(c){
+  if (!c) return {level:'bad', items:['Auf dem Bild wurde keine Zeichnung gefunden.'], tips:['Zieh den Rahmen enger um die Zeichnung.', 'Schieb den Regler „Zarte Striche“ nach rechts.']};
+  const st2 = c.stats || {keep:1, edge:0, size:1}, items = [], tips = []; let level = 'ok';
+  const worse = l => { if (l === 'bad' || level === 'ok') level = l; };
+  if (st2.keep < .25){ worse('bad'); items.push(`Nur ${Math.round(st2.keep*100)} % der Striche wurden erkannt – der Großteil der Zeichnung fehlt.`); tips.push('Geh zurück und zieh den Rahmen so, dass die ganze Zeichnung drin ist.', 'Schieb den Regler „Zarte Striche“ nach rechts.', 'Mach das Foto bei hellem Licht, ohne Schatten auf dem Blatt.'); }
+  else if (st2.keep < .7){ worse('warn'); items.push(`Etwa ${Math.round((1-st2.keep)*100)} % der Striche fehlen – schau, ob alles da ist.`); tips.push('Schieb den Regler „Zarte Striche“ etwas nach rechts.'); }
+  if (st2.edge > .04){ worse('warn'); items.push('Die Zeichnung stößt an den Rahmen – vielleicht ist etwas abgeschnitten.'); tips.push('Geh zurück und zieh den Rahmen etwas größer.'); }
+  if (st2.size < .12){ worse('warn'); items.push('Die Zeichnung ist sehr klein im Bild und wird dadurch unscharf.'); tips.push('Geh zurück und zieh den Rahmen enger um die Zeichnung.'); }
+  if (level === 'ok') items.push(`Sieht gut aus – ${Math.round(st2.keep*100)} % der Striche erkannt.`);
+  return {level, items, tips, keep:st2.keep};
+}
+function showVerdict(v){
+  const box = $('scanCheck'); box.className = 'verdict ' + v.level; box.replaceChildren();
+  const head = document.createElement('b'); head.textContent = {ok:'✔ Geprüft: Das klappt', warn:'⚠ Bitte prüfen', bad:'✖ So klappt es noch nicht'}[v.level]; box.append(head);
+  [...v.items, ...v.tips.map(t => 'Tipp: ' + t)].forEach(t => { const p = document.createElement('p'); p.textContent = t; box.append(p); });
 }
 // der Knopf ist ein <label for="scanFile"> und öffnet die Auswahl selbst; hier nur noch die Tastatur
 $('scanBtn').addEventListener('click', startPick);

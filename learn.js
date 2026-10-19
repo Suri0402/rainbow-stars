@@ -307,11 +307,13 @@ function renderFig(){
   const ok = f.inWorld && f.saved, img = el('img', 'thumb'); img.src = f.url; img.alt = '';
   const box = el('div', 'fs-body'); box.append(el('b', '', ok ? `✔ ${f.name} ist da!` : `⚠ ${f.name} hat nicht ganz geklappt`));
   const ul = el('ul', 'checks');
-  ul.append(line(f.inWorld ? ['ok', 'In der ' + worldName(f.world)] : ['bad', 'Nicht in der Welt – das Bild ließ sich nicht lesen']));
+  ul.append(line(f.inWorld ? ['ok', 'Sichtbar in der ' + worldName(f.world)] : ['bad', 'Nicht in der Welt – das Bild war leer oder ließ sich nicht lesen']));
   ul.append(line(f.saved ? ['ok', 'Auf diesem Gerät gespeichert'] : ['bad', 'Nicht gespeichert – nach dem Neuladen ist sie weg']));
   ul.append(line(shareLine(f)));
   box.append(ul);
-  const r = el('div', 'fs-row'); r.append(btn('Meine Figuren', 'small', () => { hideFig(); openMine(); }), btn('×', 'small', hideFig)); box.append(r);
+  const r = el('div', 'fs-row');
+  if (f.inWorld) r.append(btn('Zeig sie mir', 'small main', () => { hideFig(); const res = RS.goToCreature(f.id); if (typeof res === 'string'){ travel(res); setTimeout(() => RS.goToCreature(f.id), 1800); } }));
+  r.append(btn('Meine Figuren', 'small', () => { hideFig(); openMine(); }), btn('×', 'small', hideFig)); box.append(r);
   figEl.append(img, box); figEl.hidden = false;
   clearTimeout(figT); if (ok && shareLine(f)[0] !== 'bad') figT = setTimeout(hideFig, 12000);
 }
