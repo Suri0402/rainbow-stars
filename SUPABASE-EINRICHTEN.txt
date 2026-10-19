@@ -1,0 +1,79 @@
+RAINBOW STARS – gescannte Figuren mit allen teilen (Supabase)
+============================================================
+
+Ohne diese Einrichtung funktioniert das Scannen auch, die Figuren bleiben
+dann aber nur auf dem Gerät, mit dem sie gescannt wurden.
+Mit Supabase (kostenloser Tarif reicht) sehen alle Nutzer die Figuren.
+
+So funktioniert es
+  - Jemand scannt eine Figur. Sie erscheint sofort auf dem eigenen Gerät und
+    wird an Supabase geschickt, zunächst als "nicht freigegeben".
+  - Du gibst sie im Supabase-Dashboard frei. Danach erscheint sie bei allen
+    (beim Öffnen der App und sonst spätestens nach ca. 1,5 Minuten).
+  - Nimmst du die Freigabe zurück oder löschst den Eintrag, verschwindet die
+    Figur bei allen anderen wieder.
+  - In der Welt sind höchstens die 30 neuesten freigegebenen Figuren.
+
+1) Projekt anlegen
+   - https://supabase.com öffnen, Konto erstellen, "New project".
+   - Name z. B. "rainbow-stars", Region "Central EU (Frankfurt)".
+
+2) Tabelle und Bildspeicher anlegen
+   Im Projekt links auf "SQL Editor" klicken, alles zwischen den Linien
+   einfügen und "Run" drücken:
+
+------------------------------------------------------------------------
+create table public.creatures (
+  id         uuid primary key,
+  name       text not null check (char_length(name) between 1 and 24),
+  kind       text not null check (kind in ('bunny', 'bear')),
+  image_path text not null check (image_path ~ '^[0-9a-f-]{36}\.png$'),
+  approved   boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.creatures enable row level security;
+
+-- alle dürfen freigegebene Figuren sehen
+create policy "Freigegebene Figuren lesen" on public.creatures
+  for select to anon using (approved = true);
+
+-- alle dürfen neue Figuren einreichen, aber nicht selbst freigeben
+create policy "Neue Figuren einreichen" on public.creatures
+  for insert to anon with check (approved = false);
+
+grant select, insert on public.creatures to anon;
+
+-- öffentlicher Bildspeicher, nur PNG bis 1 MB
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('creatures', 'creatures', true, 1048576, array['image/png']);
+
+create policy "Figurenbilder hochladen" on storage.objects
+  for insert to anon with check (bucket_id = 'creatures');
+------------------------------------------------------------------------
+
+3) Schlüssel in die App eintragen
+   - Links "Project Settings" -> "API" (bzw. "API Keys").
+   - "Project URL" und den öffentlichen Schlüssel kopieren
+     ("anon public" oder "Publishable key").
+     NIEMALS den "service_role"- oder "secret"-Schlüssel verwenden!
+   - In index.html nach dieser Zeile suchen:
+         const SUPA = {url:'', key:''};
+     und ausfüllen, zum Beispiel:
+         const SUPA = {url:'https://abcdefgh.supabase.co', key:'eyJhbGciOi...'};
+   - Den Ordner neu auf Netlify hochladen.
+
+4) Figuren freigeben
+   - Links "Table Editor" -> Tabelle "creatures".
+   - Bei einer neuen Figur in der Spalte "approved" das Häkchen setzen (true).
+   - Das Bild ansehen: "Storage" -> "creatures" -> Datei mit dem Namen aus
+     "image_path".
+   - Unpassende Figur: Zeile löschen (und das Bild im Storage).
+
+Ohne Freigabe (nicht empfohlen, jede Figur erscheint sofort bei allen):
+------------------------------------------------------------------------
+alter table public.creatures alter column approved set default true;
+drop policy "Neue Figuren einreichen" on public.creatures;
+create policy "Neue Figuren einreichen" on public.creatures
+  for insert to anon with check (true);
+------------------------------------------------------------------------

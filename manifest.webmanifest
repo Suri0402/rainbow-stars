@@ -1,0 +1,30 @@
+{
+  "name": "Rainbow Stars",
+  "short_name": "Rainbow Stars",
+  "lang": "de",
+  "description": "Eine gezeichnete Figur läuft durch eine bunte Fantasywelt, schnuppert an Blüten und spielt mit Tieren.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#ffe8f1",
+  "theme_color": "#ffe8f1",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+RAINBOW STARS – als Webseite oder App
+=====================================
+
+Inhalt
+  index.html              die komplette Seite (läuft auch offline, Three.js ist eingebaut)
+  manifest.webmanifest    macht die Seite installierbar ("Zum Home-Bildschirm")
+  sw.js                   speichert die App für die Offline-Nutzung
+  icon-*.png              App-Icons
+
+1) Einfach ausprobieren
+   index.html doppelklicken – sie öffnet sich im Browser.
+   (Installieren aufs Handy geht erst, wenn die Seite über https läuft, siehe 2.)
+
+2) Online-Adresse
+   Die App liegt auf GitHub (Suri0402/rainbow-stars) und läuft über GitHub Pages:
+   https://suri0402.github.io/rainbow-stars/
+   Jede Änderung, die auf GitHub gepusht wird, ist nach ca. 1 Minute online.
+
+   Alternativ selbst veröffentlichen (kostenlos, ca. 2 Minuten)
+   - https://app.netlify.com/drop öffnen
+   - den ganzen Ordner "rainbow-stars-app" ins Browserfenster ziehen
+   - Netlify zeigt sofort eine Adresse (https://…netlify.app), die du teilen kannst
+   Alternativ: GitHub Pages, Cloudflare Pages oder ein eigener Server –
+   einfach alle Dateien dieses Ordners in ein Verzeichnis kopieren.
+
+3) Als App aufs Handy
+   Die https-Adresse auf dem Handy öffnen, dann:
+   - iPhone (Safari): Teilen-Symbol -> "Zum Home-Bildschirm"
+   - Android (Chrome): Menü ⋮ -> "App installieren" bzw. "Zum Startbildschirm"
+   Danach startet Rainbow Stars wie eine App im Vollbild, auch ohne Internet.
+
+4) Eigene Figuren einscannen
+   - Eine Figur auf weißes Papier zeichnen, am besten mit dunklem Umriss.
+   - In der App "Figur scannen" tippen, Foto machen oder aus der Galerie wählen.
+   - Einen Rahmen um die Figur ziehen, "Weiter", mit dem Regler "Papier
+     entfernen" nachbessern, Namen eingeben und wählen, ob sie hüpft oder
+     watschelt.
+   - "In die Welt schicken": Die Figur erscheint mit Sternenwirbel und bleibt.
+   Damit ALLE die Figuren sehen, einmalig Supabase einrichten:
+   siehe SUPABASE-EINRICHTEN.txt
