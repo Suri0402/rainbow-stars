@@ -2,7 +2,12 @@ RAINBOW STARS – als Webseite oder App
 =====================================
 
 Inhalt
-  index.html              die komplette Seite (läuft auch offline, Three.js ist eingebaut)
+  index.html              die Seite (Oberfläche, Dialoge, Aussehen)
+  app.js                  die Spielwelt: Mädchen, Tiere, Heimatwiese, Scanner, Teilen
+  learn.js                Lernen & Reisen: Wissenskarten, Fragen, Aufträge, Album, Reisepass
+  worlds/space.js         die Sternenwelt mit Minispielen
+  content/space.json      Wissenskarten und Fragen der Sternenwelt (hier kann man Texte ändern)
+  three.min.js            3D-Bibliothek Three.js (läuft auch offline)
   manifest.webmanifest    macht die Seite installierbar ("Zum Home-Bildschirm")
   sw.js                   speichert die App für die Offline-Nutzung
   icon-*.png              App-Icons
@@ -38,3 +43,17 @@ Inhalt
    - "In die Welt schicken": Die Figur erscheint mit Sternenwirbel und bleibt.
    Damit ALLE die Figuren sehen, einmalig Supabase einrichten:
    siehe SUPABASE-EINRICHTEN.txt
+
+5) Spielen und Lernen
+   - Das Regenbogen-Tor auf der Wiese (oder der Knopf "Reisepass") bringt
+     dich in andere Welten. Zuerst gibt es die Sternenwelt.
+   - Tippe auf Sonne, Planeten, Mond, Komet oder ISS: Das Mädchen läuft hin
+     und du bekommst eine Wissenskarte, danach eine kurze Frage.
+   - Sternenfee Luna verteilt Aufträge, z. B. Planeten ordnen, Sternbilder
+     verbinden, Mondsprung testen und einen eigenen Planeten malen.
+   - Für Karten, richtige Antworten und Aufträge gibt es Regenbogensterne.
+     Wer alle Aufträge einer Welt schafft, bekommt einen Stempel im
+     Reisepass und eine Belohnung (Sternen-Haarreif).
+   - Falsch beantwortete Fragen kommen später noch einmal – ohne Strafe.
+   - "Album" zeigt alle gesammelten Wissenskarten. "🔊 Vorlesen" liest vor.
+   - Der Fortschritt wird auf dem Gerät gespeichert.

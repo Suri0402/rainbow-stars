@@ -26,7 +26,7 @@ So funktioniert es
 create table public.creatures (
   id         uuid primary key,
   name       text not null check (char_length(name) between 1 and 24),
-  kind       text not null check (kind in ('bunny', 'bear')),
+  kind       text not null check (kind in ('bunny', 'bear', 'float')),
   image_path text not null check (image_path ~ '^[0-9a-f-]{36}\.png$'),
   approved   boolean not null default false,
   created_at timestamptz not null default now()
@@ -57,11 +57,11 @@ create policy "Figurenbilder hochladen" on storage.objects
    - "Project URL" und den öffentlichen Schlüssel kopieren
      ("anon public" oder "Publishable key").
      NIEMALS den "service_role"- oder "secret"-Schlüssel verwenden!
-   - In index.html nach dieser Zeile suchen:
+   - In app.js nach dieser Zeile suchen:
          const SUPA = {url:'', key:''};
      und ausfüllen, zum Beispiel:
          const SUPA = {url:'https://abcdefgh.supabase.co', key:'eyJhbGciOi...'};
-   - Den Ordner neu auf Netlify hochladen.
+   - Speichern und auf GitHub pushen (oder mir die Werte schicken).
 
 4) Figuren freigeben
    - Links "Table Editor" -> Tabelle "creatures".
