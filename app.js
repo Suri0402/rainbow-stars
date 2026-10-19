@@ -766,7 +766,8 @@ function renderCut(){
     : SHARE ? 'Deine Figur erscheint sofort bei dir. Für alle anderen erscheint sie, sobald sie freigegeben ist.'
     : 'Teilen ist noch nicht eingerichtet. Die Figur bleibt auf diesem Gerät.';
 }
-$('scanBtn').onclick = () => $('scanFile').click();
+// der Knopf ist ein <label for="scanFile"> und öffnet die Auswahl selbst; hier nur noch die Tastatur
+$('scanBtn').onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('scanFile').click(); } };
 $('scanFile').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   try { scanS.photo = await photoCanvas(f); } catch(err){ setStatus('Das Foto konnte nicht geöffnet werden.'); return; }
@@ -850,5 +851,10 @@ function tick(){
   requestAnimationFrame(tick);
 }
 // erst rendern, wenn alle Skripte (Lernen, Welten) geladen sind – sonst bremsen frühe Bilder den Start
-addEventListener('DOMContentLoaded', tick);
+addEventListener('DOMContentLoaded', () => { document.body.classList.remove('loading'); setStatus('schaut sich um …'); tick(); });
+// Fehler sichtbar machen, damit man sie melden kann
+let errShown = false;
+const showErr = m => { if (errShown) return; errShown = true; setStatus('⚠ Fehler: ' + String(m).slice(0, 120)); };
+addEventListener('error', e => showErr(e.message));
+addEventListener('unhandledrejection', e => showErr(e.reason && e.reason.message || e.reason));
 })();

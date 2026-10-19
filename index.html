@@ -36,10 +36,16 @@ h1{margin:0;font-family:var(--f-display);font-weight:600;font-size:clamp(28px,4.
 .bubble{background:var(--paper);border:2px solid var(--ink);border-radius:20px 20px 20px 5px;padding:6px 14px 8px;font-size:19px;line-height:1.15;max-width:min(400px,100%);box-shadow:3px 3px 0 var(--ink)}
 .bubble small{display:block;font-size:13px;color:var(--muted);letter-spacing:.06em}
 .controls{pointer-events:auto;display:flex;gap:8px;flex-wrap:wrap}
-button{font:inherit;font-size:18px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:4px 16px 6px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
-button:hover{background:var(--sun)}
-button:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
-button:focus-visible{outline:3px solid #ff7aa8;outline-offset:2px}
+button,.btn{display:inline-block;font:inherit;font-size:18px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:4px 16px 6px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+button:hover,.btn:hover{background:var(--sun)}
+button:active,.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+button:focus-visible,.btn:focus-visible{outline:3px solid #ff7aa8;outline-offset:2px}
+.btn.main{background:var(--pink)}
+.btn.main:hover{background:var(--sun)}
+/* Datei-Feld unsichtbar, aber nicht display:none – so öffnet das Label die Kamera/Galerie direkt */
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+/* bis die App geladen ist, sind die Knöpfe gesperrt */
+body.loading .controls,body.loading #starsHud{opacity:.45;pointer-events:none}
 .swatches{display:flex;align-items:center;gap:6px;background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:4px 10px;box-shadow:2px 2px 0 var(--ink)}
 .swatches span{font-size:17px;margin-right:2px}
 .sw{width:24px;height:24px;padding:0;border-radius:50%;background:var(--c);border:2px solid var(--ink);box-shadow:none}
@@ -132,12 +138,12 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 [hidden]{display:none!important}
 </style>
 </head>
-<body>
+<body class="loading">
 <div id="stage"></div>
 <div id="paper"></div>
 <div class="hud top">
   <h1>Rainbow Stars</h1>
-  <div class="bubble" aria-live="polite"><small>gerade</small><span id="status">schaut sich um …</span></div>
+  <div class="bubble" aria-live="polite"><small>gerade</small><span id="status">lädt …</span></div>
   <button type="button" id="questChip" class="quest" hidden><small>AUFTRAG</small><span></span></button>
 </div>
 <button type="button" id="starsHud" class="stars-hud" aria-label="Regenbogensterne – Album öffnen">★ <b>0</b></button>
@@ -148,13 +154,13 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
     <div class="swatches" id="swatches" role="group" aria-label="Haarfarbe"><span>Haare</span></div>
     <button id="next" type="button">Nächstes Abenteuer</button>
     <button id="pause" type="button">Pause</button>
-    <button id="scanBtn" type="button" class="main">✎ Figur scannen</button>
+    <label id="scanBtn" for="scanFile" class="btn main" role="button" tabindex="0">✎ Figur scannen</label>
     <button id="albumBtn" type="button">📖 Album</button>
     <button id="passBtn" type="button">✦ Reisepass</button>
   </div>
   <div class="hint">Tippe auf alles, was dich neugierig macht · Das Regenbogen-Tor bringt dich in andere Welten · Ziehen dreht die Kamera</div>
 </div>
-<input id="scanFile" type="file" accept="image/*" hidden>
+<input id="scanFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
 <div id="scan" class="scan" hidden role="dialog" aria-modal="true" aria-labelledby="scanTitle">
   <div class="sheet">
     <h2 id="scanTitle">Neue Figur</h2>
