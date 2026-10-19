@@ -741,25 +741,26 @@ function cutPass(src, r, sens, maxSide, prior){
   // dunkle Flächen, die mehrere Bildränder berühren (Tisch, Papierkante), gehören zum Hintergrund
   const seen = new Uint8Array(N);
   for (const s of border){ if (!wall[s] || seen[s]) continue; let sides = 0; qh = qt = 0; seen[s] = 1; q[qt++] = s;
-    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
+    let onEdge = 0;
+    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; if (x===0 || x===W-1 || y===0 || y===H-1) onEdge++; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
       if (x>0 && wall[i-1] && !seen[i-1]){ seen[i-1] = 1; q[qt++] = i-1; } if (x<W-1 && wall[i+1] && !seen[i+1]){ seen[i+1] = 1; q[qt++] = i+1; }
       if (y>0 && wall[i-W] && !seen[i-W]){ seen[i-W] = 1; q[qt++] = i-W; } if (y<H-1 && wall[i+W] && !seen[i+W]){ seen[i+W] = 1; q[qt++] = i+W; } }
-    if ((sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1) >= 2) for (let k2=0;k2<qt;k2++) wall[q[k2]] = 0; }
+    if ((sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1) >= 2 && onEdge > border.length*.15) for (let k2=0;k2<qt;k2++) wall[q[k2]] = 0; }
   qh = qt = 0;
   const push = i => { if (!outside[i] && !wall[i]){ outside[i] = 1; q[qt++] = i; } };
   border.forEach(push);
   while (qh < qt){ const i = q[qh++], x = i%W; if (x>0) push(i-1); if (x<W-1) push(i+1); if (i>=W) push(i-W); if (i<N-W) push(i+W); }
   // 4) zusammenhängende Teile; kleine Krümel weg, Tisch-/Papierkanten am Bildrand ignorieren
   const lab = new Int32Array(N), comps = []; qh = qt = 0;
-  for (let s=0; s<N; s++){ if (outside[s] || lab[s]) continue; const id = comps.length+1, cp = {id, n:0, strong:0, x0:W, y0:H, x1:0, y1:0}; let sides = 0;
+  for (let s=0; s<N; s++){ if (outside[s] || lab[s]) continue; const id = comps.length+1, cp = {id, n:0, strong:0, edge:0, x0:W, y0:H, x1:0, y1:0}; let sides = 0;
     lab[s] = id; q[qt++] = s;
-    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; cp.n++; cp.strong += strong[i]; if (x<cp.x0) cp.x0 = x; if (x>cp.x1) cp.x1 = x; if (y<cp.y0) cp.y0 = y; if (y>cp.y1) cp.y1 = y; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
+    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; cp.n++; cp.strong += strong[i]; if (x===0 || x===W-1 || y===0 || y===H-1) cp.edge++; if (x<cp.x0) cp.x0 = x; if (x>cp.x1) cp.x1 = x; if (y<cp.y0) cp.y0 = y; if (y>cp.y1) cp.y1 = y; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
       if (x>0 && !outside[i-1] && !lab[i-1]){ lab[i-1] = id; q[qt++] = i-1; } if (x<W-1 && !outside[i+1] && !lab[i+1]){ lab[i+1] = id; q[qt++] = i+1; }
       if (y>0 && !outside[i-W] && !lab[i-W]){ lab[i-W] = id; q[qt++] = i-W; } if (y<H-1 && !outside[i+W] && !lab[i+W]){ lab[i+W] = id; q[qt++] = i+W; } }
     cp.sides = (sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1); comps.push(cp); }
   if (!comps.length) return null;
   const visible = comps.filter(c => c.strong >= Math.max(8, c.n*.004)), cand = visible.length ? visible : comps;
-  const inner = cand.filter(c => c.sides < 2), pool = inner.length ? inner : cand, big = Math.max(...pool.map(c => c.n));
+  const inner = cand.filter(c => c.sides < 2 || c.edge < border.length*.15), pool = inner.length ? inner : cand, big = Math.max(...pool.map(c => c.n));
   // Teile nur, wenn sie nah an der Hauptfigur liegen (z. B. ein Ball) oder fast so groß sind – lose Schattenkanten fallen weg
   const main = pool.find(c => c.n === big), mx = (main.x1-main.x0)*.3 + 6, my = (main.y1-main.y0)*.3 + 6;
   const near = c => c.x1 >= main.x0 - mx && c.x0 <= main.x1 + mx && c.y1 >= main.y0 - my && c.y0 <= main.y1 + my;
@@ -789,9 +790,12 @@ function finishCut({W, H, col, fig, line}, boost){
       const x0 = Math.max(0, x-R), y0 = Math.max(0, y-R), x1 = Math.min(W, x+R+1), y1 = Math.min(H, y+R+1), n = box(S[3], x0, y0, x1, y1);
       if (n < (x1-x0)*(y1-y0)*.12) continue;
       for (let c=0;c<3;c++) col[p+c] = box(S[c], x0, y0, x1, y1)/n; }
-    let ln = line; for (let i=0, n=Math.max(1, Math.round(Math.max(W, H)*.004)); i<n; i++) ln = dilate(ln, W, H);   // Striche dicker (im Spiel ist die Figur klein)
+    // viele Bleistiftstriche (schattierte Zeichnung)? Dann nur leicht nachdunkeln, nicht verdicken – sonst wird alles klobig
+    let nf = 0, nl = 0; for (let i=0;i<N;i++) if (fig[i]){ nf++; nl += line[i]; }
+    const sketchy = nl > nf*.18, tl = sketchy ? .3 : .8, tn = sketchy ? .15 : .5;
+    let ln = line; if (!sketchy) for (let i=0, n=Math.max(1, Math.round(Math.max(W, H)*.004)); i<n; i++) ln = dilate(ln, W, H);   // Striche dicker (im Spiel ist die Figur klein)
     for (let i=0;i<N;i++){ if (!fig[i]) continue; const p = i*4, r = col[p], g = col[p+1], b = col[p+2], m = (r+g+b)/3;
-      if (ln[i] && (line[i] || m < 200)){ const t = line[i] ? .8 : .5; col[p] = r*(1-t) + 59*t; col[p+1] = g*(1-t) + 42*t; col[p+2] = b*(1-t) + 58*t; continue; }
+      if (ln[i] && (line[i] || m < 200)){ const t = line[i] ? tl : tn; col[p] = r*(1-t) + 59*t; col[p+1] = g*(1-t) + 42*t; col[p+2] = b*(1-t) + 58*t; continue; }
       if (Math.max(r,g,b) - Math.min(r,g,b) > 12){ const s = 2.4, dk = .88; col[p] = (m + (r-m)*s)*dk; col[p+1] = (m + (g-m)*s)*dk; col[p+2] = (m + (b-m)*s)*dk; } }
   }
   // dunkler Umriss wie bei den Tieren (nur mit Verstärken), außen der weiße Sticker-Rand
