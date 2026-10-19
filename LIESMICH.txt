@@ -41,6 +41,11 @@ Inhalt
      entfernen" nachbessern, Namen eingeben und wählen, ob sie hüpft oder
      watschelt.
    - "In die Welt schicken": Die Figur erscheint mit Sternenwirbel und bleibt.
+   - Man kann auch Dinge zeichnen und beim Scannen sagen, was es ist:
+     Ball (rollt, wird gekickt, die Tiere jagen ihn), Spielzeug (das Mädchen
+     trägt es herum), Pflanze/Deko (steht fest), Essen (die Tiere naschen es
+     auf, nach einer Minute wächst es nach).
+   - Löschen: Album -> "Meine Figuren" -> Löschen.
    Damit ALLE die Figuren sehen, einmalig Supabase einrichten:
    siehe SUPABASE-EINRICHTEN.txt
 

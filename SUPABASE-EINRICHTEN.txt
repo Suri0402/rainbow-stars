@@ -26,7 +26,7 @@ So funktioniert es
 create table public.creatures (
   id         uuid primary key,
   name       text not null check (char_length(name) between 1 and 24),
-  kind       text not null check (kind in ('bunny', 'bear', 'float')),
+  kind       text not null check (kind in ('bunny', 'bear', 'float', 'ball', 'toy', 'deco', 'food')),
   image_path text not null check (image_path ~ '^[0-9a-f-]{36}\.png$'),
   approved   boolean not null default false,
   created_at timestamptz not null default now()

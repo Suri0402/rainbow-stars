@@ -393,7 +393,7 @@ function updateGirl(dt, t){
     const d = new V3(st.approach.x - st.pos.x, 0, st.approach.z - st.pos.z), len = d.length();
     if (len < .05){
       const arrived = st.act;   // selbst angetippt? Dann z. B. Wissenskarte öffnen
-      if (arrived === userPick){ userPick = null; if (arrived.onArrive) setTimeout(() => arrived.onArrive(arrived), 900); }
+      if (arrived === userPick || arrived.always){ if (arrived === userPick) userPick = null; if (arrived.onArrive) setTimeout(() => arrived.onArrive(arrived), arrived.always ? 150 : 900); }
       st.state = 'act'; st.actT = 0; st.timer = st.act.kind === 'animal' ? 5.6 : 4.8;
       setStatus(st.act.doing + (st.act.mark || (st.act.kind === 'animal' ? ' ♡' : ' ✿')));
       if (st.act.kind === 'animal'){ const a = st.act.ref; a.state = 'play'; a.playA = Math.atan2(a.pos.x - st.pos.x, a.pos.z - st.pos.z); }
@@ -417,7 +417,7 @@ function updateGirl(dt, t){
     st.actT += dt; const T = st.actT;
     st.face = -st.side;
     const fade = Math.min(1, st.timer*2.5);
-    if (st.act.kind !== 'animal'){
+    if (st.act.kind !== 'animal' && !st.act.happy){
       const k = ease(Math.min(1, T*2.5)) * fade;
       lean = .2*k; headRot = -.17*k*st.face;
       if (st.act.marvel && T > .35 && T < 1.95){ eye = 'open'; mouth = 'o'; blush = 1.4; }   // staunen statt schnuppern
@@ -522,6 +522,8 @@ function updateGirl(dt, t){
 
 function updateAnimal(a, dt, t){
   a.timer -= dt; let moving = false, dir = null;
+  if (a.chase){ a.chaseT -= dt; if (a.chaseT <= 0 || a.chase.gone){ a.chase = null; a.state = 'idle'; a.timer = .5; }
+    else if (a.state !== 'wait' && a.state !== 'play'){ if (a.chase.near && a.pos.distanceTo(a.chase.pos) < .45){ a.state = 'idle'; a.timer = 1; } else { a.state = 'wander'; a.target.copy(a.chase.pos); a.target.y = 0; } } }
   if (a.state === 'idle'){ if (a.timer <= 0){ a.state = 'wander'; const ang = Math.random()*6.28, r = 2 + Math.random()*11; a.target.set(Math.cos(ang)*r, 0, Math.sin(ang)*r); } }
   else if (a.state === 'wander'){
     const d = new V3().subVectors(a.target, a.pos); d.y = 0;
@@ -621,9 +623,10 @@ async function showCreature(rec, {near=false, arrive=false}={}){
   const pos = near ? st.pos.clone().addScaledVector(camRight(), (Math.random() < .5 ? -1 : 1)*1.9).add(new V3(Math.sin(az)*.6, 0, Math.cos(az)*.6))
                    : new V3(Math.cos(ang), 0, Math.sin(ang)).multiplyScalar(3 + Math.random()*8);
   const wid = W[rec.world] ? rec.world : 'home';
-  const a = addCreature({name:rec.name, c, w, kind:rec.kind, pos, rnd:Math.random, appear: arrive ? 0 : undefined, wid});
+  const a = THING_TYPES.includes(rec.kind) ? addThing({name:rec.name, c, type:rec.kind, pos, wid, appear: arrive ? 0 : undefined})
+                                         : addCreature({name:rec.name, c, w, kind:rec.kind, pos, rnd:Math.random, appear: arrive ? 0 : undefined, wid});
   world.set(rec.id, a);
-  if (arrive && wid === worldId){ arrivalFx(a); setStatus(rec.name + ' ist angekommen! ✦'); setTimeout(() => { if (animals.includes(a)) startActivity(a.act); }, 2400); }
+  if (arrive && wid === worldId){ arrivalFx(a); setStatus(rec.name + ' ist angekommen! ✦'); setTimeout(() => { if (W[a.wid].acts.includes(a.act)) startActivity(a.act); }, 2400); }
   return a;
 }
 function removeCreature(id){
@@ -631,8 +634,96 @@ function removeCreature(id){
   if (st.act && st.act.ref === a){ st.act = null; st.state = 'idle'; st.timer = .6; }
   if (st.last && st.last.ref === a) st.last = null;
   a.g.parent.remove(a.g);
-  [[animals,a],[W[a.wid].acts,a.act],[W[a.wid].picks,a.mesh],[bills,a.bb],[fadeables,a.mesh]].forEach(([arr,v]) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i,1); });
+  a.gone = true; if (carrying === a) carrying = null;
+  [[animals,a],[things,a],[W[a.wid].acts,a.act],[W[a.wid].picks,a.mesh],[bills,a.bb],[fadeables,a.mesh]].forEach(([arr,v]) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i,1); });
   const img = a.mesh.material.map.image, tx = texCache.get(img); if (tx){ tx.dispose(); texCache.delete(img); }
+}
+
+
+// ================= GEZEICHNETE DINGE: Ball, Spielzeug, Pflanze/Deko, Essen =================
+const THING_TYPES = ['ball', 'toy', 'deco', 'food'], things = [];
+let carrying = null;   // Spielzeug, das das Mädchen gerade trägt
+function addThing({name, c, type, pos, wid='home', appear}){
+  const tall = {ball:.55, toy:.75, deco:1.6, food:.5}[type], w = Math.min(type === 'deco' ? 2.6 : 1.2, tall*c.width/c.height), h = w*c.height/c.width;
+  const g = new THREE.Group(); W[wid].group.add(g); const sh = shadow(w*.85, g);
+  const bb = new THREE.Group(); g.add(bb); bills.push(bb);
+  const body = new THREE.Group(); bb.add(body);
+  const m = bill(c, w, body, type === 'ball' ? .5 : 0); bills.splice(bills.indexOf(m),1);
+  if (type === 'ball') m.position.y = h/2;
+  const th = {name, type, g, bb, body, mesh:m, sh, pos:pos.clone(), vel:new V3(), y:0, vy:0, w, h, wid, appear, home:pos.clone(), eatT:0, regrow:0, near:type === 'food'};
+  g.position.copy(th.pos);
+  const T = {ball:['läuft zum Ball ' + name, 'spielt Ball mit ' + name], toy:['läuft zu ' + name, 'hebt ' + name + ' hoch'],
+             deco:['läuft zu ' + name, 'bestaunt ' + name], food:['läuft zu ' + name, 'ruft die Tiere zu ' + name]}[type];
+  const act = {kind:'thing', ref:th, go:T[0], doing:T[1], mark:{ball:' ⚽', toy:' ✦', deco:' ✿', food:' ♡'}[type],
+    happy: type === 'ball' || type === 'toy', marvel: type === 'deco', always: type !== 'deco', off: type === 'ball' ? .5 : type === 'deco' ? w*.45 + .4 : .6, fxH: h*.8,
+    onArrive: () => thingArrive(th)};
+  th.act = act; m.userData.act = act; W[wid].acts.push(act); W[wid].picks.push(m); things.push(th);
+  if (appear !== undefined) g.scale.setScalar(.001);
+  if (type === 'food') setTimeout(() => callAnimals(th), 3000);
+  return th;
+}
+const sameWorld = th => animals.filter(a => a.wid === th.wid && (a.kind === 'bunny' || a.kind === 'bear'));
+function callAnimals(th, n=2){
+  if (th.gone || th.g.visible === false) return;
+  sameWorld(th).sort((a,b) => a.pos.distanceTo(th.pos) - b.pos.distanceTo(th.pos)).slice(0, n).forEach(a => { a.chase = th; a.chaseT = 14; });
+}
+function kick(th, from, power=5){
+  const d = new V3().subVectors(th.pos, from); d.y = 0; if (d.lengthSq() < 1e-4) d.set(Math.random()-.5, 0, Math.random()-.5);
+  d.normalize().applyAxisAngle(new V3(0,1,0), (Math.random()-.5)*.9);
+  th.vel.copy(d.multiplyScalar(power)); th.vy = power*.65;
+  for (let i=0;i<5;i++) spawn(fxTex.star[(Math.random()*6)|0], th.pos.clone().add(new V3(0, .3, 0)), new V3((Math.random()-.5)*.8, .9, (Math.random()-.5)*.8), .9, .1);
+}
+function thingArrive(th){
+  if (th.gone) return;
+  if (th.type === 'ball'){ kick(th, st.pos); sameWorld(th).forEach(a => { if (a.pos.distanceTo(th.pos) < 12){ a.chase = th; a.chaseT = 5; } }); }
+  else if (th.type === 'toy') pickUp(th);
+  else if (th.type === 'food') callAnimals(th, 3);
+}
+function pickUp(th){
+  if (carrying) drop();
+  carrying = th; th.carryT = 9;
+  const acts = W[th.wid].acts, i = acts.indexOf(th.act); if (i >= 0) acts.splice(i, 1);
+  th.g.parent.remove(th.g); girl.add(th.g); th.sh.visible = false;
+  setStatus('trägt ' + th.name + ' herum ✦');
+}
+function drop(){
+  const th = carrying; if (!th) return; carrying = null;
+  girl.remove(th.g); W[th.wid].group.add(th.g); th.sh.visible = true;
+  th.pos.copy(st.pos).addScaledVector(camRight(), .7 * (Math.random() < .5 ? -1 : 1)); th.g.position.copy(th.pos); th.g.scale.setScalar(1);
+  if (!W[th.wid].acts.includes(th.act)) W[th.wid].acts.push(th.act);
+}
+function updateThings(dt, t){
+  for (const th of things){
+    if (th.appear !== undefined && th.appear < 1){ const u = th.appear = Math.min(1, th.appear + dt/1.4); th.g.scale.setScalar(Math.max(.001, 1 - Math.cos(u*Math.PI*2.5)*Math.exp(-5*u)*(1-u))); }
+    if (th === carrying){
+      th.carryT -= dt; const side = camRight().multiplyScalar(.5*st.face);   // neben ihr in Hüfthöhe, nicht vor dem Gesicht
+      th.g.position.set(side.x + Math.sin(az)*.15, .3 + Math.abs(Math.sin(t*6))*.03 + (st.state === 'act' ? Math.abs(Math.sin(t*8))*.12 : 0), side.z + Math.cos(az)*.15); th.g.scale.setScalar(.75); th.body.rotation.z = Math.sin(t*3)*.08;
+      if (th.carryT <= 0 || th.wid !== worldId) drop();
+      continue;
+    }
+    if (th.type === 'ball'){
+      th.pos.addScaledVector(th.vel, dt); th.vel.multiplyScalar(Math.pow(.35, dt));
+      th.vy -= 14*dt; th.y += th.vy*dt; if (th.y < 0){ th.y = 0; th.vy = Math.abs(th.vy) > 1.2 ? -th.vy*.55 : 0; }
+      const r = Math.hypot(th.pos.x, th.pos.z); if (r > 15){ const nx = th.pos.x/r, nz = th.pos.z/r, dot = th.vel.x*nx + th.vel.z*nz; th.vel.x -= 2*dot*nx; th.vel.z -= 2*dot*nz; th.pos.x = nx*15; th.pos.z = nz*15; }
+      const sp = Math.hypot(th.vel.x, th.vel.z); th.mesh.rotation.z -= th.vel.dot(camRight())*dt/(th.w*.5);   // rollen
+      // Tiere stupsen den Ball weiter, wenn sie ihn erwischen
+      if (sp < 1.5) for (const a of animals){ if (a.chase === th && a.pos.distanceTo(th.pos) < .5){ kick(th, a.pos, 2.5 + Math.random()*1.5); a.chaseT = Math.max(a.chaseT, 2.5); break; } }
+      th.g.position.set(th.pos.x, 0, th.pos.z); th.body.position.y = th.y; th.sh.scale.setScalar(1/(1 + th.y*.8));
+    } else if (th.type === 'food'){
+      if (th.g.visible === false){ if (t > th.regrow){ th.g.visible = true; th.appear = 0; th.eatT = 0; th.body.scale.setScalar(1); th.gone = false; if (!W[th.wid].acts.includes(th.act)) W[th.wid].acts.push(th.act); } continue; }
+      const eaters = animals.filter(a => a.chase === th && a.pos.distanceTo(th.pos) < .6);
+      if (eaters.length){ th.eatT += dt*eaters.length;
+        if (Math.random() < dt*3) spawn(fxTex.heart, th.pos.clone().add(new V3((Math.random()-.5)*.4, .6, 0)), new V3(0, .5, 0), 1.2, .14);
+        th.body.scale.setScalar(Math.max(.15, 1 - th.eatT/5));
+        if (th.eatT >= 5){ th.g.visible = false; th.gone = true; th.regrow = t + 60; eaters.forEach(a => { a.chase = null; a.state = 'idle'; a.timer = .3; });
+          const acts = W[th.wid].acts, i = acts.indexOf(th.act); if (i >= 0) acts.splice(i, 1);
+          if (st.act === th.act){ st.act = null; st.state = 'idle'; st.timer = .5; }
+          if (th.wid === worldId) setStatus(th.name + ' ist aufgegessen – mmh! Es wächst bald nach.'); }
+      }
+      th.body.rotation.z = Math.sin(t*2 + th.home.x)*.03;
+    } else if (th.type === 'deco'){ th.body.rotation.z = Math.sin(t*1.1 + th.home.x)*.025; }
+    else th.body.rotation.z = Math.sin(t*1.6 + th.home.z)*.04;
+  }
 }
 
 // --- Teilen über Supabase (REST, ohne Zusatzbibliothek) ---
@@ -668,7 +759,7 @@ async function syncShared(first){
     for (const row of rows.reverse()){
       if (known.has(row.id)) continue;
       const img = await fetch(`${SUPA.url}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(row.image_path)}`); if (!img.ok) continue;
-      const rec = {id:row.id, name:String(row.name || 'Freund').slice(0,24), kind:['bear','float'].includes(row.kind) ? row.kind : 'bunny', blob:await img.blob(), mine:false, created:Date.parse(row.created_at) || Date.now()};
+      const rec = {id:row.id, name:String(row.name || 'Freund').slice(0,24), kind:['bear','float','ball','toy','deco','food'].includes(row.kind) ? row.kind : 'bunny', blob:await img.blob(), mine:false, created:Date.parse(row.created_at) || Date.now()};
       await idb.put(rec); showCreature(rec, {arrive:!first});
     }
   } catch(e){ console.warn('Geteilte Figuren konnten nicht geladen werden', e); }
@@ -796,7 +887,7 @@ function finishCut({W, H, col, fig, line}, boost){
     let ln = line; if (!sketchy) for (let i=0, n=Math.max(1, Math.round(Math.max(W, H)*.004)); i<n; i++) ln = dilate(ln, W, H);   // Striche dicker (im Spiel ist die Figur klein)
     for (let i=0;i<N;i++){ if (!fig[i]) continue; const p = i*4, r = col[p], g = col[p+1], b = col[p+2], m = (r+g+b)/3;
       if (ln[i] && (line[i] || m < 200)){ const t = line[i] ? tl : tn; col[p] = r*(1-t) + 59*t; col[p+1] = g*(1-t) + 42*t; col[p+2] = b*(1-t) + 58*t; continue; }
-      if (Math.max(r,g,b) - Math.min(r,g,b) > 12){ const s = 2.4, dk = .88; col[p] = (m + (r-m)*s)*dk; col[p+1] = (m + (g-m)*s)*dk; col[p+2] = (m + (b-m)*s)*dk; } }
+      const cr = Math.max(r,g,b) - Math.min(r,g,b); if (cr > 12){ const s = Math.min(2.4, Math.max(1, 120/cr)), dk = .9; col[p] = (m + (r-m)*s)*dk; col[p+1] = (m + (g-m)*s)*dk; col[p+2] = (m + (b-m)*s)*dk; } }   // blasse Farben stark verstärken, kräftige kaum
   }
   // dunkler Umriss wie bei den Tieren (nur mit Verstärken), außen der weiße Sticker-Rand
   let ol = fig; if (boost) for (let i=0, n=Math.max(2, Math.round(Math.max(W, H)*.011)); i<n; i++) ol = dilate(ol, W, H);
@@ -870,11 +961,14 @@ $('scanCropOk').onclick = () => { scanStep('edit'); renderCut(); };
 $('scanBack').onclick = () => scanStep('crop');
 let sensT = 0; $('scanSens').oninput = () => { clearTimeout(sensT); sensT = setTimeout(renderCut, 150); };
 $('scanBoost').onchange = renderCut;
+// Was wurde gezeichnet? Nur Figuren brauchen die Bewegungsart
+scanEl.querySelectorAll('input[name="scanType"]').forEach(r => r.onchange = () => { $('scanKinds').hidden = r.value !== 'figure' || !r.checked; });
 $('scanClose').onclick = closeScan;
 addEventListener('keydown', e => { if (e.key === 'Escape' && !scanEl.hidden) closeScan(); });
 $('scanGo').onclick = () => {
   const c = scanS.cut; if (!c) return;
-  const name = $('scanName').value.trim().slice(0,24) || 'Sternchen', kind = scanEl.querySelector('input[name="scanKind"]:checked').value;
+  const name = $('scanName').value.trim().slice(0,24) || 'Sternchen', type = scanEl.querySelector('input[name="scanType"]:checked').value,
+        kind = type === 'figure' ? scanEl.querySelector('input[name="scanKind"]:checked').value : type;
   $('scanGo').disabled = true;
   c.toBlob(async blob => {
     if (!blob){ $('scanGo').disabled = false; $('scanNote').textContent = '⚠ Das Bild konnte nicht erstellt werden. Zieh den Rahmen etwas kleiner und versuch es nochmal.'; scanFail('save', 'Das Bild der Figur konnte nicht erstellt werden.'); return; }
@@ -909,7 +1003,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },
   deleteCreature: id => { removeCreature(id); return idb.del(id); },
   resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
-  SHARE,
+  SHARE, things, animals,
   get worldId(){ return worldId; }, get paused(){ return paused; }, setPaused: v => { paused = v; }, openScan: () => { startPick(); $('scanFile').click(); }};
 
 // ---------- Loop ----------
@@ -919,6 +1013,7 @@ function tick(){
   t += dt;
   updateGirl(dt, t);
   animals.forEach(a => updateAnimal(a, dt, t));
+  updateThings(dt, t);
   if (W[worldId].update) W[worldId].update(dt, t);
   butterflies.forEach(b => { const u = b.userData; u.ph += dt*u.s; b.position.set(u.c.x + Math.cos(u.ph)*u.r, u.c.y + Math.sin(u.ph*2.3)*.35, u.c.z + Math.sin(u.ph*1.4)*u.r);
     b.scale.x = .32*(.25 + .75*Math.abs(Math.sin(t*14 + u.ph*4))); });

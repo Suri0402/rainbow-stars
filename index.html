@@ -196,7 +196,14 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
       <div class="scale"><span>nur kräftige</span><span>auch ganz zarte</span></div>
       <label class="field check"><input id="scanBoost" type="checkbox" checked> Linien und Farben verstärken</label>
       <label class="field">Name <input id="scanName" type="text" maxlength="24" placeholder="z. B. Sternchen" autocomplete="off" enterkeyhint="done"></label>
-      <div class="field kinds" role="radiogroup" aria-label="Bewegung"><span>Bewegt sich</span>
+      <div class="field kinds" role="radiogroup" aria-label="Was hast du gezeichnet?"><span>Das ist</span>
+        <label><input type="radio" name="scanType" value="figure" checked> eine Figur</label>
+        <label><input type="radio" name="scanType" value="ball"> ein Ball</label>
+        <label><input type="radio" name="scanType" value="toy"> ein Spielzeug</label>
+        <label><input type="radio" name="scanType" value="deco"> eine Pflanze / Deko</label>
+        <label><input type="radio" name="scanType" value="food"> etwas zu essen</label>
+      </div>
+      <div class="field kinds" id="scanKinds" role="radiogroup" aria-label="Bewegung"><span>Bewegt sich</span>
         <label><input type="radio" name="scanKind" value="bunny" checked> hüpfend</label>
         <label><input type="radio" name="scanKind" value="bear"> watschelnd</label>
         <label><input type="radio" name="scanKind" value="float"> schwebend</label>
