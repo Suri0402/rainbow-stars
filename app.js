@@ -756,13 +756,29 @@ function cutout(src, r, th){
 
 // --- Scan-Dialog ---
 const scanEl = $('scan'), cropC = $('cropC'), cutC = $('cutC'), scanS = {photo:null, crop:null, cut:null};
+// Jeder Fehlschlag beim Scannen wird gemeldet (learn.js zeigt dann eine rote Problemkarte und merkt ihn sich)
+const scanFail = (step, msg) => { console.warn('Scannen:', step, msg); dispatchEvent(new CustomEvent('rs:scanfail', {detail:{step, msg:String(msg), at:Date.now()}})); };
+// Kommt nach dem Öffnen der Kamera/Galerie kein Foto zurück? (Abbrechen meldet Chrome mit "cancel")
+let pickPending = false;
+const ss = {get(){ try { return +sessionStorage.getItem('rs-scan-pending') || 0; } catch(e){ return 0; } },
+  set(v){ try { v ? sessionStorage.setItem('rs-scan-pending', String(v)) : sessionStorage.removeItem('rs-scan-pending'); } catch(e){} }};
+const startPick = () => { pickPending = true; ss.set(Date.now()); };
+const endPick = () => { pickPending = false; ss.set(0); };
+const checkPick = () => { if (pickPending) setTimeout(() => { if (pickPending){ endPick();
+  scanFail('nophoto', 'Es ist kein Foto in der App angekommen. Falls du abgebrochen hast, ist alles gut – sonst versuch es bitte nochmal.'); } }, 2500); };
+addEventListener('focus', checkPick);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkPick(); });
+// Wurde die Seite neu gestartet, während die Kamera offen war? (Android tut das bei wenig freiem Speicher)
+addEventListener('DOMContentLoaded', () => { const t = ss.get(); ss.set(0);
+  if (t && Date.now() - t < 10*60*1000) setTimeout(() => scanFail('restart', 'Die App wurde neu gestartet, während die Kamera offen war – dabei ging das Foto verloren. Das passiert, wenn auf dem Handy wenig Speicher frei ist.'), 1500); });
 const scanStep = s => { scanEl.querySelectorAll('.step').forEach(e => e.hidden = e.dataset.step !== s); scanEl.hidden = false; };
 const closeScan = () => { scanEl.hidden = true; scanS.photo = scanS.cut = null; };
 function drawCrop(){ const x = cropC.getContext('2d'), r = scanS.crop; x.drawImage(scanS.photo, 0, 0);
   x.fillStyle = 'rgba(52,44,58,.5)'; x.beginPath(); x.rect(0, 0, cropC.width, cropC.height); x.rect(r.x, r.y, r.w, r.h); x.fill('evenodd');
   const lw = Math.max(3, cropC.width/200); x.lineWidth = lw; x.strokeStyle = '#ff7aa8'; x.setLineDash([lw*4, lw*2.5]); x.strokeRect(r.x, r.y, r.w, r.h); x.setLineDash([]); }
 function renderCut(){
-  scanS.cut = cutout(scanS.photo, scanS.crop, +$('scanSens').value);
+  try { scanS.cut = cutout(scanS.photo, scanS.crop, +$('scanSens').value); }
+  catch(err){ scanS.cut = null; scanFail('cut', 'Beim Ausschneiden ist ein Fehler passiert: ' + (err.message || err)); }
   const c = scanS.cut, x = cutC.getContext('2d');
   cutC.width = c ? c.width : 320; cutC.height = c ? c.height : 200; if (c) x.drawImage(c, 0, 0);
   $('scanGo').disabled = !c;
@@ -772,10 +788,16 @@ function renderCut(){
     : 'Teilen ist noch nicht eingerichtet. Die Figur bleibt auf diesem Gerät.';
 }
 // der Knopf ist ein <label for="scanFile"> und öffnet die Auswahl selbst; hier nur noch die Tastatur
-$('scanBtn').onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('scanFile').click(); } };
+$('scanBtn').addEventListener('click', startPick);
+$('scanBtn').onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); startPick(); $('scanFile').click(); } };
+$('scanFile').addEventListener('cancel', endPick);
 $('scanFile').onchange = async e => {
+  endPick();
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  try { scanS.photo = await photoCanvas(f); } catch(err){ setStatus('Das Foto konnte nicht geöffnet werden.'); return; }
+  const info = `${f.type || 'unbekanntes Format'}, ${f.size < 1024 ? f.size + ' Byte' : Math.round(f.size/1024) + ' KB'}`;
+  if (!f.size){ scanFail('photo', `Das Foto ist leer angekommen (${info}).`); return; }
+  try { scanS.photo = await photoCanvas(f); }
+  catch(err){ scanFail('photo', `Das Foto konnte nicht geöffnet werden (${info}).`); return; }
   const p = scanS.photo; cropC.width = p.width; cropC.height = p.height;
   scanS.crop = {x:p.width*.03, y:p.height*.03, w:p.width*.94, h:p.height*.94}; drawCrop(); scanStep('crop');
 };
@@ -796,12 +818,14 @@ $('scanGo').onclick = () => {
   const name = $('scanName').value.trim().slice(0,24) || 'Sternchen', kind = scanEl.querySelector('input[name="scanKind"]:checked').value;
   $('scanGo').disabled = true;
   c.toBlob(async blob => {
-    if (!blob){ $('scanGo').disabled = false; $('scanNote').textContent = '⚠ Das Bild konnte nicht erstellt werden. Zieh den Rahmen etwas kleiner und versuch es nochmal.'; return; }
+    if (!blob){ $('scanGo').disabled = false; $('scanNote').textContent = '⚠ Das Bild konnte nicht erstellt werden. Zieh den Rahmen etwas kleiner und versuch es nochmal.'; scanFail('save', 'Das Bild der Figur konnte nicht erstellt werden.'); return; }
+    try {
     const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world:worldId};
     const saved = (await idb.put(rec)) !== undefined; closeScan(); $('scanName').value = '';
     const a = await showCreature(rec, {near:true, arrive:true});
     dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:rec.world, name, inWorld:!!a, saved, thumb:blob}}));
     if (rec.world === 'home') shareCreature(rec);
+    } catch(err){ closeScan(); scanFail('send', 'Die Figur konnte nicht in die Welt geschickt werden: ' + (err.message || err)); }
   }, 'image/png');
 };
 
@@ -827,7 +851,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   deleteCreature: id => { removeCreature(id); return idb.del(id); },
   resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
   SHARE,
-  get worldId(){ return worldId; }, get paused(){ return paused; }, setPaused: v => { paused = v; }, openScan: () => $('scanFile').click()};
+  get worldId(){ return worldId; }, get paused(){ return paused; }, setPaused: v => { paused = v; }, openScan: () => { startPick(); $('scanFile').click(); }};
 
 // ---------- Loop ----------
 const clock = new THREE.Clock(); let t = 0; const tmpW = new V3();

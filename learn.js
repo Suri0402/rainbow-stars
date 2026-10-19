@@ -315,21 +315,51 @@ function renderFig(){
   figEl.append(img, box); figEl.hidden = false;
   clearTimeout(figT); if (ok && shareLine(f)[0] !== 'bad') figT = setTimeout(hideFig, 12000);
 }
-function hideFig(){ figEl.hidden = true; clearTimeout(figT); }
+function hideFig(){ figEl.hidden = true; figEl.classList.remove('bad'); clearTimeout(figT); }
+
+// Probleme beim Scannen: rote Karte + Protokoll (die letzten 10, gespeichert)
+const TIPS = {
+  nophoto:'Tippe nochmal auf „Figur scannen“. Klappt die Kamera nicht, mach das Foto vorher mit der Kamera-App und wähle es dann über „Dateien“ oder „Galerie“ aus.',
+  restart:'Mach das Foto zuerst mit der Kamera-App. Tippe dann auf „Figur scannen“ und wähle das Foto über „Dateien“ oder „Galerie“ aus. Andere Apps zu schließen hilft auch.',
+  photo:'Versuch ein anderes Foto. Am besten klappt ein normales Foto (JPG) von der Kamera.',
+  cut:'Zieh den Rahmen enger um die Figur oder versuch ein Foto mit mehr Licht.',
+  save:'Lade die Seite neu und versuch es nochmal.', send:'Lade die Seite neu und versuch es nochmal.',
+  world:'Lade die Seite neu. Hilft das nicht, scanne die Figur nochmal.', share:'Die App versucht es später von selbst nochmal. Du kannst auch in „Meine Figuren“ auf „Nochmal senden“ tippen.'};
+let scanLog = [];
+RS.idb.getP('scanlog').then(v => { if (Array.isArray(v)) scanLog = v.concat(scanLog).slice(-10); });
+function logProblem(step, msg, name){ scanLog.push({at:Date.now(), step, msg, name}); scanLog = scanLog.slice(-10); RS.idb.setP('scanlog', scanLog); }
+function showProblem(step, msg){
+  figEl.replaceChildren(); figEl.classList.add('bad');
+  const box = el('div', 'fs-body'); box.append(el('b', '', '⚠ Das hat nicht geklappt'), el('p', 'cardtext', msg), el('p', 'note', 'Tipp: ' + (TIPS[step] || TIPS.save)));
+  const r = el('div', 'fs-row');
+  if (step !== 'share') r.append(btn('Nochmal versuchen ✎', 'small main', () => { hideFig(); RS.openScan(); }));
+  r.append(btn('Meine Figuren', 'small', () => { hideFig(); openMine(); }), btn('×', 'small', hideFig));
+  box.append(r); figEl.append(box); figEl.hidden = false; clearTimeout(figT);
+}
+addEventListener('rs:scanfail', e => { const d = e.detail; logProblem(d.step, d.msg); showProblem(d.step, d.msg); });
 addEventListener('rs:scanned', e => {
   const d = e.detail; if (figLive) URL.revokeObjectURL(figLive.url);
   figLive = {...d, url:URL.createObjectURL(d.thumb)};
+  if (!d.inWorld) logProblem('world', 'Die Figur ist nicht in der Welt erschienen – das Bild ließ sich nicht lesen.', d.name);
+  if (!d.saved) logProblem('save', 'Die Figur wurde nicht gespeichert und ist nach dem Neuladen weg.', d.name);
   setTimeout(renderFig, 1800);   // erst den Sternenwirbel zeigen
 });
 addEventListener('rs:share', e => {
   const d = e.detail;
   if (figLive && figLive.id === d.id){ figLive.state = d.state; if (!figEl.hidden) renderFig(); }
   if (d.state === 'approved') toast('🎉 ' + d.name + ' ist jetzt für alle sichtbar!');
-  if (d.state === 'error' && (!figLive || figLive.id !== d.id || figEl.hidden)) toast('⚠ ' + d.name + ' konnte nicht geteilt werden');
+  if (d.state === 'error'){ logProblem('share', 'Senden an alle hat nicht geklappt (' + (d.msg || 'unbekannt') + ').', d.name);
+    if (!figLive || figLive.id !== d.id || figEl.hidden) toast('⚠ ' + d.name + ' konnte nicht geteilt werden'); }
 });
 function openMine(){
   RS.myCreatures().then(list => openSheet('Meine Figuren', body => {
-    if (!list.length){ body.append(el('p', 'tip', 'Du hast noch keine Figur eingescannt. Mal eine Figur auf Papier und tippe auf „✎ Figur scannen“.')); row(body, [btn('Schließen', 'main', closeSheet)]); return; }
+    const problems = () => { if (!scanLog.length) return;
+      body.append(el('h3', 'albumh', '⚠ Probleme beim Scannen'));
+      const ul = el('ul', 'checks problems');
+      scanLog.slice().reverse().forEach(p => { const li = el('li', 'bad'); const t = new Date(p.at);
+        li.append(el('span', 'ic', '⚠'), el('span', '', `${t.toLocaleDateString('de-DE', {day:'numeric', month:'numeric'})} ${t.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})} · ${p.name ? p.name + ': ' : ''}${p.msg}`)); ul.append(li); });
+      body.append(ul); row(body, [btn('Liste leeren', 'small', () => { scanLog = []; RS.idb.setP('scanlog', scanLog); openMine(); })]); };
+    if (!list.length){ body.append(el('p', 'tip', 'Du hast noch keine Figur eingescannt. Mal eine Figur auf Papier und tippe auf „✎ Figur scannen“.')); problems(); row(body, [btn('Schließen', 'main', closeSheet)]); return; }
     body.append(el('p', 'tip', `${list.length} ${list.length === 1 ? 'Figur' : 'Figuren'} von dir`));
     const urls = [], wrap = el('div', 'figs');
     list.forEach(r => {
@@ -347,6 +377,7 @@ function openMine(){
       info.append(acts); card.append(img, info); wrap.append(card);
     });
     body.append(wrap);
+    problems();
     if (RS.SHARE && list.some(r => r.uploaded)) body.append(el('p', 'note', 'Gelöschte Figuren verschwinden nur auf diesem Gerät. Bei allen anderen werden sie im Supabase-Dashboard gelöscht.'));
     row(body, [btn('Neue Figur scannen ✎', '', () => { closeSheet(); RS.openScan(); }), btn('Schließen', 'main', closeSheet)]);
     const revoke = () => { if (sheetEl.hidden){ urls.forEach(URL.revokeObjectURL); obs.disconnect(); } }, obs = new MutationObserver(revoke); obs.observe(sheetEl, {attributes:true, attributeFilter:['hidden']});
