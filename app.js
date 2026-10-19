@@ -617,7 +617,7 @@ async function showCreature(rec, {near=false, arrive=false}={}){
   if (world.has(rec.id)) return world.get(rec.id); world.set(rec.id, null);
   let c; try { c = await blobCanvas(rec.blob); } catch(e){ world.delete(rec.id); console.warn('Figurenbild nicht lesbar', e); return null; }
   if (!world.has(rec.id)) return null;   // in der Zwischenzeit entfernt
-  const w = Math.min(1.3, .8*c.width/c.height), ang = Math.random()*Math.PI*2;
+  const w = Math.min(1.4, .95*c.width/c.height), ang = Math.random()*Math.PI*2;
   const pos = near ? st.pos.clone().addScaledVector(camRight(), (Math.random() < .5 ? -1 : 1)*1.9).add(new V3(Math.sin(az)*.6, 0, Math.cos(az)*.6))
                    : new V3(Math.cos(ang), 0, Math.sin(ang)).multiplyScalar(3 + Math.random()*8);
   const wid = W[rec.world] ? rec.world : 'home';
@@ -682,19 +682,29 @@ setInterval(() => { if (document.visibilityState === 'visible') syncShared(false
 
 // --- Scanner: Foto -> Ausschnitt -> Papier entfernen -> Figur ---
 function photoCanvas(file){ return new Promise((ok, bad) => { const u = URL.createObjectURL(file), im = new Image();
-  im.onload = () => { const k = Math.min(1, 1600/Math.max(im.naturalWidth, im.naturalHeight)), [c,x] = cnv(Math.round(im.naturalWidth*k), Math.round(im.naturalHeight*k));
+  im.onload = () => { const k = Math.min(1, 2400/Math.max(im.naturalWidth, im.naturalHeight)), [c,x] = cnv(Math.round(im.naturalWidth*k), Math.round(im.naturalHeight*k));
     x.drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok(c); };
   im.onerror = () => { URL.revokeObjectURL(u); bad(new Error('Bild nicht lesbar')); }; im.src = u; }); }
 function dilate(m, W, H){ const o = new Uint8Array(m.length);
   for (let y=0;y<H;y++) for (let x=0;x<W;x++){ const i = y*W+x; if (!m[i]) continue; o[i] = 1; if (x>0) o[i-1] = 1; if (x<W-1) o[i+1] = 1; if (y>0) o[i-W] = 1; if (y<H-1) o[i+W] = 1; }
   return o; }
-// Schneidet die Zeichnung vom Papier aus. th: wie stark sich ein Strich vom Papier abheben muss (größer = mehr wird entfernt).
-function cutout(src, r, th){
-  const k = Math.min(1, 720/Math.max(r.w, r.h)), W = Math.max(8, Math.round(r.w*k)), H = Math.max(8, Math.round(r.h*k)), N = W*H;
+// Schneidet die Zeichnung vom Papier aus.
+// sens 0–100: wie zart ein Strich sein darf, damit er noch zur Figur zählt (rechts = auch ganz zarte Striche).
+// Zwei Durchgänge: erst grob die Figur finden, dann nur um sie herum in hoher Auflösung ausschneiden.
+function cutout(src, r, sens, boost = true){
+  const first = cutPass(src, r, sens, 720); if (!first) return null;
+  const pad = Math.max(first.bw, first.bh)*.08, x0 = Math.max(r.x, first.bx - pad), y0 = Math.max(r.y, first.by - pad);
+  const r2 = {x:x0, y:y0, w:Math.min(r.x + r.w, first.bx + first.bw + pad) - x0, h:Math.min(r.y + r.h, first.by + first.bh + pad) - y0};
+  const fine = r2.w*r2.h < r.w*r.h*.8 ? cutPass(src, r2, sens, 1100, first) : null;
+  return finishCut(fine || first, boost);
+}
+const erode = (m, W, H) => { const inv = new Uint8Array(m.length); for (let i=0;i<m.length;i++) inv[i] = m[i] ? 0 : 1; const d = dilate(inv, W, H); for (let i=0;i<m.length;i++) d[i] = d[i] ? 0 : 1; return d; };
+function cutPass(src, r, sens, maxSide, prior){
+  const k = Math.min(1, maxSide/Math.max(r.w, r.h)), W = Math.max(8, Math.round(r.w*k)), H = Math.max(8, Math.round(r.h*k)), N = W*H;
   const [, wx] = cnv(W, H); wx.drawImage(src, r.x, r.y, r.w, r.h, 0, 0, W, H);
   const d = wx.getImageData(0, 0, W, H).data;
   // 1) Papierfarbe je Kachel (hellste 10 %), damit Schatten und Licht-Verläufe im Foto nicht stören
-  const CS = 24, GX = Math.ceil(W/CS), GY = Math.ceil(H/CS), cells = GX*GY, bg = new Float32Array(cells*3), ok = new Uint8Array(cells);
+  const CS = Math.max(12, Math.round(Math.max(W, H)/45)), GX = Math.ceil(W/CS), GY = Math.ceil(H/CS), cells = GX*GY, bg = new Float32Array(cells*3), ok = new Uint8Array(cells);
   for (let gy=0; gy<GY; gy++) for (let gx=0; gx<GX; gx++){
     const h = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)]; let n = 0;
     for (let y=gy*CS; y<Math.min(H,(gy+1)*CS); y++) for (let x=gx*CS; x<Math.min(W,(gx+1)*CS); x++){ const i = (y*W+x)*4; h[0][d[i]]++; h[1][d[i+1]]++; h[2][d[i+2]]++; n++; }
@@ -711,41 +721,85 @@ function cutout(src, r, th){
       for (let dy=-1; dy<=1; dy++) for (let dx=-1; dx<=1; dx++){ const X = gx+dx, Y = gy+dy; if (X<0||Y<0||X>=GX||Y>=GY || !ok[Y*GX+X]) continue; const j = Y*GX+X; s[0] += bg[j*3]; s[1] += bg[j*3+1]; s[2] += bg[j*3+2]; m++; }
       if (m){ bg[i*3] = s[0]/m; bg[i*3+1] = s[1]/m; bg[i*3+2] = s[2]/m; nk[i] = 1; } }
     ok.set(nk); }
-  // 2) Farben gegen das Papier ausgleichen (Papier wird weiß) und Striche erkennen
-  const ink = new Uint8Array(N), col = new Uint8ClampedArray(N*4);
+  // 2) Farben gegen das Papier ausgleichen (Papier wird weiß); Strich = dunkel genug ODER farbig genug
+  const thD = 52 - sens*.32, thC = 34 - sens*.19;
+  const ink = new Uint8Array(N), line = new Uint8Array(N), strong = new Uint8Array(N), col = new Uint8ClampedArray(N*4);
   for (let y=0;y<H;y++){ const fy = clamp(y/CS-.5, 0, GY-1), y0 = Math.floor(fy), y1 = Math.min(GY-1, y0+1), ty = fy-y0;
-    for (let x=0;x<W;x++){ const fx = clamp(x/CS-.5, 0, GX-1), x0 = Math.floor(fx), x1 = Math.min(GX-1, x0+1), tx = fx-x0, p = (y*W+x)*4; let mn = 255;
+    for (let x=0;x<W;x++){ const fx = clamp(x/CS-.5, 0, GX-1), x0 = Math.floor(fx), x1 = Math.min(GX-1, x0+1), tx = fx-x0, p = (y*W+x)*4; let mn = 255, mx = 0;
       for (let ch=0; ch<3; ch++){ const b = (bg[(y0*GX+x0)*3+ch]*(1-tx) + bg[(y0*GX+x1)*3+ch]*tx)*(1-ty) + (bg[(y1*GX+x0)*3+ch]*(1-tx) + bg[(y1*GX+x1)*3+ch]*tx)*ty;
-        const v = 255 - (255 - Math.min(255, d[p+ch]/Math.max(40,b)*255))*1.12; col[p+ch] = v; if (v < mn) mn = v; }
-      ink[y*W+x] = 255 - mn > th ? 1 : 0; } }
+        const v = Math.min(255, d[p+ch]/Math.max(40,b)*255); col[p+ch] = v; if (v < mn) mn = v; if (v > mx) mx = v; }
+      const dark = 255 - mn, chr = mx - mn, i = y*W+x;
+      ink[i] = dark > thD || chr > thC ? 1 : 0;
+      strong[i] = dark > thD + 28 || chr > thC + 18 ? 1 : 0;   // deutlich sichtbar (Schattenkanten sind das nie)
+      line[i] = dark > 55 && chr < 28 && dark > chr*2.5 ? 1 : 0;   // grauer Bleistift-/Filzstiftstrich
+    } }
   // 3) Lücken im Umriss schließen, Papier von außen her fluten: alles, was nicht erreicht wird, gehört zur Figur (auch weiße Innenflächen)
-  const wall = dilate(dilate(ink, W, H), W, H), outside = new Uint8Array(N), q = new Int32Array(N); let qh = 0, qt = 0;
+  const kc = Math.max(2, Math.round(Math.max(W, H)/(prior ? 240 : 180)));
+  let wall = ink; for (let i=0;i<kc;i++) wall = dilate(wall, W, H);
+  const outside = new Uint8Array(N), q = new Int32Array(N); let qh = 0, qt = 0;
   const border = []; for (let x=0;x<W;x++) border.push(x, (H-1)*W+x); for (let y=0;y<H;y++) border.push(y*W, y*W+W-1);
   // dunkle Flächen, die mehrere Bildränder berühren (Tisch, Papierkante), gehören zum Hintergrund
   const seen = new Uint8Array(N);
   for (const s of border){ if (!wall[s] || seen[s]) continue; let sides = 0; qh = qt = 0; seen[s] = 1; q[qt++] = s;
     while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
-      [x>0 && i-1, x<W-1 && i+1, y>0 && i-W, y<H-1 && i+W].forEach(j => { if (j !== false && wall[j] && !seen[j]){ seen[j] = 1; q[qt++] = j; } }); }
-    if ((sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1) >= 2) for (let k=0;k<qt;k++) wall[q[k]] = 0; }
+      if (x>0 && wall[i-1] && !seen[i-1]){ seen[i-1] = 1; q[qt++] = i-1; } if (x<W-1 && wall[i+1] && !seen[i+1]){ seen[i+1] = 1; q[qt++] = i+1; }
+      if (y>0 && wall[i-W] && !seen[i-W]){ seen[i-W] = 1; q[qt++] = i-W; } if (y<H-1 && wall[i+W] && !seen[i+W]){ seen[i+W] = 1; q[qt++] = i+W; } }
+    if ((sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1) >= 2) for (let k2=0;k2<qt;k2++) wall[q[k2]] = 0; }
   qh = qt = 0;
   const push = i => { if (!outside[i] && !wall[i]){ outside[i] = 1; q[qt++] = i; } };
   border.forEach(push);
   while (qh < qt){ const i = q[qh++], x = i%W; if (x>0) push(i-1); if (x<W-1) push(i+1); if (i>=W) push(i-W); if (i<N-W) push(i+W); }
   // 4) zusammenhängende Teile; kleine Krümel weg, Tisch-/Papierkanten am Bildrand ignorieren
   const lab = new Int32Array(N), comps = []; qh = qt = 0;
-  for (let s=0; s<N; s++){ if (outside[s] || lab[s]) continue; const id = comps.length+1, cp = {id, n:0, sides:0}; let L=1, Rr=1, T=1, B=1;
+  for (let s=0; s<N; s++){ if (outside[s] || lab[s]) continue; const id = comps.length+1, cp = {id, n:0, strong:0, x0:W, y0:H, x1:0, y1:0}; let sides = 0;
     lab[s] = id; q[qt++] = s;
-    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; cp.n++; if (x===0) L=2; if (x===W-1) Rr=2; if (y===0) T=2; if (y===H-1) B=2;
-      [x>0 && i-1, x<W-1 && i+1, y>0 && i-W, y<H-1 && i+W].forEach(j => { if (j !== false && !outside[j] && !lab[j]){ lab[j] = id; q[qt++] = j; } }); }
-    cp.sides = (L-1)+(Rr-1)+(T-1)+(B-1); comps.push(cp); }
+    while (qh < qt){ const i = q[qh++], x = i%W, y = (i/W)|0; cp.n++; cp.strong += strong[i]; if (x<cp.x0) cp.x0 = x; if (x>cp.x1) cp.x1 = x; if (y<cp.y0) cp.y0 = y; if (y>cp.y1) cp.y1 = y; if (x===0) sides |= 1; if (x===W-1) sides |= 2; if (y===0) sides |= 4; if (y===H-1) sides |= 8;
+      if (x>0 && !outside[i-1] && !lab[i-1]){ lab[i-1] = id; q[qt++] = i-1; } if (x<W-1 && !outside[i+1] && !lab[i+1]){ lab[i+1] = id; q[qt++] = i+1; }
+      if (y>0 && !outside[i-W] && !lab[i-W]){ lab[i-W] = id; q[qt++] = i-W; } if (y<H-1 && !outside[i+W] && !lab[i+W]){ lab[i+W] = id; q[qt++] = i+W; } }
+    cp.sides = (sides&1) + (sides>>1&1) + (sides>>2&1) + (sides>>3&1); comps.push(cp); }
   if (!comps.length) return null;
-  const inner = comps.filter(c => c.sides < 2), pool = inner.length ? inner : comps, big = Math.max(...pool.map(c => c.n));
-  const keep = new Set(pool.filter(c => c.n >= Math.max(60, big*.06)).map(c => c.id));
-  const fig = new Uint8Array(N); for (let i=0;i<N;i++) fig[i] = keep.has(lab[i]) ? 1 : 0;
-  // 5) weißer Ausschneide-Rand wie bei einem Sticker, dann auf den Inhalt zuschneiden
-  const rim = dilate(dilate(fig, W, H), W, H); let a0=W, b0=H, a1=-1, b1=-1;
+  const visible = comps.filter(c => c.strong >= Math.max(8, c.n*.004)), cand = visible.length ? visible : comps;
+  const inner = cand.filter(c => c.sides < 2), pool = inner.length ? inner : cand, big = Math.max(...pool.map(c => c.n));
+  // Teile nur, wenn sie nah an der Hauptfigur liegen (z. B. ein Ball) oder fast so groß sind – lose Schattenkanten fallen weg
+  const main = pool.find(c => c.n === big), mx = (main.x1-main.x0)*.3 + 6, my = (main.y1-main.y0)*.3 + 6;
+  const near = c => c.x1 >= main.x0 - mx && c.x0 <= main.x1 + mx && c.y1 >= main.y0 - my && c.y0 <= main.y1 + my;
+  const keep = new Set(pool.filter(c => c === main || c.n >= big*.6 || (c.n >= Math.max(60*k*k*4, big*.04) && near(c))).map(c => c.id));
+  let fig = new Uint8Array(N); for (let i=0;i<N;i++) fig[i] = keep.has(lab[i]) ? 1 : 0;
+  for (let i=0;i<kc-1;i++) fig = erode(fig, W, H);   // den Saum vom Lückenschließen wieder abnehmen
+  // Grundform aus dem groben Durchgang übernehmen: zarte Umrisse mit großen Lücken laufen so nicht aus
+  if (prior){ const pk = prior.k, pf = prior.fig, PW = prior.W, PH = prior.H, inner = erode(erode(pf, PW, PH), PW, PH);
+    for (let y=0;y<H;y++){ const py = Math.floor((r.y + y/k - prior.r.y)*pk); if (py < 0 || py >= PH) continue;
+      for (let x=0;x<W;x++){ const px = Math.floor((r.x + x/k - prior.r.x)*pk); if (px >= 0 && px < PW && inner[py*PW+px]) fig[y*W+x] = 1; } } }
+  let a0=W, b0=H, a1=-1, b1=-1;
+  for (let i=0;i<N;i++) if (fig[i]){ const x = i%W, y = (i/W)|0; if (x<a0) a0=x; if (x>a1) a1=x; if (y<b0) b0=y; if (y>b1) b1=y; }
+  if (a1 < 0 || (a1-a0) < 10 || (b1-b0) < 10) return null;
+  return {W, H, col, fig, line, k, r, bx:r.x + a0/k, by:r.y + b0/k, bw:(a1-a0+1)/k, bh:(b1-b0+1)/k};
+}
+// Feinschliff: Linien kräftiger, Farben satter, weißer Sticker-Rand, auf den Inhalt zuschneiden
+function finishCut({W, H, col, fig, line}, boost){
+  const N = W*H, rk = Math.max(2, Math.round(Math.max(W, H)/260));
+  if (boost){
+    // helle Lücken zwischen Buntstift-Strichen mit der Farbe der Umgebung füllen (Summenbilder für schnelle Fenster-Mittelwerte)
+    const R = Math.max(4, Math.round(Math.max(W, H)/80)), W1 = W+1, S = [new Float64Array(W1*(H+1)), new Float64Array(W1*(H+1)), new Float64Array(W1*(H+1)), new Float64Array(W1*(H+1))];
+    for (let y=0;y<H;y++) for (let x=0;x<W;x++){ const i = y*W+x, p = i*4, cr = Math.max(col[p],col[p+1],col[p+2]) - Math.min(col[p],col[p+1],col[p+2]), on = fig[i] && cr > 18 && !line[i] ? 1 : 0, o = (y+1)*W1 + x+1;
+      for (let c=0;c<3;c++) S[c][o] = (on ? col[p+c] : 0) + S[c][o-1] + S[c][o-W1] - S[c][o-W1-1]; S[3][o] = on + S[3][o-1] + S[3][o-W1] - S[3][o-W1-1]; }
+    const box = (A, x0, y0, x1, y1) => A[y1*W1+x1] - A[y0*W1+x1] - A[y1*W1+x0] + A[y0*W1+x0];
+    for (let y=0;y<H;y++) for (let x=0;x<W;x++){ const i = y*W+x, p = i*4; if (!fig[i] || line[i]) continue;
+      const cr = Math.max(col[p],col[p+1],col[p+2]) - Math.min(col[p],col[p+1],col[p+2]); if (cr > 18) continue;
+      const x0 = Math.max(0, x-R), y0 = Math.max(0, y-R), x1 = Math.min(W, x+R+1), y1 = Math.min(H, y+R+1), n = box(S[3], x0, y0, x1, y1);
+      if (n < (x1-x0)*(y1-y0)*.12) continue;
+      for (let c=0;c<3;c++) col[p+c] = box(S[c], x0, y0, x1, y1)/n; }
+    let ln = line; for (let i=0, n=Math.max(1, Math.round(Math.max(W, H)*.004)); i<n; i++) ln = dilate(ln, W, H);   // Striche dicker (im Spiel ist die Figur klein)
+    for (let i=0;i<N;i++){ if (!fig[i]) continue; const p = i*4, r = col[p], g = col[p+1], b = col[p+2], m = (r+g+b)/3;
+      if (ln[i] && (line[i] || m < 200)){ const t = line[i] ? .8 : .5; col[p] = r*(1-t) + 59*t; col[p+1] = g*(1-t) + 42*t; col[p+2] = b*(1-t) + 58*t; continue; }
+      if (Math.max(r,g,b) - Math.min(r,g,b) > 12){ const s = 2.4, dk = .88; col[p] = (m + (r-m)*s)*dk; col[p+1] = (m + (g-m)*s)*dk; col[p+2] = (m + (b-m)*s)*dk; } }
+  }
+  // dunkler Umriss wie bei den Tieren (nur mit Verstärken), außen der weiße Sticker-Rand
+  let ol = fig; if (boost) for (let i=0, n=Math.max(2, Math.round(Math.max(W, H)*.011)); i<n; i++) ol = dilate(ol, W, H);
+  let rim = ol; for (let i=0;i<rk;i++) rim = dilate(rim, W, H);
+  let a0=W, b0=H, a1=-1, b1=-1;
   for (let i=0;i<N;i++){ const p = i*4;
-    if (fig[i]){ col[p+3] = 255; } else if (rim[i]){ col[p] = 251; col[p+1] = 247; col[p+2] = 238; col[p+3] = 255; } else col[p+3] = 0;
+    if (fig[i]) col[p+3] = 255; else if (ol[i]){ col[p] = 59; col[p+1] = 42; col[p+2] = 58; col[p+3] = 255; } else if (rim[i]){ col[p] = 251; col[p+1] = 247; col[p+2] = 238; col[p+3] = 255; } else col[p+3] = 0;
     if (rim[i]){ const x = i%W, y = (i/W)|0; if (x<a0) a0=x; if (x>a1) a1=x; if (y<b0) b0=y; if (y>b1) b1=y; } }
   if (a1 < 0 || (a1-a0) < 12 || (b1-b0) < 12) return null;
   const [fc, fx] = cnv(W, H); fx.putImageData(new ImageData(col, W, H), 0, 0);
@@ -777,12 +831,12 @@ function drawCrop(){ const x = cropC.getContext('2d'), r = scanS.crop; x.drawIma
   x.fillStyle = 'rgba(52,44,58,.5)'; x.beginPath(); x.rect(0, 0, cropC.width, cropC.height); x.rect(r.x, r.y, r.w, r.h); x.fill('evenodd');
   const lw = Math.max(3, cropC.width/200); x.lineWidth = lw; x.strokeStyle = '#ff7aa8'; x.setLineDash([lw*4, lw*2.5]); x.strokeRect(r.x, r.y, r.w, r.h); x.setLineDash([]); }
 function renderCut(){
-  try { scanS.cut = cutout(scanS.photo, scanS.crop, +$('scanSens').value); }
+  try { scanS.cut = cutout(scanS.photo, scanS.crop, +$('scanSens').value, $('scanBoost').checked); }
   catch(err){ scanS.cut = null; scanFail('cut', 'Beim Ausschneiden ist ein Fehler passiert: ' + (err.message || err)); }
   const c = scanS.cut, x = cutC.getContext('2d');
   cutC.width = c ? c.width : 320; cutC.height = c ? c.height : 200; if (c) x.drawImage(c, 0, 0);
   $('scanGo').disabled = !c;
-  $('scanNote').textContent = !c ? 'Keine Figur gefunden. Zieh den Rahmen enger oder schieb den Regler nach links.'
+  $('scanNote').textContent = !c ? 'Keine Figur gefunden. Zieh den Rahmen enger um die Figur oder schieb den Regler nach rechts.'
     : worldId !== 'home' ? 'Deine Figur zieht in die ' + (W[worldId].name || 'Welt') + ' ein und bleibt auf diesem Gerät.'
     : SHARE ? 'Deine Figur erscheint sofort bei dir. Für alle anderen erscheint sie, sobald sie freigegeben ist.'
     : 'Teilen ist noch nicht eingerichtet. Die Figur bleibt auf diesem Gerät.';
@@ -810,7 +864,8 @@ cropC.addEventListener('pointermove', e => { if (!cropDown) return; const [x,y] 
 $('scanRetake').onclick = () => $('scanFile').click();
 $('scanCropOk').onclick = () => { scanStep('edit'); renderCut(); };
 $('scanBack').onclick = () => scanStep('crop');
-let sensT = 0; $('scanSens').oninput = () => { clearTimeout(sensT); sensT = setTimeout(renderCut, 120); };
+let sensT = 0; $('scanSens').oninput = () => { clearTimeout(sensT); sensT = setTimeout(renderCut, 150); };
+$('scanBoost').onchange = renderCut;
 $('scanClose').onclick = closeScan;
 addEventListener('keydown', e => { if (e.key === 'Escape' && !scanEl.hidden) closeScan(); });
 $('scanGo').onclick = () => {
