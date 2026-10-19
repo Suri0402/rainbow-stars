@@ -614,9 +614,9 @@ function arrivalFx(a){
   setTimeout(() => { for (let i=0;i<5;i++) spawn(fxTex.heart, a.pos.clone().add(new V3((Math.random()-.5)*.6, .9 + Math.random()*.3, 0)), new V3((Math.random()-.5)*.2, .5, 0), 2, .16); }, 1300);
 }
 async function showCreature(rec, {near=false, arrive=false}={}){
-  if (world.has(rec.id)) return; world.set(rec.id, null);
-  let c; try { c = await blobCanvas(rec.blob); } catch(e){ world.delete(rec.id); return; }
-  if (!world.has(rec.id)) return;   // in der Zwischenzeit entfernt
+  if (world.has(rec.id)) return world.get(rec.id); world.set(rec.id, null);
+  let c; try { c = await blobCanvas(rec.blob); } catch(e){ world.delete(rec.id); console.warn('Figurenbild nicht lesbar', e); return null; }
+  if (!world.has(rec.id)) return null;   // in der Zwischenzeit entfernt
   const w = Math.min(1.3, .8*c.width/c.height), ang = Math.random()*Math.PI*2;
   const pos = near ? st.pos.clone().addScaledVector(camRight(), (Math.random() < .5 ? -1 : 1)*1.9).add(new V3(Math.sin(az)*.6, 0, Math.cos(az)*.6))
                    : new V3(Math.cos(ang), 0, Math.sin(ang)).multiplyScalar(3 + Math.random()*8);
@@ -624,6 +624,7 @@ async function showCreature(rec, {near=false, arrive=false}={}){
   const a = addCreature({name:rec.name, c, w, kind:rec.kind, pos, rnd:Math.random, appear: arrive ? 0 : undefined, wid});
   world.set(rec.id, a);
   if (arrive && wid === worldId){ arrivalFx(a); setStatus(rec.name + ' ist angekommen! ✦'); setTimeout(() => { if (animals.includes(a)) startActivity(a.act); }, 2400); }
+  return a;
 }
 function removeCreature(id){
   const a = world.get(id); world.delete(id); if (!a) return;
@@ -643,12 +644,15 @@ async function uploadCreature(rec){
   const ins = await fetch(`${SUPA.url}/rest/v1/creatures`, {method:'POST', headers:supaH({'Content-Type':'application/json', Prefer:'return=minimal'}),
     body:JSON.stringify({id:rec.id, name:rec.name, kind:rec.kind, image_path:path})});
   if (!ins.ok && ins.status !== 409) throw new Error('Eintrag: ' + ins.status);
-  rec.uploaded = true; await idb.put(rec); return true;
+  rec.uploaded = true; delete rec.shareError; await idb.put(rec); return true;
 }
+const shareEvt = (rec, state, msg) => dispatchEvent(new CustomEvent('rs:share', {detail:{id:rec.id, name:rec.name, state, msg}}));
 function shareCreature(rec){
   if (!SHARE) return;
-  uploadCreature(rec).then(done => { if (done) setTimeout(() => setStatus(rec.name + ' wartet jetzt auf die Freigabe für alle ✉'), 9000); })
-    .catch(e => { console.warn('Teilen fehlgeschlagen, neuer Versuch später', e); });
+  if (!navigator.onLine){ shareEvt(rec, 'offline'); return; }
+  shareEvt(rec, 'sending');
+  uploadCreature(rec).then(done => { if (done) shareEvt(rec, 'uploaded'); })
+    .catch(e => { console.warn('Teilen fehlgeschlagen, neuer Versuch später', e); rec.shareError = String(e.message || e); idb.put(rec); shareEvt(rec, 'error', rec.shareError); });
 }
 let syncing = false;
 async function syncShared(first){
@@ -659,6 +663,7 @@ async function syncShared(first){
     const rows = await res.json(), ids = new Set(rows.map(r => r.id)), local = await idb.all();
     // fremde Figuren, die nicht mehr freigegeben (oder zu alt) sind, verschwinden wieder
     for (const r of local) if (!r.mine && !ids.has(r.id)){ removeCreature(r.id); idb.del(r.id); }
+    for (const r of local) if (r.mine && ids.has(r.id) && !r.approved){ r.approved = true; idb.put(r); dispatchEvent(new CustomEvent('rs:share', {detail:{id:r.id, name:r.name, state:'approved'}})); }
     const known = new Set(local.map(r => r.id));
     for (const row of rows.reverse()){
       if (known.has(row.id)) continue;
@@ -791,10 +796,12 @@ $('scanGo').onclick = () => {
   const name = $('scanName').value.trim().slice(0,24) || 'Sternchen', kind = scanEl.querySelector('input[name="scanKind"]:checked').value;
   $('scanGo').disabled = true;
   c.toBlob(async blob => {
+    if (!blob){ $('scanGo').disabled = false; $('scanNote').textContent = '⚠ Das Bild konnte nicht erstellt werden. Zieh den Rahmen etwas kleiner und versuch es nochmal.'; return; }
     const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world:worldId};
-    await idb.put(rec); closeScan(); $('scanName').value = '';
-    showCreature(rec, {near:true, arrive:true}); if (rec.world === 'home') shareCreature(rec);
-    dispatchEvent(new CustomEvent('rs:scanned', {detail:{world:rec.world, name}}));
+    const saved = (await idb.put(rec)) !== undefined; closeScan(); $('scanName').value = '';
+    const a = await showCreature(rec, {near:true, arrive:true});
+    dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:rec.world, name, inWorld:!!a, saved, thumb:blob}}));
+    if (rec.world === 'home') shareCreature(rec);
   }, 'image/png');
 };
 
@@ -815,6 +822,11 @@ function enterWorld(id){
 }
 window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
   addCreature, addWorld, enterWorld, W, st, setStatus, startActivity, girl, J, K, TP, CX, TOPY, LAYER, idb, $,
+  myCreatures: () => idb.all().then(l => l.filter(r => r.mine).sort((a,b) => b.created - a.created).map(r => ({...r, inWorld:!!world.get(r.id)}))),
+  goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },
+  deleteCreature: id => { removeCreature(id); return idb.del(id); },
+  resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
+  SHARE,
   get worldId(){ return worldId; }, get paused(){ return paused; }, setPaused: v => { paused = v; }, openScan: () => $('scanFile').click()};
 
 // ---------- Loop ----------

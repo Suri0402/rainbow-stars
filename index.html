@@ -129,6 +129,18 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .bars{display:flex;justify-content:space-around;align-items:flex-end;gap:8px;height:220px;margin-top:12px;padding:8px;border:2px solid var(--ink);border-radius:14px;background:#fff}
 .bar{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;font-size:16px}
 .bar i{display:block;width:70%;min-height:4px;border:2px solid var(--ink);border-radius:8px 8px 2px 2px}
+/* Statuskarte nach dem Scannen und Übersicht "Meine Figuren" */
+.figstatus{position:fixed;left:50%;top:calc(60px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:15;width:min(380px,calc(100% - 32px));display:flex;gap:10px;align-items:flex-start;background:var(--paper);border:2px solid var(--ink);border-radius:18px;box-shadow:3px 3px 0 var(--ink);padding:10px 12px;animation:pop .4s}
+.thumb{width:64px;height:64px;flex:none;object-fit:contain;border:2px solid var(--ink);border-radius:12px;background:repeating-conic-gradient(#efe8dc 0 25%,#fbf7ee 0 50%) 0 0/14px 14px}
+.fs-body,.fig-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:17px}
+.fs-body b,.fig-info b{font-family:var(--f-display);font-weight:600;font-size:18px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:16px;line-height:1.2}
+.checks li{display:flex;gap:6px}.checks .ic{width:18px;flex:none;text-align:center}
+.checks .ok .ic{color:#2f9a63}.checks .bad{color:#b23a55}.checks .wait .ic{color:#c98a1c}.checks .info{color:var(--muted)}
+.fs-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.figs{display:flex;flex-direction:column;gap:10px}
+.fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
+button.danger{background:#ffd0d6}
 @media (max-width:560px){.stars-hud{font-size:19px}.quest{font-size:15px}}
 </style>
 <style>
@@ -148,6 +160,7 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 </div>
 <button type="button" id="starsHud" class="stars-hud" aria-label="Regenbogensterne – Album öffnen">★ <b>0</b></button>
 <div id="toast" class="toast" hidden aria-live="polite"></div>
+<div id="figStatus" class="figstatus" hidden role="status" aria-live="polite"></div>
 <div id="warp" class="warp" hidden></div>
 <div class="hud bottom">
   <div class="controls">

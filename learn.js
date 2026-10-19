@@ -193,6 +193,7 @@ function openAlbum(){
   openSheet('Wissensalbum', body => {
     const all = Object.values(cardById), have = all.filter(c => P.cards[c.id]).length;
     body.append(el('p', 'tip', `${have} von ${all.length} Karten gesammelt · ★ ${P.stars}`));
+    row(body, [btn('🖼 Meine Figuren', 'small', () => openMine())]);
     Object.values(worlds).forEach(w => {
       body.append(el('h3', 'albumh', w.name));
       const grid = el('div', 'album');
@@ -286,6 +287,71 @@ function applyWear(){
   });
 }
 
-window.Learn = {registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
+// ---------- Eigene Figuren: Statuskarte nach dem Scannen + Übersicht "Meine Figuren" ----------
+const worldName = id => (RS.W[id] && RS.W[id].name) || 'Heimatwiese';
+function shareLine(r){   // r: gespeicherte Figur (oder Live-Zustand aus der Statuskarte)
+  if ((r.world || 'home') !== 'home') return ['info', 'Bleibt in der ' + worldName(r.world) + ' auf diesem Gerät'];
+  if (!RS.SHARE) return ['info', 'Nur auf diesem Gerät – Teilen ist noch nicht eingerichtet'];
+  if (r.approved || r.state === 'approved') return ['ok', 'Für alle sichtbar'];
+  if (r.state === 'error' || r.shareError) return ['bad', 'Senden hat nicht geklappt – neuer Versuch später'];
+  if (r.state === 'offline') return ['wait', 'Kein Internet – wird später an alle geschickt'];
+  if (r.uploaded || r.state === 'uploaded') return ['ok', 'Eingereicht – erscheint bei allen nach der Freigabe'];
+  return ['wait', 'Wird an alle geschickt …'];
+}
+const ICON = {ok:'✔', bad:'⚠', wait:'⏳', info:'ⓘ'};
+const line = ([k, t]) => { const li = el('li', k); li.append(el('span', 'ic', ICON[k]), el('span', '', t)); return li; };
+const figEl = $('figStatus'); let figT = 0, figLive = null;
+function renderFig(){
+  const f = figLive; if (!f) return;
+  figEl.replaceChildren();
+  const ok = f.inWorld && f.saved, img = el('img', 'thumb'); img.src = f.url; img.alt = '';
+  const box = el('div', 'fs-body'); box.append(el('b', '', ok ? `✔ ${f.name} ist da!` : `⚠ ${f.name} hat nicht ganz geklappt`));
+  const ul = el('ul', 'checks');
+  ul.append(line(f.inWorld ? ['ok', 'In der ' + worldName(f.world)] : ['bad', 'Nicht in der Welt – das Bild ließ sich nicht lesen']));
+  ul.append(line(f.saved ? ['ok', 'Auf diesem Gerät gespeichert'] : ['bad', 'Nicht gespeichert – nach dem Neuladen ist sie weg']));
+  ul.append(line(shareLine(f)));
+  box.append(ul);
+  const r = el('div', 'fs-row'); r.append(btn('Meine Figuren', 'small', () => { hideFig(); openMine(); }), btn('×', 'small', hideFig)); box.append(r);
+  figEl.append(img, box); figEl.hidden = false;
+  clearTimeout(figT); if (ok && shareLine(f)[0] !== 'bad') figT = setTimeout(hideFig, 12000);
+}
+function hideFig(){ figEl.hidden = true; clearTimeout(figT); }
+addEventListener('rs:scanned', e => {
+  const d = e.detail; if (figLive) URL.revokeObjectURL(figLive.url);
+  figLive = {...d, url:URL.createObjectURL(d.thumb)};
+  setTimeout(renderFig, 1800);   // erst den Sternenwirbel zeigen
+});
+addEventListener('rs:share', e => {
+  const d = e.detail;
+  if (figLive && figLive.id === d.id){ figLive.state = d.state; if (!figEl.hidden) renderFig(); }
+  if (d.state === 'approved') toast('🎉 ' + d.name + ' ist jetzt für alle sichtbar!');
+  if (d.state === 'error' && (!figLive || figLive.id !== d.id || figEl.hidden)) toast('⚠ ' + d.name + ' konnte nicht geteilt werden');
+});
+function openMine(){
+  RS.myCreatures().then(list => openSheet('Meine Figuren', body => {
+    if (!list.length){ body.append(el('p', 'tip', 'Du hast noch keine Figur eingescannt. Mal eine Figur auf Papier und tippe auf „✎ Figur scannen“.')); row(body, [btn('Schließen', 'main', closeSheet)]); return; }
+    body.append(el('p', 'tip', `${list.length} ${list.length === 1 ? 'Figur' : 'Figuren'} von dir`));
+    const urls = [], wrap = el('div', 'figs');
+    list.forEach(r => {
+      const card = el('div', 'fig'), img = el('img', 'thumb'), u = URL.createObjectURL(r.blob); urls.push(u); img.src = u; img.alt = '';
+      const info = el('div', 'fig-info'); info.append(el('b', '', r.name));
+      const ul = el('ul', 'checks'); ul.append(line(r.inWorld ? ['ok', 'In der ' + worldName(r.world)] : ['bad', 'Nicht geladen – lade die Seite neu'])); ul.append(line(shareLine(r))); info.append(ul);
+      const acts = el('div', 'fs-row');
+      if (r.inWorld) acts.append(btn('Hinlaufen', 'small main', () => { closeSheet(); const res = RS.goToCreature(r.id);
+        if (typeof res === 'string'){ travel(res); setTimeout(() => RS.goToCreature(r.id), 1800); } }));
+      if ((r.world || 'home') === 'home' && RS.SHARE && !r.uploaded) acts.append(btn('Nochmal senden', 'small', () => { RS.resend(r.id); toast('Wird gesendet …'); }));
+      const del = btn('Löschen', 'small', () => {
+        if (!del.dataset.sure){ del.dataset.sure = 1; del.textContent = 'Wirklich löschen?'; del.classList.add('danger'); return; }
+        RS.deleteCreature(r.id).then(() => { toast(r.name + ' wurde gelöscht'); openMine(); });
+      }); acts.append(del);
+      info.append(acts); card.append(img, info); wrap.append(card);
+    });
+    body.append(wrap);
+    if (RS.SHARE && list.some(r => r.uploaded)) body.append(el('p', 'note', 'Gelöschte Figuren verschwinden nur auf diesem Gerät. Bei allen anderen werden sie im Supabase-Dashboard gelöscht.'));
+    row(body, [btn('Neue Figur scannen ✎', '', () => { closeSheet(); RS.openScan(); }), btn('Schließen', 'main', closeSheet)]);
+    const revoke = () => { if (sheetEl.hidden){ urls.forEach(URL.revokeObjectURL); obs.disconnect(); } }, obs = new MutationObserver(revoke); obs.observe(sheetEl, {attributes:true, attributeFilter:['hidden']});
+  }));
+}
+window.Learn = {openMine, registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
   addStars, toast, checkQuests, el, btn, row, P, save, discoveredObjects, correctIn, ready, speak, canSpeak, worldOf};
 })();
