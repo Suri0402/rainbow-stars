@@ -5,6 +5,10 @@ Inhalt
   index.html              die Seite (Oberfläche, Dialoge, Aussehen)
   app.js                  die Spielwelt: Mädchen, Tiere, Heimatwiese, Scanner, Teilen
   learn.js                Lernen & Reisen: Wissenskarten, Fragen, Aufträge, Album, Reisepass
+  profiles.js             Profile mit PIN (jedes Kind hat eigene Figuren und Sterne)
+  raetsel.js, math.js     Rätsel-Zeit: Wissens-Quiz und Rechen-Geschichten
+  rewards.js              Geschenke, Laden, Meine Sachen (Sticker, Anziehsachen, Haustiere, Deko)
+  content/quiz.json       Fragen für das Wissens-Quiz (Natur, Mensch, Geschichte)
   worlds/space.js         die Sternenwelt mit Minispielen
   content/space.json      Wissenskarten und Fragen der Sternenwelt (hier kann man Texte ändern)
   three.min.js            3D-Bibliothek Three.js (läuft auch offline)
@@ -67,3 +71,28 @@ Inhalt
    - Falsch beantwortete Fragen kommen später noch einmal – ohne Strafe.
    - "Album" zeigt alle gesammelten Wissenskarten. "🔊 Vorlesen" liest vor.
    - Der Fortschritt wird auf dem Gerät gespeichert.
+
+6) Profile
+   - Beim Start wählt jedes Kind sein Profil und gibt seine 4-stellige PIN ein.
+   - Alle Figuren sind in der Welt zu sehen, aber nur die eigenen stehen in
+     "Meine Figuren" und können gelöscht oder ausgemalt werden.
+   - Sterne, Wissenskarten, Goodies und Rechen-Stufe gehören jedem Profil allein.
+   - PIN vergessen? Beim Profil auf "PIN vergessen?" tippen – eine Rechenfrage
+     für Erwachsene schützt das Zurücksetzen.
+   - Profil wechseln oder löschen: oben rechts auf den Namen tippen.
+   - Hinweis: Die Profile liegen nur auf diesem Gerät (kein Online-Konto).
+
+7) Rätsel-Zeit (Knopf "🧠 Rätsel")
+   - Wissens-Quiz: Wetter & Natur, Mensch & Körper, Geschichte, Weltall oder
+     bunt gemischt – je 5 Fragen.
+   - Rechen-Geschichten: Sachaufgaben zum Lesen in 4 Stufen (etwa 1./2. bis
+     5./6. Klasse). Die Stufe startet nach der Klasse im Profil und passt sich an:
+     4 richtige hintereinander -> schwerer, 2 falsche -> leichter.
+     Bei einem Fehler gibt es erst einen Lese-Tipp, dann den Rechenweg.
+   - Nach jeder richtigen Lösung: Sterne und ein Überraschungsgeschenk 🎁.
+
+8) Goodies (Knopf "🎒 Sachen")
+   - Sticker-Album, Anziehsachen (Krone, Zauberhut, Sonnenbrille, Blumenkranz,
+     Schleife, Feenflügel), Haustiere, die mitlaufen, und Deko für die Wiese.
+   - Im Regenbogen-Laden kann man sich Sachen mit Sternen kaufen.
+   - Haarfarbe ändern: ebenfalls unter "Meine Sachen".

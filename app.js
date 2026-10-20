@@ -609,6 +609,8 @@ const idb = (() => {
 
 // --- Figuren in der Welt ---
 const world = new Map();   // id -> Tier-Objekt (null, solange das Bild noch lädt)
+let owner = null;          // angemeldetes Profil: nur dessen Figuren erscheinen in "Meine Figuren" und dürfen gelöscht/ausgemalt werden
+const mayEdit = rec => rec && rec.mine && (!rec.owner || !owner || rec.owner === owner);
 async function blobCanvas(blob){ const b = await createImageBitmap(blob); const [c,x] = cnv(b.width, b.height); x.drawImage(b,0,0); if (b.close) b.close(); return c; }
 function arrivalFx(a){
   for (let i=0;i<26;i++){ const ang = i/26*Math.PI*2;
@@ -643,6 +645,7 @@ function removeCreature(id){
 }
 
 
+const tickHooks = [];   // Zusatz-Skripte (z. B. Haustiere) hängen sich hier in jedes Bild ein
 // ================= GEZEICHNETE DINGE: Ball, Spielzeug, Pflanze/Deko, Essen =================
 const THING_TYPES = ['ball', 'toy', 'deco', 'food'], things = [];
 let carrying = null;   // Spielzeug, das das Mädchen gerade trägt
@@ -1059,7 +1062,7 @@ $('scanPaint').onclick = () => { if (!scanS.cut) return;
   openPaint(scanS.cut, {done: c => { scanS.cut = c; $('scanGo').click(); }, back: () => scanStep('edit')}); };
 // schon vorhandene Figur nachträglich ausmalen
 async function paintCreature(id){
-  const rec = (await idb.all()).find(r => r.id === id); if (!rec) return;
+  const rec = (await idb.all()).find(r => r.id === id); if (!mayEdit(rec)) return;
   let c; try { c = await blobCanvas(rec.blob); } catch(e){ scanFail('photo', 'Das Bild der Figur ließ sich nicht öffnen.'); return; }
   openPaint(c, {goLabel:'Speichern ✦', back: closeScan, note: rec.uploaded ? 'Die neuen Farben siehst du auf diesem Gerät.' : '',
     done: out => out.toBlob(async blob => { if (!blob) return; rec.blob = blob; await idb.put(rec); closeScan();
@@ -1075,7 +1078,7 @@ $('scanGo').onclick = () => {
   c.toBlob(async blob => {
     if (!blob){ $('scanGo').disabled = false; $('scanNote').textContent = '⚠ Das Bild konnte nicht erstellt werden. Zieh den Rahmen etwas kleiner und versuch es nochmal.'; scanFail('save', 'Das Bild der Figur konnte nicht erstellt werden.'); return; }
     try {
-    const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world:worldId};
+    const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world:worldId, owner};
     const saved = (await idb.put(rec)) !== undefined; closeScan(); $('scanName').value = '';
     const a = await showCreature(rec, {near:true, arrive:true});
     dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:rec.world, name, inWorld:!!a, saved, thumb:blob}}));
@@ -1101,9 +1104,13 @@ function enterWorld(id){
 }
 window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
   addCreature, addWorld, enterWorld, W, st, setStatus, startActivity, girl, J, K, TP, CX, TOPY, LAYER, idb, $,
-  myCreatures: () => idb.all().then(l => l.filter(r => r.mine).sort((a,b) => b.created - a.created).map(r => ({...r, inWorld:!!world.get(r.id)}))),
+  myCreatures: () => idb.all().then(l => l.filter(r => r.mine && (!owner || r.owner === owner)).sort((a,b) => b.created - a.created).map(r => ({...r, inWorld:!!world.get(r.id)}))),
   goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },
-  deleteCreature: id => { removeCreature(id); return idb.del(id); },
+  deleteCreature: id => idb.all().then(l => { const rec = l.find(r => r.id === id); if (!mayEdit(rec)) throw new Error('Diese Figur gehört jemand anderem.'); removeCreature(id); return idb.del(id); }),
+  setOwner: id => { owner = id; }, get owner(){ return owner; },
+  claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
+  deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
+  onTick: f => tickHooks.push(f), addThing, removeFromWorld: removeCreature, world, camRight, uuid,
   resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
   SHARE, things, animals, paintCreature,
   get worldId(){ return worldId; }, get paused(){ return paused; }, setPaused: v => { paused = v; }, openScan: () => { startPick(); $('scanFile').click(); }};
@@ -1116,6 +1123,7 @@ function tick(){
   updateGirl(dt, t);
   animals.forEach(a => updateAnimal(a, dt, t));
   updateThings(dt, t);
+  tickHooks.forEach(f => f(dt, t));
   if (W[worldId].update) W[worldId].update(dt, t);
   butterflies.forEach(b => { const u = b.userData; u.ph += dt*u.s; b.position.set(u.c.x + Math.cos(u.ph)*u.r, u.c.y + Math.sin(u.ph*2.3)*.35, u.c.z + Math.sin(u.ph*1.4)*u.r);
     b.scale.x = .32*(.25 + .75*Math.abs(Math.sin(t*14 + u.ph*4))); });

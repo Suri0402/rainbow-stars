@@ -4,18 +4,28 @@
 const RS = window.RS, { THREE, V3, $ } = RS;
 
 // ---------- Fortschritt (IndexedDB, Speicher "progress") ----------
-const P = {stars:0, cards:{}, q:{}, review:[], quests:{}, stamps:{}, items:{}, wear:{}, games:{}, flags:{}};
-let saveT = 0, loaded = false;
-const save = () => { if (!loaded) return; clearTimeout(saveT); saveT = setTimeout(() => RS.idb.setP('main', P), 300); };
-// Gespeicherten Stand laden und mit allem zusammenführen, was schon vor dem Laden passiert ist (nie überschreiben)
-const ready = RS.idb.getP('main').then(v => {
+// Jedes Profil hat seinen eigenen Spielstand (Schlüssel "p:<Profil-ID>"). Geladen wird erst nach der Anmeldung.
+const P = {stars:0, cards:{}, q:{}, review:[], quests:{}, stamps:{}, items:{}, wear:{}, games:{}, flags:{}, math:{level:2, ok:0, bad:0, solved:0}, stickers:{}, deco:{}};
+let saveT = 0, loaded = false, profileId = null, readyResolve;
+const save = () => { if (!loaded) return; clearTimeout(saveT); saveT = setTimeout(() => RS.idb.setP('p:' + profileId, P), 300); };
+const ready = new Promise(r => readyResolve = r);
+// migrate: beim allerersten Profil den bisherigen Spielstand (ohne Profile) übernehmen
+async function loadProfile(id, {migrate = false, mathLevel} = {}){
+  profileId = id;
+  let v = await RS.idb.getP('p:' + id);
+  if (!v && migrate) v = await RS.idb.getP('main');
   if (v){
     P.stars += v.stars || 0;
-    ['cards','q','quests','stamps','items','wear','games','flags'].forEach(k => P[k] = Object.assign({}, v[k], P[k]));
+    ['cards','q','quests','stamps','items','wear','games','flags','stickers','deco'].forEach(k => P[k] = Object.assign({}, v[k], P[k]));
     P.review = [...new Set([...(v.review || []), ...P.review])];
-  }
-  loaded = true; save(); renderHud(); applyWear();
-});
+    if (v.math) P.math = Object.assign({}, P.math, v.math);
+    if (v.pet && !P.pet) P.pet = v.pet;
+  } else if (mathLevel) P.math.level = mathLevel;
+  let log = await RS.idb.getP('scanlog:' + id); if (!log && migrate) log = await RS.idb.getP('scanlog');
+  if (Array.isArray(log)) scanLog = log.concat(scanLog).slice(-10);
+  loaded = true; save(); renderHud(); applyWear(); readyResolve();
+  dispatchEvent(new CustomEvent('rs:profile', {detail:{id}}));
+}
 
 // ---------- Welten-Register ----------
 const worlds = {};   // id -> {id, name, content:{cards, questions, objects}, quests:[...], stampName, reward:{id, name}}
@@ -149,6 +159,7 @@ function record(q, ok){
   P.review = P.review.filter(id => id !== q.id); if (!ok) P.review.push(q.id);
   save();
 }
+let giftHook = null;
 const PRAISE = ['Super!', 'Richtig!', 'Klasse!', 'Genau!', 'Spitze!'], CHEER = ['Fast!', 'Knapp daneben!', 'Gut versucht!'];
 function ask(q, onDone, opts = {}){
   const first = !(P.q[q.id] && (P.q[q.id].ok || P.q[q.id].bad));
@@ -162,6 +173,7 @@ function ask(q, onDone, opts = {}){
       if (resultText) res.append(el('p', 'cardtext', resultText));
       res.append(el('p', 'cardtext', q.explain)); body.append(res);
       if (ok) addStars(q.type === 'order' ? 3 : first ? 2 : 1);
+      if (ok && giftHook && opts.gift !== false) giftHook(res);   // nach jeder richtigen Lösung ein Überraschungsgeschenk
       checkQuests(); if (onDone) onDone(ok);
       row(body, [btn(opts.next ? 'Nächste Frage →' : 'Weiter', 'main', opts.next || closeSheet)]);
       res.scrollIntoView({block:'nearest', behavior:'smooth'});
@@ -298,9 +310,12 @@ function applyWear(){
   Object.entries(ITEMS).forEach(([id, it]) => {
     const on = !!(P.items[id] && P.wear[id]);
     if (on && !worn[id]){
-      const c = it.draw(), w = it.w, h = w*c.height/c.width, J = RS.J.head, piv = J.userData.piv;
+      const c = it.draw(), w = it.w, h = w*c.height/c.width, slot = it.slot || 'head', J = slot === 'back' ? RS.J.torso : RS.J.head, piv = J.userData.piv;
       const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({map:RS.tex(c), transparent:true, alphaTest:.05, side:THREE.DoubleSide}));
-      m.position.set((RS.CX - piv[0])*RS.K, (piv[1] - RS.TOPY + it.y)*RS.K - h*.3, .12); m.renderOrder = 80; J.add(m); worn[id] = m;
+      if (slot === 'head') m.position.set((RS.CX - piv[0])*RS.K, (piv[1] - RS.TOPY + it.y)*RS.K - h*.3, .12);
+      else if (slot === 'eyes') m.position.set((RS.CX - piv[0])*RS.K, (piv[1] - 1032)*RS.K + (it.y || 0)*RS.K, .14);
+      else m.position.set((RS.CX - piv[0])*RS.K, (piv[1] - (RS.TP.torso.y0 + RS.TP.torso.h/2))*RS.K + (it.y || 0)*RS.K, -.03);   // Rücken: Mitte des Oberkörpers
+      m.renderOrder = slot === 'back' ? 40 : 80; J.add(m); worn[id] = m;
     }
     if (worn[id]) worn[id].visible = on;
   });
@@ -347,8 +362,8 @@ const TIPS = {
   save:'Lade die Seite neu und versuch es nochmal.', send:'Lade die Seite neu und versuch es nochmal.',
   world:'Lade die Seite neu. Hilft das nicht, scanne die Figur nochmal.', share:'Die App versucht es später von selbst nochmal. Du kannst auch in „Meine Figuren“ auf „Nochmal senden“ tippen.'};
 let scanLog = [];
-RS.idb.getP('scanlog').then(v => { if (Array.isArray(v)) scanLog = v.concat(scanLog).slice(-10); });
-function logProblem(step, msg, name){ scanLog.push({at:Date.now(), step, msg, name}); scanLog = scanLog.slice(-10); RS.idb.setP('scanlog', scanLog); }
+const saveLog = () => { if (profileId) RS.idb.setP('scanlog:' + profileId, scanLog); };
+function logProblem(step, msg, name){ scanLog.push({at:Date.now(), step, msg, name}); scanLog = scanLog.slice(-10); saveLog(); }
 function showProblem(step, msg){
   figEl.replaceChildren(); figEl.classList.add('bad');
   const box = el('div', 'fs-body'); box.append(el('b', '', '⚠ Das hat nicht geklappt'), el('p', 'cardtext', msg), el('p', 'note', 'Tipp: ' + (TIPS[step] || TIPS.save)));
@@ -379,7 +394,7 @@ function openMine(){
       const ul = el('ul', 'checks problems');
       scanLog.slice().reverse().forEach(p => { const li = el('li', 'bad'); const t = new Date(p.at);
         li.append(el('span', 'ic', '⚠'), el('span', '', `${t.toLocaleDateString('de-DE', {day:'numeric', month:'numeric'})} ${t.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})} · ${p.name ? p.name + ': ' : ''}${p.msg}`)); ul.append(li); });
-      body.append(ul); row(body, [btn('Liste leeren', 'small', () => { scanLog = []; RS.idb.setP('scanlog', scanLog); openMine(); })]); };
+      body.append(ul); row(body, [btn('Liste leeren', 'small', () => { scanLog = []; saveLog(); openMine(); })]); };
     if (!list.length){ body.append(el('p', 'tip', 'Du hast noch keine Figur eingescannt. Mal eine Figur auf Papier und tippe auf „✎ Figur scannen“.')); problems(); row(body, [btn('Schließen', 'main', closeSheet)]); return; }
     body.append(el('p', 'tip', `${list.length} ${list.length === 1 ? 'Figur' : 'Figuren'} von dir`));
     const urls = [], wrap = el('div', 'figs');
@@ -394,7 +409,7 @@ function openMine(){
       if ((r.world || 'home') === 'home' && RS.SHARE && !r.uploaded) acts.append(btn('Nochmal senden', 'small', () => { RS.resend(r.id); toast('Wird gesendet …'); }));
       const del = btn('Löschen', 'small', () => {
         if (!del.dataset.sure){ del.dataset.sure = 1; del.textContent = 'Wirklich löschen?'; del.classList.add('danger'); return; }
-        RS.deleteCreature(r.id).then(() => { toast(r.name + ' wurde gelöscht'); openMine(); });
+        RS.deleteCreature(r.id).then(() => { toast(r.name + ' wurde gelöscht'); openMine(); }).catch(e => toast('⚠ ' + e.message));
       }); acts.append(del);
       info.append(acts); card.append(img, info); wrap.append(card);
     });
@@ -405,6 +420,6 @@ function openMine(){
     const revoke = () => { if (sheetEl.hidden){ urls.forEach(URL.revokeObjectURL); obs.disconnect(); } }, obs = new MutationObserver(revoke); obs.observe(sheetEl, {attributes:true, attributeFilter:['hidden']});
   }));
 }
-window.Learn = {quiz, openMine, registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
+window.Learn = {renderHud, setGift: f => { giftHook = f; }, ITEMS, applyWear, loadProfile, get profileId(){ return profileId; }, quiz, openMine, registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
   addStars, toast, checkQuests, el, btn, row, P, save, discoveredObjects, correctIn, ready, speak, canSpeak, worldOf};
 })();
