@@ -143,6 +143,19 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .figs{display:flex;flex-direction:column;gap:10px}
 .fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
 button.danger{background:#ffd0d6}
+body[data-world="time"]{background:linear-gradient(180deg,#ffd9a8 0%,#ffe9c6 40%,#f6e7d0 70%,#efe4d2 100%)}
+.reccode{font-family:var(--f-display);font-size:30px;letter-spacing:.08em;text-align:center;background:#fff;border:3px dashed var(--ink);border-radius:14px;padding:10px;margin:8px 0}
+.bookrow{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff;margin-bottom:8px}
+.bookinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:17px}
+.bookcover{display:block;max-width:120px;max-height:170px;border:2px solid var(--ink);border-radius:6px;margin:8px auto}
+.bookcover.small{width:58px;max-height:86px;object-fit:cover;margin:0;flex:none}
+.qcard{border:2px solid var(--ink);border-radius:14px;padding:6px 10px 10px;margin:0 0 8px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.qcard legend{font-family:var(--f-display);font-weight:600;padding:0 6px}
+.talkedit{width:100%;font-size:17px}
+.talk{margin:6px 0 0;padding-left:22px;font-size:19px;line-height:1.35}
+.scratch{position:relative;width:100%;max-width:360px;margin:6px auto;aspect-ratio:360/260;border:2px solid var(--ink);border-radius:14px;overflow:hidden;touch-action:none}
+.scratch canvas{position:absolute;inset:0;width:100%;height:100%}
+.cartouche{margin:12px auto;min-height:64px;max-width:100%;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;font-size:34px;padding:8px 22px;border:4px solid #b98866;border-radius:60px;background:#fbf0d6}
 .viewlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
 button.viewopt{display:flex;align-items:center;gap:8px;border-radius:16px;padding:6px 10px;background:#fff;text-align:left;font-size:17px;min-height:68px}
 button.viewopt.on{background:var(--mint)}
@@ -245,12 +258,14 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
     <button id="raetselBtn" type="button" class="main">🧠 Rätsel</button>
     <button id="thingsBtn" type="button">🎒 Sachen</button>
     <button id="viewBtn" type="button">👁 Mädchen</button>
+    <button id="readBtn" type="button">📚 Lesen</button>
     <button id="albumBtn" type="button">📖 Album</button>
     <button id="passBtn" type="button">✦ Reisepass</button>
   </div>
   <div class="hint">Tippe auf den Boden: die Figur läuft hin · Tippe auf Dinge zum Entdecken · 👁 Sicht: andere Figur steuern · Ziehen dreht die Kamera</div>
 </div>
 <input id="scanFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+<input id="isbnFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
 <div id="scan" class="scan" hidden role="dialog" aria-modal="true" aria-labelledby="scanTitle">
   <div class="sheet">
     <h2 id="scanTitle">Neue Figur</h2>
@@ -309,7 +324,10 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 <script src="rewards.js"></script>
 <script src="raetsel.js"></script>
 <script src="profiles.js"></script>
+<script src="parents.js"></script>
+<script src="books.js"></script>
 <script src="worlds/space.js"></script>
+<script src="worlds/time.js"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

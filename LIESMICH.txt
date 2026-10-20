@@ -6,6 +6,10 @@ Inhalt
   app.js                  die Spielwelt: Mädchen, Tiere, Heimatwiese, Scanner, Teilen
   learn.js                Lernen & Reisen: Wissenskarten, Fragen, Aufträge, Album, Reisepass
   profiles.js             Profile mit PIN (jedes Kind hat eigene Figuren und Sterne)
+  parents.js              Eltern-Bereich mit eigener Eltern-PIN
+  books.js                Bücher: Strichcode scannen, Buch-Quiz, Bild, Lesegespräch
+  worlds/time.js          die Zeitmaschine (Dino-Tal, Ägypten, Ritterburg)
+  content/time.json       Wissenskarten und Fragen der Zeitmaschine
   raetsel.js, math.js     Rätsel-Zeit: Wissens-Quiz und Rechen-Geschichten
   rewards.js              Geschenke, Laden, Meine Sachen (Sticker, Anziehsachen, Haustiere, Deko)
   content/quiz.json       Fragen für das Wissens-Quiz (Natur, Mensch, Geschichte)
@@ -102,3 +106,19 @@ Inhalt
      zeigt das Ziel). Danach spielt sie 20 Sekunden nicht von selbst weiter.
    - Knopf "👁 Sicht": Figur wählen (Mädchen, Tiere, eigene Figuren). Die Kamera
      folgt ihr, und sie wird per Tippen gesteuert. "Übersicht" zeigt die ganze Welt.
+
+10) Lesen schaltet Welten frei
+   ERST EINMAL: Ein Erwachsener richtet die Eltern-PIN ein (Profil oben rechts
+   -> "👪 Eltern-Bereich", oder beim Start "👪 Eltern"). Den angezeigten
+   Wiederherstellungs-Code aufschreiben! Solange keine Eltern-PIN existiert,
+   könnte ein Kind sie selbst einrichten – also bitte gleich erledigen.
+   Buch anmelden (Eltern-Bereich -> "＋ Buch anmelden"):
+   - Strichcode hinten auf dem Buch fotografieren (oder ISBN/Titel eintippen),
+     Kind auswählen, 3–5 Fragen mit richtiger und zwei falschen Antworten.
+   Kind (Knopf "📚 Lesen"), wenn das Buch fertig ist:
+   1. Buch-Quiz: mindestens 80 % richtig. Bei Fehlern wird nicht verraten, was
+      richtig gewesen wäre; der nächste Versuch geht erst nach 1 Stunde.
+   2. Bild zum Buch auf Papier malen und einscannen – es zieht in die Welt ein.
+   3. Lesegespräch mit einem Erwachsenen, der mit der Eltern-PIN bestätigt.
+   Freischaltung: 1. Buch -> Zeitmaschine Dino-Tal, 2. -> Altes Ägypten,
+   3. -> Ritterburg. Jedes Kind schaltet für sich selbst frei.

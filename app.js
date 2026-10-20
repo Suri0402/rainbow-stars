@@ -1097,18 +1097,19 @@ async function paintCreature(id){
       dispatchEvent(new CustomEvent('rs:painted', {detail:{id:rec.id, ok:!!a}})); }, 'image/png')});
 }
 
+let scanContext = null;   // z. B. {bookId, bookTitle} – der nächste Scan gehört zu einem Buch
 $('scanGo').onclick = () => {
-  const c = scanS.cut; if (!c) return;
+  const c = scanS.cut; if (!c) return; const ctx = scanContext && Date.now() - scanContext.at < 15*60e3 ? scanContext : null; scanContext = null;
   const name = $('scanName').value.trim().slice(0,24) || 'Sternchen', type = scanEl.querySelector('input[name="scanType"]:checked').value,
         kind = type === 'figure' ? scanEl.querySelector('input[name="scanKind"]:checked').value : type;
   $('scanGo').disabled = true;
   c.toBlob(async blob => {
     if (!blob){ $('scanGo').disabled = false; $('scanNote').textContent = '⚠ Das Bild konnte nicht erstellt werden. Zieh den Rahmen etwas kleiner und versuch es nochmal.'; scanFail('save', 'Das Bild der Figur konnte nicht erstellt werden.'); return; }
     try {
-    const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world:worldId, owner};
+    const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world:worldId, owner, book: ctx && ctx.bookTitle || undefined};
     const saved = (await idb.put(rec)) !== undefined; closeScan(); $('scanName').value = '';
     const a = await showCreature(rec, {near:true, arrive:true});
-    dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:rec.world, name, inWorld:!!a, saved, thumb:blob}}));
+    dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:rec.world, name, inWorld:!!a, saved, thumb:blob, bookId: ctx && ctx.bookId}}));
     if (rec.world === 'home') shareCreature(rec);
     } catch(err){ closeScan(); scanFail('send', 'Die Figur konnte nicht in die Welt geschickt werden: ' + (err.message || err)); }
   }, 'image/png');
@@ -1138,7 +1139,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   setOwner: id => { owner = id; }, get owner(){ return owner; },
   claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
   deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
-  setView, get ctrl(){ return ctrl; }, get view(){ return view; }, goTo,
+  setScanContext: c => { scanContext = c && {...c, at:Date.now()}; }, setView, get ctrl(){ return ctrl; }, get view(){ return view; }, goTo,
   onTick: f => tickHooks.push(f), addThing, removeFromWorld: removeCreature, world, camRight, uuid,
   resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
   SHARE, things, animals, paintCreature,

@@ -169,9 +169,10 @@ function ask(q, onDone, opts = {}){
     const finish = (ok, resultText) => {
       record(q, ok);
       const res = el('div', 'result ' + (ok ? 'ok' : 'bad'));
-      res.append(el('b', '', ok ? PRAISE[Math.floor(Math.random()*PRAISE.length)] : CHEER[Math.floor(Math.random()*CHEER.length)] + ' So ist es:'));
-      if (resultText) res.append(el('p', 'cardtext', resultText));
-      res.append(el('p', 'cardtext', q.explain)); body.append(res);
+      res.append(el('b', '', ok ? PRAISE[Math.floor(Math.random()*PRAISE.length)] : opts.noReveal ? 'Leider nicht richtig.' : CHEER[Math.floor(Math.random()*CHEER.length)] + ' So ist es:'));
+      if (resultText && !opts.noReveal) res.append(el('p', 'cardtext', resultText));
+      if (!opts.noReveal) res.append(el('p', 'cardtext', q.explain)); else if (!ok) res.append(el('p', 'cardtext', 'Weiter zur nächsten Frage.'));
+      body.append(res);
       if (ok) addStars(q.type === 'order' ? 3 : first ? 2 : 1);
       if (ok && giftHook && opts.gift !== false) giftHook(res);   // nach jeder richtigen Lösung ein Überraschungsgeschenk
       checkQuests(); if (onDone) onDone(ok);
@@ -192,7 +193,7 @@ function ask(q, onDone, opts = {}){
     } else {
       const list = el('div', 'opts'), order = q.type === 'tf' ? q.options.map((_, i) => i) : shuffle(q.options.map((_, i) => i));   // Antworten mischen, „Stimmt“ bleibt vorn
       order.forEach(i => { const b = btn(q.options[i], 'opt', () => {
-        list.querySelectorAll('button').forEach(x => { x.disabled = true; if (+x.dataset.i === q.answer) x.classList.add('right'); });
+        list.querySelectorAll('button').forEach(x => { x.disabled = true; if (+x.dataset.i === q.answer && (!opts.noReveal || i === q.answer)) x.classList.add('right'); });
         if (i !== q.answer) b.classList.add('wrong');
         finish(i === q.answer);
       }); b.dataset.i = i; list.append(b); });
@@ -239,7 +240,7 @@ hudStars.onclick = openAlbum;
 questChip.onclick = () => openQuests();
 
 // ---------- Reisepass & Reisen ----------
-const TRAVEL = [{id:'home', name:'Heimatwiese', icon:'✿'}, {id:'space', name:'Sternenwelt', icon:'☾'}, {id:'time', name:'Zeitmaschine', icon:'⌛', soon:true}];
+const TRAVEL = [{id:'home', name:'Heimatwiese', icon:'✿'}, {id:'space', name:'Sternenwelt', icon:'☾'}, {id:'time', name:'Zeitmaschine', icon:'⌛', needsBooks:1}];
 function openPassport(){
   openSheet('Reisepass', body => {
     body.append(el('p', 'tip', 'Wohin soll die Reise gehen? In jeder Welt warten Aufträge, Wissenskarten und ein Stempel.'));
@@ -248,11 +249,14 @@ function openPassport(){
       const w = worlds[t.id], here = RS.worldId === t.id, card = el('div', 'pworld' + (t.soon ? ' soon' : ''));
       const stamp = el('div', 'stamp' + (P.stamps[t.id] ? '' : ' empty')); stamp.textContent = P.stamps[t.id] ? (w && w.stampIcon || t.icon) : t.icon;
       const info = el('div', 'pinfo'); info.append(el('b', '', t.name));
-      if (t.soon) info.append(el('small', '', 'kommt bald'));
+      const books = window.Books ? Books.count : 0, locked = t.needsBooks && books < t.needsBooks;   // Welten, die ein gelesenes Buch freischaltet
+      if (locked){ card.classList.add('soon'); info.append(el('small', '', '🔒 Lies dein erstes Buch, dann öffnet sie sich')); }
+      else if (t.soon) info.append(el('small', '', 'kommt bald'));
       else if (w && w.quests) info.append(el('small', '', `${w.quests.filter(q => P.quests[t.id + ':' + q.id]).length} von ${w.quests.length} Aufträgen`));
       else info.append(el('small', '', here ? 'du bist hier' : 'dein Zuhause'));
       card.append(stamp, info);
-      if (!t.soon && !here && RS.W[t.id]) card.append(btn('Reisen ✦', 'main small', () => { closeSheet(); travel(t.id); }));
+      if (locked) card.append(btn('📚 Lesen', 'small', () => window.Books && Books.openRead()));
+      else if (!t.soon && !here && RS.W[t.id]) card.append(btn('Reisen ✦', 'main small', () => { closeSheet(); travel(t.id); }));
       else if (here) card.append(el('small', 'here', 'hier'));
       list.append(card);
     });
@@ -421,7 +425,7 @@ function openMine(){
     const urls = [], wrap = el('div', 'figs');
     list.forEach(r => {
       const card = el('div', 'fig'), img = el('img', 'thumb'), u = URL.createObjectURL(r.blob); urls.push(u); img.src = u; img.alt = '';
-      const info = el('div', 'fig-info'); info.append(el('b', '', r.name));
+      const info = el('div', 'fig-info'); info.append(el('b', '', r.name)); if (r.book) info.append(el('small', 'note', '📚 aus „' + r.book + '“'));
       const ul = el('ul', 'checks'); ul.append(line(r.inWorld ? ['ok', 'In der ' + worldName(r.world)] : ['bad', 'Nicht geladen – lade die Seite neu'])); ul.append(line(shareLine(r))); info.append(ul);
       const acts = el('div', 'fs-row');
       if (r.inWorld) acts.append(btn('Hinlaufen', 'small main', () => { closeSheet(); const res = RS.goToCreature(r.id);

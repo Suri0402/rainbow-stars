@@ -38,6 +38,7 @@ function chooser(){
     profiles.forEach(p => g.append(btn(p.avatar + '\n' + p.name, 'profbtn', () => askPin(p))));
     g.append(btn('＋\nNeues Profil', 'profbtn new', () => create()));
     b.append(g);
+    L.row(b, [btn('👪 Eltern', 'small', () => window.Parents && Parents.openArea({fromLogin:true}))]);
     if (!profiles.length) b.append(el('p', 'tip', 'Leg zuerst ein Profil für dich an. Jedes Kind bekommt sein eigenes Profil mit eigenen Figuren und Sternen.'));
   });
 }
@@ -54,7 +55,7 @@ function askPin(p){
     }, 'Gib deine PIN ein:');
     const stay = el('label', 'field check'); const cb = document.createElement('input'); cb.type = 'checkbox'; stay.append(cb, document.createTextNode(' Auf diesem Gerät angemeldet bleiben'));
     b.append(pad, msg, stay);
-    L.row(b, [btn('← Zurück', '', chooser), btn('PIN vergessen?', 'small', () => parentGate(() => setPin(p, chooser)))]);
+    L.row(b, [btn('← Zurück', '', chooser), btn('PIN vergessen?', 'small', () => (window.Parents && Parents.hasPin() ? Parents.verify(() => setPin(p, chooser), {inLogin:true}) : parentGate(() => setPin(p, chooser))))]);
   });
 }
 function parentGate(then){
@@ -115,7 +116,7 @@ function menu(p){
     L.row(body, [btn('🔄 Spieler wechseln', 'main', async () => { await RS.idb.setP('autologin', null); location.reload(); })]);
     L.row(body, [btn('🔑 PIN ändern', 'small', () => { L.closeSheet(); askOld(p, () => setPin(p, () => { ov.hidden = true; })); }),
                  btn('🗑 Profil löschen', 'small', () => { L.closeSheet(); askOld(p, () => confirmDelete(p)); })]);
-    L.row(body, [btn('Schließen', '', L.closeSheet)]);
+    L.row(body, [btn('👪 Eltern-Bereich', 'small', () => { L.closeSheet(); window.Parents && Parents.openArea(); }), btn('Schließen', '', L.closeSheet)]);
   });
 }
 function askOld(p, then){
@@ -136,5 +137,5 @@ addEventListener('DOMContentLoaded', async () => {
   const auto = await RS.idb.getP('autologin'), p = profiles.find(q => q.id === auto);
   if (p) login(p, true); else chooser();
 });
-window.Profiles = {get list(){ return profiles; }};
+window.Profiles = {get list(){ return profiles; }, hash, pinPad, setPin, view, chooser, saveProfiles, get current(){ return profiles.find(p => p.id === RS.owner); }};
 })();
