@@ -96,3 +96,9 @@ Inhalt
      Schleife, Feenflügel), Haustiere, die mitlaufen, und Deko für die Wiese.
    - Im Regenbogen-Laden kann man sich Sachen mit Sternen kaufen.
    - Haarfarbe ändern: ebenfalls unter "Meine Sachen".
+
+9) Steuern und Sicht
+   - Auf den Boden tippen: Die Figur läuft genau dorthin (kleiner Sternenkranz
+     zeigt das Ziel). Danach spielt sie 20 Sekunden nicht von selbst weiter.
+   - Knopf "👁 Sicht": Figur wählen (Mädchen, Tiere, eigene Figuren). Die Kamera
+     folgt ihr, und sie wird per Tippen gesteuert. "Übersicht" zeigt die ganze Welt.

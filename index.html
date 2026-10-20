@@ -143,6 +143,11 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .figs{display:flex;flex-direction:column;gap:10px}
 .fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
 button.danger{background:#ffd0d6}
+.viewlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+button.viewopt{display:flex;align-items:center;gap:8px;border-radius:16px;padding:6px 10px;background:#fff;text-align:left;font-size:17px;min-height:68px}
+button.viewopt.on{background:var(--mint)}
+button.viewopt canvas{flex:none}
+.vicon{font-size:36px;width:56px;text-align:center}
 .palette{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .palette button{width:38px;height:38px;padding:0;border-radius:50%;background:var(--c);box-shadow:none}
 .palette button:hover{background:var(--c);transform:scale(1.1)}
@@ -239,10 +244,11 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
     <label id="scanBtn" for="scanFile" class="btn main" role="button" tabindex="0">✎ Figur scannen</label>
     <button id="raetselBtn" type="button" class="main">🧠 Rätsel</button>
     <button id="thingsBtn" type="button">🎒 Sachen</button>
+    <button id="viewBtn" type="button">👁 Mädchen</button>
     <button id="albumBtn" type="button">📖 Album</button>
     <button id="passBtn" type="button">✦ Reisepass</button>
   </div>
-  <div class="hint">Tippe auf alles, was dich neugierig macht · Das Regenbogen-Tor bringt dich in andere Welten · Ziehen dreht die Kamera</div>
+  <div class="hint">Tippe auf den Boden: die Figur läuft hin · Tippe auf Dinge zum Entdecken · 👁 Sicht: andere Figur steuern · Ziehen dreht die Kamera</div>
 </div>
 <input id="scanFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
 <div id="scan" class="scan" hidden role="dialog" aria-modal="true" aria-labelledby="scanTitle">

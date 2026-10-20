@@ -355,6 +355,8 @@ function spawn(t, pos, vel, life, sx, sy=sx){
 // ================= VERHALTEN =================
 const st = {state:'idle', timer:1.2, act:null, last:null, phase:0, actT:0, pos:new V3(0,0,0), face:1, faceS:1, side:1, approach:new V3(), spin:0, turn:0};
 let paused = false, az = 0, el = .22, dist = 5.6, tAz = 0, tEl = .22, tDist = 5.6, lastDrag = -1e9;
+// Steuern & Sicht: ctrl = gesteuerte Figur (null = das Mädchen), view = 'follow' oder 'overview'
+let ctrl = null, view = 'follow', manualUntil = 0;
 const statusEl = $('status');
 const setStatus = t => { if (statusEl.textContent !== t) statusEl.textContent = t; };
 const camRight = () => new V3(Math.cos(az), 0, -Math.sin(az));
@@ -387,7 +389,7 @@ function updateGirl(dt, t){
   let armL = Math.sin(t*1.3)*.04, armR = -Math.sin(t*1.3+.6)*.04;
   let hipSway = Math.sin(t*.8)*.02, breathe = Math.sin(t*2.4)*.012;
   let eye = 'open', mouth = 'smile', blush = 1, legLift = [0,0], legRot = [0,0];
-  if (st.state === 'idle' && st.timer <= 0) chooseNext();
+  if (st.state === 'idle' && st.timer <= 0 && performance.now() > manualUntil) chooseNext();
   if (st.state === 'walk'){
     approachPoint(st.act, st.approach);
     const d = new V3(st.approach.x - st.pos.x, 0, st.approach.z - st.pos.z), len = d.length();
@@ -524,7 +526,7 @@ function updateAnimal(a, dt, t){
   a.timer -= dt; let moving = false, dir = null;
   if (a.chase){ a.chaseT -= dt; if (a.chaseT <= 0 || a.chase.gone){ a.chase = null; a.state = 'idle'; a.timer = .5; }
     else if (a.state !== 'wait' && a.state !== 'play'){ if (a.chase.near && a.pos.distanceTo(a.chase.pos) < .45){ a.state = 'idle'; a.timer = 1; } else { a.state = 'wander'; a.target.copy(a.chase.pos); a.target.y = 0; } } }
-  if (a.state === 'idle'){ if (a.timer <= 0){ a.state = 'wander'; const ang = Math.random()*6.28, r = 2 + Math.random()*11; a.target.set(Math.cos(ang)*r, 0, Math.sin(ang)*r); } }
+  if (a.state === 'idle'){ if (a.timer <= 0 && !(a.manual > performance.now())){ a.state = 'wander'; const ang = Math.random()*6.28, r = 2 + Math.random()*11; a.target.set(Math.cos(ang)*r, 0, Math.sin(ang)*r); } }
   else if (a.state === 'wander'){
     const d = new V3().subVectors(a.target, a.pos); d.y = 0;
     if (d.length() < .1){ a.state = 'idle'; a.timer = 1 + Math.random()*3; }
@@ -569,7 +571,32 @@ function pick(x,y){
   ndc.set(x/innerWidth*2-1, -(y/innerHeight)*2+1); ray.setFromCamera(ndc, camera);
   const hit = ray.intersectObjects(pickables, false).find(h => { const u = h.uv, img = h.object.material.map.image; if (!u || !img.getContext) return true;
     const px = img.getContext('2d').getImageData(Math.floor(u.x*img.width), Math.floor((1-u.y)*img.height), 1, 1).data; return px[3] > 30; });
-  if (hit){ userPick = hit.object.userData.act; startActivity(userPick); }
+  if (hit){ const act = hit.object.userData.act;
+    if (ctrl){ if (act.ref !== ctrl) steerTo(ctrl, act.ref.pos, act.ref.name || ''); return; }   // gesteuerte Figur läuft zum angetippten Ding
+    userPick = act; startActivity(userPick); manualUntil = performance.now() + 20000; return; }
+  // auf den Boden getippt: dorthin laufen
+  const p = ray.ray.intersectPlane(groundPlane, new V3()); if (!p) return;
+  const r = Math.hypot(p.x, p.z); if (r > 16){ p.x *= 16/r; p.z *= 16/r; }
+  goTo(p);
+}
+const groundPlane = new THREE.Plane(new V3(0, 1, 0), 0);
+function goMarker(p){ for (let i=0;i<10;i++){ const a = i/10*Math.PI*2; spawn(fxTex.star[i%6], new V3(p.x + Math.cos(a)*.35, .1, p.z + Math.sin(a)*.35), new V3(Math.cos(a)*.3, .7, Math.sin(a)*.3), .9, .1); } }
+function goTo(p){
+  goMarker(p);
+  if (ctrl) return steerTo(ctrl, p);
+  const act = {kind:'spot', ref:{pos:p.clone().setY(0)}, go:'läuft dorthin', doing:'schaut sich um', mark:' ✦', marvel:true, off:0, fxH:1.2};
+  userPick = null; startActivity(act); manualUntil = performance.now() + 20000;
+}
+function steerTo(a, p, what){
+  if (st.act && st.act.ref === a){ st.act = null; st.state = 'idle'; st.timer = 1; }   // spielt gerade mit dem Mädchen? Dann loslassen
+  a.chase = null; a.state = 'wander'; a.target.set(p.x, 0, p.z); a.manual = performance.now() + 20000;
+  setStatus(a.name + (what ? ' läuft zu ' + what : ' läuft dorthin') + ' …');
+}
+function setView({figure, overview} = {}){
+  if (figure !== undefined) ctrl = figure;
+  view = overview ? 'overview' : 'follow';
+  tDist = overview ? 24 : (camera.aspect < .8 ? 6.2 : 5.6); tEl = overview ? 1.0 : .22;
+  dispatchEvent(new CustomEvent('rs:view', {detail:{name: ctrl ? ctrl.name : null, overview}}));
 }
 $('next').onclick = () => chooseNext();
 $('pause').onclick = e => { paused = !paused; e.currentTarget.textContent = paused ? 'Weiter' : 'Pause'; };
@@ -1096,6 +1123,7 @@ function enterWorld(id){
   activities = w.acts; pickables = w.picks;
   scene.fog.color.setHex(w.fog ?? 0xfbeef0); document.body.dataset.world = id;
   for (let i=fx.length-1;i>=0;i--){ scene.remove(fx[i].sp); fx[i].sp.material.dispose(); fx.splice(i,1); }
+  ctrl = null; view = 'follow'; tDist = camera.aspect < .8 ? 6.2 : 5.6; tEl = .22;
   st.pos.copy(w.spawn || new V3(0,0,0)); st.state = 'idle'; st.timer = 2.5; st.act = st.last = userPick = null; st.spin = 0;
   camT.set(st.pos.x, 1, st.pos.z); tAz = 0;
   setStatus(w.hello || 'schaut sich um …');
@@ -1110,6 +1138,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   setOwner: id => { owner = id; }, get owner(){ return owner; },
   claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
   deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
+  setView, get ctrl(){ return ctrl; }, get view(){ return view; }, goTo,
   onTick: f => tickHooks.push(f), addThing, removeFromWorld: removeCreature, world, camRight, uuid,
   resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
   SHARE, things, animals, paintCreature,
@@ -1140,7 +1169,9 @@ function tick(){
   if (performance.now() - lastDrag > 6000) tAz = angLerp(tAz, Math.round(tAz/(Math.PI*2))*Math.PI*2 + Math.sin(t*.05)*.25, dtR*.15);
   const k = 1 - Math.pow(.03, dtR);
   az = angLerp(az, tAz, k); el += (tEl-el)*k; dist += (tDist-dist)*k;
-  camT.lerp(new V3(st.pos.x, 1.0, st.pos.z), 1 - Math.pow(.06, dtR));
+  if (ctrl && !animals.includes(ctrl)) setView({figure:null});   // gesteuerte Figur gelöscht -> zurück zum Mädchen
+  const fp = view === 'overview' ? new V3(0, 0, 0) : (ctrl ? ctrl.pos : st.pos);
+  camT.lerp(new V3(fp.x, view === 'overview' ? 0 : (ctrl ? .6 : 1.0), fp.z), 1 - Math.pow(.06, dtR));
   camera.position.set(camT.x + Math.sin(az)*Math.cos(el)*dist, camT.y + Math.sin(el)*dist, camT.z + Math.cos(az)*Math.cos(el)*dist);
   camera.lookAt(camT);
   bills.forEach(b => b.rotation.y = az);

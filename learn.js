@@ -321,6 +321,27 @@ function applyWear(){
   });
 }
 
+// ---------- Sicht wechseln: welcher Figur folgt die Kamera, wer wird per Tippen gesteuert? ----------
+function openView(){
+  openSheet('👁 Sicht wählen', body => {
+    body.append(el('p', 'tip', 'Wähle eine Figur: Die Kamera folgt ihr, und wenn du auf den Boden tippst, läuft sie dorthin.'));
+    const list = el('div', 'viewlist'), cur = RS.ctrl, over = RS.view === 'overview';
+    const opt = (name, canvas, active, run) => { const b = btn('', 'viewopt' + (active ? ' on' : ''), () => { run(); closeSheet(); });
+      if (canvas){ const t = document.createElement('canvas'), k = Math.min(56/canvas.width, 56/canvas.height); t.width = Math.round(canvas.width*k); t.height = Math.round(canvas.height*k); t.getContext('2d').drawImage(canvas, 0, 0, t.width, t.height); b.append(t); }
+      else b.append(el('span', 'vicon', '👧'));
+      b.append(el('span', '', name + (active ? ' ✔' : ''))); list.append(b); };
+    opt('Das Mädchen', null, !cur && !over, () => RS.setView({figure:null}));
+    RS.animals.filter(a => a.wid === RS.worldId).forEach(a => opt(a.name, a.mesh.material.map.image, cur === a && !over, () => RS.setView({figure:a})));
+    body.append(list);
+    body.append(el('h3', 'albumh', 'Kamera'));
+    row(body, [btn('🗺 Übersicht – die ganze Welt' + (over ? ' ✔' : ''), over ? 'main' : '', () => { RS.setView({overview:!over}); closeSheet(); })]);
+    row(body, [btn('Schließen', '', closeSheet)]);
+  });
+}
+$('viewBtn').onclick = openView;
+addEventListener('rs:view', e => { $('viewBtn').textContent = '👁 ' + (e.detail.overview ? 'Übersicht' : (e.detail.name || 'Mädchen')); });
+addEventListener('rs:world', () => { $('viewBtn').textContent = '👁 Mädchen'; });
+
 // ---------- Eigene Figuren: Statuskarte nach dem Scannen + Übersicht "Meine Figuren" ----------
 const worldName = id => (RS.W[id] && RS.W[id].name) || 'Heimatwiese';
 function shareLine(r){   // r: gespeicherte Figur (oder Live-Zustand aus der Statuskarte)

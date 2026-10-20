@@ -123,6 +123,7 @@ function spawnPet(){
 }
 function choosePet(id){ P.pet = id; L.save(); spawnPet(); }
 RS.onTick(() => { if (!pet) return;
+  if (!pet.chase && !(pet.manual > performance.now())){ pet.chase = petTarget; pet.chaseT = 1e12; }   // nach dem Steuern wieder mitlaufen
   const side = RS.camRight().multiplyScalar(-(RS.st.face || 1)*1.1); petTarget.pos.copy(RS.st.pos).add(side); petTarget.pos.z += .35;
   if (pet.pos.distanceTo(RS.st.pos) > 9){ pet.pos.copy(petTarget.pos); } });
 addEventListener('rs:world', () => { if (P.pet) spawnPet(); });
