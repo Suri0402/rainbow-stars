@@ -940,7 +940,7 @@ function renderCut(){
   const c = scanS.cut, x = cutC.getContext('2d');
   cutC.width = c ? c.width : 320; cutC.height = c ? c.height : 200; if (c) x.drawImage(c, 0, 0);
   const v = scanVerdict(c); scanS.verdict = v; showVerdict(v);
-  $('scanGo').disabled = v.level === 'bad';
+  $('scanGo').disabled = $('scanPaint').disabled = v.level === 'bad';
   $('scanGo').textContent = v.level === 'warn' ? 'Trotzdem in die Welt schicken' : 'In die Welt schicken ✦';
   $('scanNote').textContent = !c ? ''
     : worldId !== 'home' ? 'Deine Figur zieht in die ' + (W[worldId].name || 'Welt') + ' ein und bleibt auf diesem Gerät.'
@@ -993,6 +993,80 @@ $('scanBoost').onchange = renderCut;
 scanEl.querySelectorAll('input[name="scanType"]').forEach(r => r.onchange = () => { $('scanKinds').hidden = r.value !== 'figure' || !r.checked; });
 $('scanClose').onclick = closeScan;
 addEventListener('keydown', e => { if (e.key === 'Escape' && !scanEl.hidden) closeScan(); });
+
+// --- Ausmalen: Eimer, Pinsel, Radierer. Die Farbe wird mit der Helligkeit der Zeichnung multipliziert –
+//     so bleiben Bleistiftstriche und Schattierung sichtbar, und neu Übermalen ersetzt die alte Farbe.
+const paintC = $('paintC'), paintX = paintC.getContext('2d', {willReadFrequently:true});
+const PALETTE = ['#ff8fb1','#ff4f7b','#ffb36b','#ff7a3c','#ffe066','#c8e86a','#7fdca4','#2fae6a','#7cc4ff','#3d7bff','#b49bff','#8a5cff','#ffe0cf','#e8b48c','#a5703f','#6b4a3a','#c9ced6','#ffffff'];
+const paintS = {base:null, band:null, undo:[], color:PALETTE[0], tool:'fill', done:null, back:null};
+PALETTE.forEach((col, i) => { const b = document.createElement('button'); b.type = 'button'; b.style.setProperty('--c', col); b.setAttribute('role', 'radio'); b.setAttribute('aria-label', 'Farbe ' + (i+1));
+  b.setAttribute('aria-checked', i === 0 ? 'true' : 'false'); b.onclick = () => { paintS.color = col; $('palette').querySelectorAll('button').forEach(x => x.setAttribute('aria-checked', x === b ? 'true' : 'false')); if (paintS.tool === 'erase') setTool('fill'); };
+  $('palette').append(b); });
+function setTool(t){ paintS.tool = t; [['toolFill','fill'],['toolBrush','brush'],['toolErase','erase']].forEach(([id, v]) => { $(id).setAttribute('aria-pressed', v === t ? 'true' : 'false'); $(id).classList.toggle('main', v === t); }); }
+$('toolFill').onclick = () => setTool('fill'); $('toolBrush').onclick = () => setTool('brush'); $('toolErase').onclick = () => setTool('erase');
+function openPaint(canvas, {done, back, goLabel, note}){
+  paintC.width = canvas.width; paintC.height = canvas.height; paintX.clearRect(0, 0, paintC.width, paintC.height); paintX.drawImage(canvas, 0, 0);
+  const W2 = paintC.width, H2 = paintC.height, base = paintX.getImageData(0, 0, W2, H2), N2 = W2*H2;
+  // Randzone (weißer Sticker-Rand) nicht anmalen: alles in der Nähe von Durchsichtigem
+  let band = new Uint8Array(N2); for (let i=0;i<N2;i++) band[i] = base.data[i*4+3] < 200 ? 1 : 0;
+  for (let k=0;k<4;k++) band = dilate(band, W2, H2);
+  Object.assign(paintS, {base, band, undo:[], done, back, stats:canvas.stats});
+  $('paintGo').textContent = goLabel || 'In die Welt schicken ✦'; $('paintNote').textContent = note || '';
+  setTool('fill'); scanStep('paint');
+}
+const pushUndo = () => { paintS.undo.push(paintX.getImageData(0, 0, paintC.width, paintC.height)); if (paintS.undo.length > 20) paintS.undo.shift(); };
+$('paintUndo').onclick = () => { const u = paintS.undo.pop(); if (u) paintX.putImageData(u, 0, 0); };
+function tint(cur, i, col, lift = 0){   // eine Stelle einfärben (col = null: Originalfarbe zurück; lift hellt dunkle Flächen auf)
+  const b = paintS.base.data, p = i*4;
+  if (!col){ cur[p] = b[p]; cur[p+1] = b[p+1]; cur[p+2] = b[p+2]; return; }
+  const L = lift + (1 - lift)*Math.min(1, (b[p]*.3 + b[p+1]*.59 + b[p+2]*.11)/235);
+  cur[p] = col[0]*L; cur[p+1] = col[1]*L; cur[p+2] = col[2]*L;
+}
+const hexRGB = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+function paintFill(px, py){
+  const W2 = paintC.width, H2 = paintC.height, b = paintS.base.data, start = py*W2 + px;
+  const lum = i => b[i*4]*.3 + b[i*4+1]*.59 + b[i*4+2]*.11, ok = i => !paintS.band[i] && b[i*4+3] > 200;
+  if (!ok(start)){ $('paintNote').textContent = 'Tippe in die Figur hinein – am Rand wird nicht gemalt.'; return; }
+  // helle Fläche: bis zu den Strichen füllen. Dunkle Fläche (z. B. ausgemaltes Herz): nur diese kleine dunkle Fläche, aufgehellt
+  const dark = lum(start) < 110, free = dark ? (i => ok(i) && lum(i) < 140) : (i => ok(i) && lum(i) >= 110);
+  const seen = new Uint8Array(W2*H2), q = [start], region = []; seen[start] = 1;
+  let opaque = 0; if (dark) for (let i=0;i<W2*H2;i++) if (b[i*4+3] > 200) opaque++;
+  while (q.length){ const i = q.pop(), x = i%W2; region.push(i);
+    if (dark && region.length > opaque*.04){ $('paintNote').textContent = 'Das ist eine Linie – nimm dafür lieber den Pinsel 🖌.'; return; }
+    for (const j of [x>0 ? i-1 : -1, x<W2-1 ? i+1 : -1, i-W2, i+W2]) if (j >= 0 && j < W2*H2 && !seen[j] && free(j)){ seen[j] = 1; q.push(j); } }
+  pushUndo(); const img = paintX.getImageData(0, 0, W2, H2), cur = img.data, col = hexRGB(paintS.color);
+  region.forEach(i => tint(cur, i, col, dark ? .45 : 0));
+  paintX.putImageData(img, 0, 0); $('paintNote').textContent = '';
+}
+function paintBrush(px, py, img){
+  const W2 = paintC.width, H2 = paintC.height, r = Math.max(6, Math.round(Math.max(W2, H2)/36)), b = paintS.base.data, cur = img.data, col = paintS.tool === 'erase' ? null : hexRGB(paintS.color);
+  for (let y=Math.max(0,py-r); y<=Math.min(H2-1,py+r); y++) for (let x=Math.max(0,px-r); x<=Math.min(W2-1,px+r); x++){
+    const i = y*W2+x; if ((x-px)**2 + (y-py)**2 > r*r || paintS.band[i] || b[i*4+3] < 200) continue; tint(cur, i, col); }
+}
+let brushImg = null, lastPt = null;
+const paintPt = e => { const r = paintC.getBoundingClientRect(); return [Math.floor((e.clientX-r.left)/r.width*paintC.width), Math.floor((e.clientY-r.top)/r.height*paintC.height)]; };
+paintC.addEventListener('pointerdown', e => { paintC.setPointerCapture(e.pointerId); const [x, y] = paintPt(e);
+  if (paintS.tool === 'fill') return paintFill(x, y);   // Pinsel und Radierer malen mit dem Finger
+  pushUndo(); brushImg = paintX.getImageData(0, 0, paintC.width, paintC.height); lastPt = [x, y]; paintBrush(x, y, brushImg); paintX.putImageData(brushImg, 0, 0); });
+paintC.addEventListener('pointermove', e => { if (!brushImg) return; const [x, y] = paintPt(e), [x0, y0] = lastPt, st2 = Math.max(2, Math.max(paintC.width, paintC.height)/90);
+  const n = Math.max(1, Math.ceil(Math.hypot(x-x0, y-y0)/st2)); for (let k=1;k<=n;k++) paintBrush(Math.round(x0 + (x-x0)*k/n), Math.round(y0 + (y-y0)*k/n), brushImg);   // durchgehender Strich
+  lastPt = [x, y]; paintX.putImageData(brushImg, 0, 0); });
+['pointerup','pointercancel'].forEach(ev => paintC.addEventListener(ev, () => { brushImg = null; lastPt = null; }));
+const paintedCanvas = () => { const [c2, x2] = cnv(paintC.width, paintC.height); x2.drawImage(paintC, 0, 0); c2.stats = paintS.stats; return c2; };
+$('paintGo').onclick = () => paintS.done && paintS.done(paintedCanvas());
+$('paintBack').onclick = () => paintS.back ? paintS.back() : closeScan();
+$('scanPaint').onclick = () => { if (!scanS.cut) return;
+  openPaint(scanS.cut, {done: c => { scanS.cut = c; $('scanGo').click(); }, back: () => scanStep('edit')}); };
+// schon vorhandene Figur nachträglich ausmalen
+async function paintCreature(id){
+  const rec = (await idb.all()).find(r => r.id === id); if (!rec) return;
+  let c; try { c = await blobCanvas(rec.blob); } catch(e){ scanFail('photo', 'Das Bild der Figur ließ sich nicht öffnen.'); return; }
+  openPaint(c, {goLabel:'Speichern ✦', back: closeScan, note: rec.uploaded ? 'Die neuen Farben siehst du auf diesem Gerät.' : '',
+    done: out => out.toBlob(async blob => { if (!blob) return; rec.blob = blob; await idb.put(rec); closeScan();
+      removeCreature(rec.id); const a = await showCreature(rec, {}); setStatus(rec.name + (a ? ' hat neue Farben ✦' : ' konnte nicht neu geladen werden ⚠'));
+      dispatchEvent(new CustomEvent('rs:painted', {detail:{id:rec.id, ok:!!a}})); }, 'image/png')});
+}
+
 $('scanGo').onclick = () => {
   const c = scanS.cut; if (!c) return;
   const name = $('scanName').value.trim().slice(0,24) || 'Sternchen', type = scanEl.querySelector('input[name="scanType"]:checked').value,
@@ -1031,7 +1105,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },
   deleteCreature: id => { removeCreature(id); return idb.del(id); },
   resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
-  SHARE, things, animals,
+  SHARE, things, animals, paintCreature,
   get worldId(){ return worldId; }, get paused(){ return paused; }, setPaused: v => { paused = v; }, openScan: () => { startPick(); $('scanFile').click(); }};
 
 // ---------- Loop ----------

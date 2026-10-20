@@ -1,120 +1,1062 @@
 {
   "world": "space",
   "objects": {
-    "sonne": ["sonne-1", "sonne-2", "sonne-3"],
-    "merkur": ["merkur-1", "merkur-2"],
-    "venus": ["venus-1", "venus-2", "venus-3"],
-    "erde": ["erde-1", "erde-2", "erde-3"],
-    "mond": ["mond-1", "mond-2", "mond-3", "mond-4"],
-    "mars": ["mars-1", "mars-2", "mars-3"],
-    "jupiter": ["jupiter-1", "jupiter-2", "jupiter-3"],
-    "saturn": ["saturn-1", "saturn-2", "saturn-3"],
-    "uranus": ["uranus-1", "uranus-2"],
-    "neptun": ["neptun-1", "neptun-2"],
-    "pluto": ["pluto-1", "pluto-2"],
-    "komet": ["komet-1", "komet-2"],
-    "iss": ["iss-1", "iss-2"],
-    "luna": ["massstab"]
+    "sonne": [
+      "sonne-1",
+      "sonne-2",
+      "sonne-3"
+    ],
+    "merkur": [
+      "merkur-1",
+      "merkur-2"
+    ],
+    "venus": [
+      "venus-1",
+      "venus-2",
+      "venus-3"
+    ],
+    "erde": [
+      "erde-1",
+      "erde-2",
+      "erde-3"
+    ],
+    "mond": [
+      "mond-1",
+      "mond-2",
+      "mond-3",
+      "mond-4"
+    ],
+    "mars": [
+      "mars-1",
+      "mars-2",
+      "mars-3"
+    ],
+    "jupiter": [
+      "jupiter-1",
+      "jupiter-2",
+      "jupiter-3"
+    ],
+    "saturn": [
+      "saturn-1",
+      "saturn-2",
+      "saturn-3"
+    ],
+    "uranus": [
+      "uranus-1",
+      "uranus-2"
+    ],
+    "neptun": [
+      "neptun-1",
+      "neptun-2"
+    ],
+    "pluto": [
+      "pluto-1",
+      "pluto-2"
+    ],
+    "komet": [
+      "komet-1",
+      "komet-2"
+    ],
+    "iss": [
+      "iss-1",
+      "iss-2"
+    ],
+    "luna": [
+      "massstab"
+    ]
   },
   "cards": [
-    {"id": "sonne-1", "title": "Die Sonne ist ein Stern", "text": "Die Sonne ist der Stern, der uns am nächsten ist. Sie ist eine riesige Kugel aus glühend heißem Gas. An ihrer Oberfläche ist es etwa 5.500 °C heiß."},
-    {"id": "sonne-2", "title": "Riesengroß", "text": "In die Sonne würden über eine Million Erden hineinpassen. Ihr Durchmesser ist etwa 109-mal so groß wie der der Erde."},
-    {"id": "sonne-3", "title": "Licht braucht Zeit", "text": "Das Sonnenlicht braucht etwa 8 Minuten bis zur Erde. Du siehst die Sonne also so, wie sie vor 8 Minuten war. Schau nie direkt in die Sonne – das schadet deinen Augen!"},
-    {"id": "merkur-1", "title": "Der Kleinste", "text": "Merkur ist der kleinste Planet und der Sonne am nächsten. Einmal um die Sonne – also ein Merkur-Jahr – dauert nur 88 Tage."},
-    {"id": "merkur-2", "title": "Heiß und eiskalt", "text": "Merkur hat fast keine Lufthülle, die Wärme festhalten könnte. Am Tag wird es über 400 °C heiß, in der Nacht kälter als −170 °C."},
-    {"id": "venus-1", "title": "Der heißeste Planet", "text": "Venus ist der heißeste Planet, obwohl Merkur näher an der Sonne ist. Ihre dicke Lufthülle hält die Wärme fest wie eine Decke: Es sind fast 470 °C!"},
-    {"id": "venus-2", "title": "Verkehrt herum", "text": "Auf der Venus geht die Sonne im Westen auf und im Osten unter. Die Venus dreht sich nämlich andersherum als fast alle anderen Planeten."},
-    {"id": "venus-3", "title": "Morgenstern und Abendstern", "text": "Nach dem Mond ist die Venus das hellste Objekt am Nachthimmel. Man nennt sie Morgenstern oder Abendstern – dabei ist sie gar kein Stern, sondern ein Planet."},
-    {"id": "erde-1", "title": "Unser blauer Planet", "text": "Die Erde ist der einzige Planet, von dem wir wissen, dass es dort Leben gibt. Etwa 71 von 100 Teilen ihrer Oberfläche sind mit Wasser bedeckt."},
-    {"id": "erde-2", "title": "Warum es Schaltjahre gibt", "text": "Die Erde braucht für eine Runde um die Sonne etwa 365 Tage und 6 Stunden. Die 6 Stunden sammeln sich an: Deshalb gibt es alle vier Jahre einen Schalttag, den 29. Februar."},
-    {"id": "erde-3", "title": "Jahreszeiten", "text": "Die Erdachse ist schräg. Darum bekommt mal die Nordhälfte, mal die Südhälfte der Erde mehr Sonnenlicht ab. So entstehen Sommer und Winter."},
-    {"id": "mond-1", "title": "Der Mond leuchtet nicht", "text": "Der Mond leuchtet nicht selbst. Er wird von der Sonne angestrahlt, und wir sehen das Licht, das er zurückwirft. Er ist etwa 384.000 km von der Erde entfernt."},
-    {"id": "mond-2", "title": "Menschen auf dem Mond", "text": "Im Juli 1969 betrat Neil Armstrong als erster Mensch den Mond. Bis 1972 waren insgesamt zwölf Menschen dort. Ihre Fußspuren sind noch da, weil es auf dem Mond keinen Wind gibt."},
-    {"id": "mond-3", "title": "Immer dieselbe Seite", "text": "Der Mond zeigt uns immer dieselbe Seite. Er dreht sich genau einmal um sich selbst, während er einmal um die Erde kreist."},
-    {"id": "mond-4", "title": "Mondphasen", "text": "Etwa alle 29½ Tage wandert der Mond von Neumond über Vollmond wieder zum Neumond. Je nachdem, wie viel wir von seiner beleuchteten Seite sehen, ist er eine Sichel, ein Halbmond oder voll."},
-    {"id": "mars-1", "title": "Der Rote Planet", "text": "Mars heißt auch der Rote Planet. Sein Staub enthält viel Eisenoxid – das ist eine Art Rost. Mars hat zwei kleine Monde: Phobos und Deimos."},
-    {"id": "mars-2", "title": "Der höchste Vulkan", "text": "Auf dem Mars steht der höchste Vulkan im ganzen Sonnensystem: Olympus Mons. Er ist mehr als doppelt so hoch wie der Mount Everest, der höchste Berg der Erde."},
-    {"id": "mars-3", "title": "Roboter auf dem Mars", "text": "Auf dem Mars fahren Roboter-Fahrzeuge, sogenannte Rover. Sie untersuchen Gestein und suchen nach Spuren von Wasser und früherem Leben."},
-    {"id": "jupiter-1", "title": "Der Riese", "text": "Jupiter ist der größte Planet im Sonnensystem. Mehr als 1.300 Erden würden in ihn hineinpassen."},
-    {"id": "jupiter-2", "title": "Der Große Rote Fleck", "text": "Der Große Rote Fleck auf Jupiter ist ein riesiger Wirbelsturm. Er ist größer als die ganze Erde und tobt schon seit über 150 Jahren."},
-    {"id": "jupiter-3", "title": "Ein Gasriese", "text": "Jupiter hat keinen festen Boden, auf dem man landen könnte – er besteht vor allem aus Gas. Er hat sehr viele Monde. Einer davon, Ganymed, ist sogar größer als der Planet Merkur."},
-    {"id": "saturn-1", "title": "Die Ringe", "text": "Saturns Ringe bestehen aus Milliarden Brocken aus Eis und Gestein. Manche sind so klein wie Sandkörner, andere so groß wie ein Haus."},
-    {"id": "saturn-2", "title": "Saturn würde schwimmen", "text": "Saturn ist für seine Größe sehr leicht. Gäbe es eine riesige Badewanne, würde er darin schwimmen – er hat eine geringere Dichte als Wasser."},
-    {"id": "saturn-3", "title": "Mond mit Seen", "text": "Saturn hat mehr als 140 bekannte Monde. Sein größter Mond Titan hat eine dicke Lufthülle und Seen – aber nicht aus Wasser, sondern aus flüssigem Methan."},
-    {"id": "uranus-1", "title": "Der Planet auf der Seite", "text": "Uranus liegt fast auf der Seite und rollt sozusagen um die Sonne. Wahrscheinlich hat ihn vor sehr langer Zeit ein gewaltiger Zusammenstoß umgekippt."},
-    {"id": "uranus-2", "title": "Mit dem Fernrohr entdeckt", "text": "Uranus wurde 1781 von Wilhelm Herschel entdeckt – als erster Planet mit einem Fernrohr. Seine blaugrüne Farbe kommt vom Gas Methan."},
-    {"id": "neptun-1", "title": "Ganz weit draußen", "text": "Neptun ist der Planet, der am weitesten von der Sonne entfernt ist. Für eine Runde um die Sonne braucht er etwa 165 Erdenjahre."},
-    {"id": "neptun-2", "title": "Stürmischer Neptun", "text": "Auf Neptun wehen die stärksten Winde im Sonnensystem: bis zu 2.000 km/h. Das ist schneller als ein Düsenflugzeug."},
-    {"id": "pluto-1", "title": "Ein Zwergplanet", "text": "Pluto galt lange als neunter Planet. Seit 2006 zählt er zu den Zwergplaneten. Er ist sogar kleiner als unser Mond."},
-    {"id": "pluto-2", "title": "Ein Herz auf Pluto", "text": "2015 flog die Raumsonde New Horizons an Pluto vorbei. Sie fotografierte dort eine riesige helle Fläche in Herzform."},
-    {"id": "komet-1", "title": "Schmutzige Schneebälle", "text": "Kometen sind wie schmutzige Schneebälle aus Eis, Staub und Gestein. Kommen sie der Sonne nahe, verdampft Eis, und es entsteht ein leuchtender Schweif."},
-    {"id": "komet-2", "title": "Der Schweif", "text": "Der Schweif eines Kometen zeigt immer von der Sonne weg. Der berühmte Halleysche Komet kommt etwa alle 76 Jahre vorbei – das nächste Mal im Jahr 2061."},
-    {"id": "iss-1", "title": "Die Raumstation ISS", "text": "Die Internationale Raumstation ISS fliegt etwa 400 km über der Erde. Sie umrundet die Erde in rund 90 Minuten. Die Crew sieht deshalb bis zu 16 Sonnenaufgänge am Tag."},
-    {"id": "iss-2", "title": "Schweben im All", "text": "Auch Deutsche waren schon auf der ISS, zum Beispiel Alexander Gerst und Matthias Maurer. Dort schwebt alles – sogar Wassertropfen werden zu kleinen Kugeln."},
-    {"id": "massstab", "title": "Riesige Abstände", "text": "Hier in der Sternenwelt liegen die Planeten nah beieinander. In Wirklichkeit sind die Abstände riesig: Wäre die Sonne ein Fußball, wäre die Erde so klein wie ein Pfefferkorn und etwa 24 Meter entfernt."},
-    {"id": "grosser-wagen", "title": "Der Große Wagen", "text": "Der Große Wagen besteht aus sieben hellen Sternen und ist bei uns das ganze Jahr zu sehen. Verlängert man seine hintere Kante etwa fünfmal, findet man den Polarstern. Er zeigt nach Norden."},
-    {"id": "kassiopeia", "title": "Kassiopeia", "text": "Das Sternbild Kassiopeia sieht aus wie ein großes W. Es ist nach einer Königin aus einer griechischen Sage benannt. Insgesamt gibt es 88 offizielle Sternbilder."},
-    {"id": "orion", "title": "Orion, der Himmelsjäger", "text": "Orion ist ein Jäger aus einer griechischen Sage. Im Winter sieht man bei uns gut seine drei Gürtelsterne, die genau in einer Reihe stehen."},
-    {"id": "schwerkraft", "title": "Springen auf dem Mond", "text": "Auf dem Mond zieht die Schwerkraft nur etwa ein Sechstel so stark wie auf der Erde. Deshalb könntest du dort ungefähr sechsmal so hoch springen. Auf dem großen Jupiter wäre es viel schwerer."},
-    {"id": "planeten-reihe", "title": "Die Reihenfolge der Planeten", "text": "Von der Sonne aus: Merkur, Venus, Erde, Mars, Jupiter, Saturn, Uranus, Neptun. Ein Merksatz: „Mein Vater erklärt mir jeden Sonntag unseren Nachthimmel.“"}
+    {
+      "id": "sonne-1",
+      "title": "Die Sonne ist ein Stern",
+      "text": "Die Sonne ist der Stern, der uns am nächsten ist. Sie ist eine riesige Kugel aus glühend heißem Gas. An ihrer Oberfläche ist es etwa 5.500 °C heiß."
+    },
+    {
+      "id": "sonne-2",
+      "title": "Riesengroß",
+      "text": "In die Sonne würden über eine Million Erden hineinpassen. Ihr Durchmesser ist etwa 109-mal so groß wie der der Erde."
+    },
+    {
+      "id": "sonne-3",
+      "title": "Licht braucht Zeit",
+      "text": "Das Sonnenlicht braucht etwa 8 Minuten bis zur Erde. Du siehst die Sonne also so, wie sie vor 8 Minuten war. Schau nie direkt in die Sonne – das schadet deinen Augen!"
+    },
+    {
+      "id": "merkur-1",
+      "title": "Der Kleinste",
+      "text": "Merkur ist der kleinste Planet und der Sonne am nächsten. Einmal um die Sonne – also ein Merkur-Jahr – dauert nur 88 Tage."
+    },
+    {
+      "id": "merkur-2",
+      "title": "Heiß und eiskalt",
+      "text": "Merkur hat fast keine Lufthülle, die Wärme festhalten könnte. Am Tag wird es über 400 °C heiß, in der Nacht kälter als −170 °C."
+    },
+    {
+      "id": "venus-1",
+      "title": "Der heißeste Planet",
+      "text": "Venus ist der heißeste Planet, obwohl Merkur näher an der Sonne ist. Ihre dicke Lufthülle hält die Wärme fest wie eine Decke: Es sind fast 470 °C!"
+    },
+    {
+      "id": "venus-2",
+      "title": "Verkehrt herum",
+      "text": "Auf der Venus geht die Sonne im Westen auf und im Osten unter. Die Venus dreht sich nämlich andersherum als fast alle anderen Planeten."
+    },
+    {
+      "id": "venus-3",
+      "title": "Morgenstern und Abendstern",
+      "text": "Nach dem Mond ist die Venus das hellste Objekt am Nachthimmel. Man nennt sie Morgenstern oder Abendstern – dabei ist sie gar kein Stern, sondern ein Planet."
+    },
+    {
+      "id": "erde-1",
+      "title": "Unser blauer Planet",
+      "text": "Die Erde ist der einzige Planet, von dem wir wissen, dass es dort Leben gibt. Etwa 71 von 100 Teilen ihrer Oberfläche sind mit Wasser bedeckt."
+    },
+    {
+      "id": "erde-2",
+      "title": "Warum es Schaltjahre gibt",
+      "text": "Die Erde braucht für eine Runde um die Sonne etwa 365 Tage und 6 Stunden. Die 6 Stunden sammeln sich an: Deshalb gibt es alle vier Jahre einen Schalttag, den 29. Februar."
+    },
+    {
+      "id": "erde-3",
+      "title": "Jahreszeiten",
+      "text": "Die Erdachse ist schräg. Darum bekommt mal die Nordhälfte, mal die Südhälfte der Erde mehr Sonnenlicht ab. So entstehen Sommer und Winter."
+    },
+    {
+      "id": "mond-1",
+      "title": "Der Mond leuchtet nicht",
+      "text": "Der Mond leuchtet nicht selbst. Er wird von der Sonne angestrahlt, und wir sehen das Licht, das er zurückwirft. Er ist etwa 384.000 km von der Erde entfernt."
+    },
+    {
+      "id": "mond-2",
+      "title": "Menschen auf dem Mond",
+      "text": "Im Juli 1969 betrat Neil Armstrong als erster Mensch den Mond. Bis 1972 waren insgesamt zwölf Menschen dort. Ihre Fußspuren sind noch da, weil es auf dem Mond keinen Wind gibt."
+    },
+    {
+      "id": "mond-3",
+      "title": "Immer dieselbe Seite",
+      "text": "Der Mond zeigt uns immer dieselbe Seite. Er dreht sich genau einmal um sich selbst, während er einmal um die Erde kreist."
+    },
+    {
+      "id": "mond-4",
+      "title": "Mondphasen",
+      "text": "Etwa alle 29½ Tage wandert der Mond von Neumond über Vollmond wieder zum Neumond. Je nachdem, wie viel wir von seiner beleuchteten Seite sehen, ist er eine Sichel, ein Halbmond oder voll."
+    },
+    {
+      "id": "mars-1",
+      "title": "Der Rote Planet",
+      "text": "Mars heißt auch der Rote Planet. Sein Staub enthält viel Eisenoxid – das ist eine Art Rost. Mars hat zwei kleine Monde: Phobos und Deimos."
+    },
+    {
+      "id": "mars-2",
+      "title": "Der höchste Vulkan",
+      "text": "Auf dem Mars steht der höchste Vulkan im ganzen Sonnensystem: Olympus Mons. Er ist mehr als doppelt so hoch wie der Mount Everest, der höchste Berg der Erde."
+    },
+    {
+      "id": "mars-3",
+      "title": "Roboter auf dem Mars",
+      "text": "Auf dem Mars fahren Roboter-Fahrzeuge, sogenannte Rover. Sie untersuchen Gestein und suchen nach Spuren von Wasser und früherem Leben."
+    },
+    {
+      "id": "jupiter-1",
+      "title": "Der Riese",
+      "text": "Jupiter ist der größte Planet im Sonnensystem. Mehr als 1.300 Erden würden in ihn hineinpassen."
+    },
+    {
+      "id": "jupiter-2",
+      "title": "Der Große Rote Fleck",
+      "text": "Der Große Rote Fleck auf Jupiter ist ein riesiger Wirbelsturm. Er ist größer als die ganze Erde und tobt schon seit über 150 Jahren."
+    },
+    {
+      "id": "jupiter-3",
+      "title": "Ein Gasriese",
+      "text": "Jupiter hat keinen festen Boden, auf dem man landen könnte – er besteht vor allem aus Gas. Er hat sehr viele Monde. Einer davon, Ganymed, ist sogar größer als der Planet Merkur."
+    },
+    {
+      "id": "saturn-1",
+      "title": "Die Ringe",
+      "text": "Saturns Ringe bestehen aus Milliarden Brocken aus Eis und Gestein. Manche sind so klein wie Sandkörner, andere so groß wie ein Haus."
+    },
+    {
+      "id": "saturn-2",
+      "title": "Saturn würde schwimmen",
+      "text": "Saturn ist für seine Größe sehr leicht. Gäbe es eine riesige Badewanne, würde er darin schwimmen – er hat eine geringere Dichte als Wasser."
+    },
+    {
+      "id": "saturn-3",
+      "title": "Mond mit Seen",
+      "text": "Saturn hat mehr als 140 bekannte Monde. Sein größter Mond Titan hat eine dicke Lufthülle und Seen – aber nicht aus Wasser, sondern aus flüssigem Methan."
+    },
+    {
+      "id": "uranus-1",
+      "title": "Der Planet auf der Seite",
+      "text": "Uranus liegt fast auf der Seite und rollt sozusagen um die Sonne. Wahrscheinlich hat ihn vor sehr langer Zeit ein gewaltiger Zusammenstoß umgekippt."
+    },
+    {
+      "id": "uranus-2",
+      "title": "Mit dem Fernrohr entdeckt",
+      "text": "Uranus wurde 1781 von Wilhelm Herschel entdeckt – als erster Planet mit einem Fernrohr. Seine blaugrüne Farbe kommt vom Gas Methan."
+    },
+    {
+      "id": "neptun-1",
+      "title": "Ganz weit draußen",
+      "text": "Neptun ist der Planet, der am weitesten von der Sonne entfernt ist. Für eine Runde um die Sonne braucht er etwa 165 Erdenjahre."
+    },
+    {
+      "id": "neptun-2",
+      "title": "Stürmischer Neptun",
+      "text": "Auf Neptun wehen die stärksten Winde im Sonnensystem: bis zu 2.000 km/h. Das ist schneller als ein Düsenflugzeug."
+    },
+    {
+      "id": "pluto-1",
+      "title": "Ein Zwergplanet",
+      "text": "Pluto galt lange als neunter Planet. Seit 2006 zählt er zu den Zwergplaneten. Er ist sogar kleiner als unser Mond."
+    },
+    {
+      "id": "pluto-2",
+      "title": "Ein Herz auf Pluto",
+      "text": "2015 flog die Raumsonde New Horizons an Pluto vorbei. Sie fotografierte dort eine riesige helle Fläche in Herzform."
+    },
+    {
+      "id": "komet-1",
+      "title": "Schmutzige Schneebälle",
+      "text": "Kometen sind wie schmutzige Schneebälle aus Eis, Staub und Gestein. Kommen sie der Sonne nahe, verdampft Eis, und es entsteht ein leuchtender Schweif."
+    },
+    {
+      "id": "komet-2",
+      "title": "Der Schweif",
+      "text": "Der Schweif eines Kometen zeigt immer von der Sonne weg. Der berühmte Halleysche Komet kommt etwa alle 76 Jahre vorbei – das nächste Mal im Jahr 2061."
+    },
+    {
+      "id": "iss-1",
+      "title": "Die Raumstation ISS",
+      "text": "Die Internationale Raumstation ISS fliegt etwa 400 km über der Erde. Sie umrundet die Erde in rund 90 Minuten. Die Crew sieht deshalb bis zu 16 Sonnenaufgänge am Tag."
+    },
+    {
+      "id": "iss-2",
+      "title": "Schweben im All",
+      "text": "Auch Deutsche waren schon auf der ISS, zum Beispiel Alexander Gerst und Matthias Maurer. Dort schwebt alles – sogar Wassertropfen werden zu kleinen Kugeln."
+    },
+    {
+      "id": "massstab",
+      "title": "Riesige Abstände",
+      "text": "Hier in der Sternenwelt liegen die Planeten nah beieinander. In Wirklichkeit sind die Abstände riesig: Wäre die Sonne ein Fußball, wäre die Erde so klein wie ein Pfefferkorn und etwa 24 Meter entfernt."
+    },
+    {
+      "id": "grosser-wagen",
+      "title": "Der Große Wagen",
+      "text": "Der Große Wagen besteht aus sieben hellen Sternen und ist bei uns das ganze Jahr zu sehen. Verlängert man seine hintere Kante etwa fünfmal, findet man den Polarstern. Er zeigt nach Norden."
+    },
+    {
+      "id": "kassiopeia",
+      "title": "Kassiopeia",
+      "text": "Das Sternbild Kassiopeia sieht aus wie ein großes W. Es ist nach einer Königin aus einer griechischen Sage benannt. Insgesamt gibt es 88 offizielle Sternbilder."
+    },
+    {
+      "id": "orion",
+      "title": "Orion, der Himmelsjäger",
+      "text": "Orion ist ein Jäger aus einer griechischen Sage. Im Winter sieht man bei uns gut seine drei Gürtelsterne, die genau in einer Reihe stehen."
+    },
+    {
+      "id": "schwerkraft",
+      "title": "Springen auf dem Mond",
+      "text": "Auf dem Mond zieht die Schwerkraft nur etwa ein Sechstel so stark wie auf der Erde. Deshalb könntest du dort ungefähr sechsmal so hoch springen. Auf dem großen Jupiter wäre es viel schwerer."
+    },
+    {
+      "id": "planeten-reihe",
+      "title": "Die Reihenfolge der Planeten",
+      "text": "Von der Sonne aus: Merkur, Venus, Erde, Mars, Jupiter, Saturn, Uranus, Neptun. Ein Merksatz: „Mein Vater erklärt mir jeden Sonntag unseren Nachthimmel.“"
+    }
   ],
   "questions": [
-    {"id": "q-sonne-1", "card": "sonne-1", "level": 1, "type": "mc", "q": "Was ist die Sonne?", "options": ["Ein Planet", "Ein Stern", "Ein Mond"], "answer": 1, "explain": "Die Sonne ist ein Stern – eine riesige Kugel aus heißem Gas, die selbst leuchtet."},
-    {"id": "q-sonne-2", "card": "sonne-1", "level": 2, "type": "mc", "q": "Wie heiß ist es ungefähr an der Oberfläche der Sonne?", "options": ["Etwa 100 °C", "Etwa 5.500 °C", "Etwa 1 Million °C"], "answer": 1, "explain": "An der Oberfläche sind es etwa 5.500 °C. Im Inneren ist es noch viel heißer."},
-    {"id": "q-sonne-3", "card": "sonne-2", "level": 1, "type": "tf", "q": "In die Sonne würden über eine Million Erden passen.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Die Sonne ist so riesig, dass über eine Million Erden hineinpassen würden."},
-    {"id": "q-sonne-4", "card": "sonne-3", "level": 1, "type": "mc", "q": "Wie lange braucht das Sonnenlicht bis zur Erde?", "options": ["Etwa 8 Sekunden", "Etwa 8 Minuten", "Etwa 8 Tage"], "answer": 1, "explain": "Etwa 8 Minuten. Licht ist unglaublich schnell, aber die Sonne ist sehr weit weg."},
-    {"id": "q-sonne-5", "card": "sonne-3", "level": 1, "type": "tf", "q": "Mit einer Sonnenbrille darf man direkt in die Sonne schauen.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Auch mit Sonnenbrille schadet das den Augen. Man braucht eine spezielle Sonnenfinsternis-Brille."},
-    {"id": "q-merkur-1", "card": "merkur-1", "level": 1, "type": "mc", "q": "Welcher Planet ist der Sonne am nächsten?", "options": ["Venus", "Mars", "Merkur"], "answer": 2, "explain": "Merkur ist der Sonne am nächsten – und außerdem der kleinste Planet."},
-    {"id": "q-merkur-2", "card": "merkur-1", "level": 2, "type": "mc", "q": "Wie lange dauert ein Jahr auf dem Merkur?", "options": ["88 Tage", "365 Tage", "12 Jahre"], "answer": 0, "explain": "Nur 88 Tage! Merkur ist nah an der Sonne und hat einen kurzen Weg."},
-    {"id": "q-merkur-3", "card": "merkur-2", "level": 1, "type": "tf", "q": "Auf dem Merkur ist es nachts eiskalt.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Ohne Lufthülle geht die Wärme verloren: Nachts wird es kälter als −170 °C."},
-    {"id": "q-venus-1", "card": "venus-1", "level": 1, "type": "mc", "q": "Welcher Planet ist der heißeste?", "options": ["Merkur", "Venus", "Mars"], "answer": 1, "explain": "Venus! Ihre dicke Lufthülle hält die Wärme fest – fast 470 °C."},
-    {"id": "q-venus-2", "card": "venus-1", "level": 2, "type": "mc", "q": "Warum ist die Venus heißer als Merkur?", "options": ["Sie ist näher an der Sonne", "Ihre dicke Lufthülle hält die Wärme fest", "Sie hat Vulkane aus Lava"], "answer": 1, "explain": "Die dicke Lufthülle wirkt wie eine Decke und lässt die Wärme nicht entweichen."},
-    {"id": "q-venus-3", "card": "venus-2", "level": 1, "type": "tf", "q": "Auf der Venus geht die Sonne im Westen auf.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Die Venus dreht sich andersherum als die Erde."},
-    {"id": "q-venus-4", "card": "venus-3", "level": 1, "type": "mc", "q": "Wie nennt man die Venus auch?", "options": ["Polarstern", "Morgenstern", "Sternschnuppe"], "answer": 1, "explain": "Morgenstern oder Abendstern – obwohl sie ein Planet ist und kein Stern."},
-    {"id": "q-erde-1", "card": "erde-1", "level": 1, "type": "mc", "q": "Wie viel der Erdoberfläche ist ungefähr mit Wasser bedeckt?", "options": ["Etwa ein Viertel", "Etwa die Hälfte", "Etwa 71 von 100 Teilen"], "answer": 2, "explain": "Etwa 71 von 100 Teilen – deshalb sieht die Erde aus dem All so blau aus."},
-    {"id": "q-erde-2", "card": "erde-2", "level": 1, "type": "mc", "q": "Welcher Tag ist der Schalttag?", "options": ["Der 29. Februar", "Der 31. April", "Der 1. Januar"], "answer": 0, "explain": "Der 29. Februar. Es gibt ihn alle vier Jahre, weil ein Erdjahr etwa 365 Tage und 6 Stunden dauert."},
-    {"id": "q-erde-3", "card": "erde-2", "level": 2, "type": "mc", "q": "Warum gibt es Schaltjahre?", "options": ["Weil die Erde jedes Jahr langsamer wird", "Weil ein Erdjahr etwa 365 Tage und 6 Stunden dauert", "Weil der Mond es so will"], "answer": 1, "explain": "Viermal 6 Stunden ergeben einen ganzen Tag – der kommt alle vier Jahre dazu."},
-    {"id": "q-erde-4", "card": "erde-3", "level": 1, "type": "mc", "q": "Wodurch entstehen die Jahreszeiten?", "options": ["Durch die schräge Erdachse", "Durch den Mond", "Durch Wolken"], "answer": 0, "explain": "Durch die schräge Erdachse bekommt mal die Nordhälfte, mal die Südhälfte mehr Sonnenlicht."},
-    {"id": "q-erde-5", "card": "erde-3", "level": 2, "type": "tf", "q": "Wenn bei uns Sommer ist, ist in Australien Winter.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Australien liegt auf der Südhälfte der Erde. Dort sind die Jahreszeiten genau andersherum."},
-    {"id": "q-mond-1", "card": "mond-1", "level": 1, "type": "tf", "q": "Der Mond leuchtet selbst, wie eine Lampe.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Der Mond wird von der Sonne angestrahlt. Wir sehen das zurückgeworfene Licht."},
-    {"id": "q-mond-2", "card": "mond-2", "level": 1, "type": "mc", "q": "Wer betrat als erster Mensch den Mond?", "options": ["Alexander Gerst", "Neil Armstrong", "Galileo Galilei"], "answer": 1, "explain": "Neil Armstrong, im Juli 1969."},
-    {"id": "q-mond-3", "card": "mond-2", "level": 2, "type": "mc", "q": "Warum sind die Fußspuren auf dem Mond noch da?", "options": ["Weil dort kein Wind weht", "Weil sie festgeklebt wurden", "Weil es dort immer regnet"], "answer": 0, "explain": "Auf dem Mond gibt es keine Luft und keinen Wind, der die Spuren verwischen könnte."},
-    {"id": "q-mond-4", "card": "mond-3", "level": 1, "type": "tf", "q": "Wir sehen vom Mond immer dieselbe Seite.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Er dreht sich genau einmal um sich selbst, während er einmal um die Erde kreist."},
-    {"id": "q-mond-5", "card": "mond-4", "level": 1, "type": "order", "q": "Bring die Mondphasen in die richtige Reihenfolge – beginne mit Neumond.", "options": ["Neumond", "Zunehmender Halbmond", "Vollmond", "Abnehmender Halbmond"], "explain": "Vom Neumond nimmt der Mond zu bis zum Vollmond und danach wieder ab."},
-    {"id": "q-mond-6", "card": "mond-4", "level": 2, "type": "mc", "q": "Wie lange dauert es ungefähr von Vollmond zu Vollmond?", "options": ["Etwa 1 Woche", "Etwa 29½ Tage", "Etwa 1 Jahr"], "answer": 1, "explain": "Etwa 29½ Tage – ungefähr ein Monat. Das Wort „Monat“ kommt sogar von „Mond“."},
-    {"id": "q-mars-1", "card": "mars-1", "level": 1, "type": "mc", "q": "Warum ist der Mars rot?", "options": ["Er ist sehr heiß", "Sein Staub enthält eine Art Rost", "Er ist mit Erdbeeren bedeckt"], "answer": 1, "explain": "Der Marsstaub enthält viel Eisenoxid – das ist eine Art Rost."},
-    {"id": "q-mars-2", "card": "mars-1", "level": 2, "type": "mc", "q": "Wie viele Monde hat der Mars?", "options": ["Keinen", "Zwei", "Zwanzig"], "answer": 1, "explain": "Zwei kleine Monde: Phobos und Deimos."},
-    {"id": "q-mars-3", "card": "mars-2", "level": 1, "type": "tf", "q": "Der höchste Vulkan im Sonnensystem steht auf dem Mars.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Olympus Mons ist mehr als doppelt so hoch wie der Mount Everest."},
-    {"id": "q-mars-4", "card": "mars-3", "level": 1, "type": "mc", "q": "Wie heißen die Roboter-Fahrzeuge auf dem Mars?", "options": ["Rover", "Drohnen", "Raketen"], "answer": 0, "explain": "Rover. Sie untersuchen das Gestein und suchen nach Spuren von Wasser."},
-    {"id": "q-jupiter-1", "card": "jupiter-1", "level": 1, "type": "mc", "q": "Welcher Planet ist der größte?", "options": ["Saturn", "Erde", "Jupiter"], "answer": 2, "explain": "Jupiter – mehr als 1.300 Erden würden hineinpassen."},
-    {"id": "q-jupiter-2", "card": "jupiter-2", "level": 1, "type": "mc", "q": "Was ist der Große Rote Fleck?", "options": ["Ein Wirbelsturm", "Ein Meer", "Ein Vulkan"], "answer": 0, "explain": "Ein riesiger Wirbelsturm – größer als die ganze Erde."},
-    {"id": "q-jupiter-3", "card": "jupiter-3", "level": 1, "type": "tf", "q": "Auf Jupiter könnte man mit einem Raumschiff auf festem Boden landen.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Jupiter ist ein Gasriese und hat keinen festen Boden."},
-    {"id": "q-jupiter-4", "card": "jupiter-3", "level": 2, "type": "mc", "q": "Welcher Jupitermond ist größer als der Planet Merkur?", "options": ["Ganymed", "Phobos", "Titan"], "answer": 0, "explain": "Ganymed. Er ist der größte Mond im ganzen Sonnensystem."},
-    {"id": "q-saturn-1", "card": "saturn-1", "level": 1, "type": "mc", "q": "Woraus bestehen Saturns Ringe?", "options": ["Aus Brocken aus Eis und Gestein", "Aus Gold", "Aus Wolken"], "answer": 0, "explain": "Aus Milliarden Brocken aus Eis und Gestein – von Sandkorn- bis Hausgröße."},
-    {"id": "q-saturn-2", "card": "saturn-2", "level": 1, "type": "tf", "q": "Saturn würde in einer riesigen Badewanne schwimmen.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Saturn hat eine geringere Dichte als Wasser."},
-    {"id": "q-saturn-3", "card": "saturn-3", "level": 2, "type": "mc", "q": "Woraus bestehen die Seen auf dem Saturnmond Titan?", "options": ["Aus Wasser", "Aus flüssigem Methan", "Aus Lava"], "answer": 1, "explain": "Aus flüssigem Methan – auf Titan ist es viel zu kalt für flüssiges Wasser."},
-    {"id": "q-uranus-1", "card": "uranus-1", "level": 1, "type": "mc", "q": "Was ist besonders an Uranus?", "options": ["Er ist rot", "Er liegt fast auf der Seite", "Er ist der größte Planet"], "answer": 1, "explain": "Uranus liegt fast auf der Seite und rollt sozusagen um die Sonne."},
-    {"id": "q-uranus-2", "card": "uranus-2", "level": 2, "type": "mc", "q": "Womit wurde Uranus 1781 entdeckt?", "options": ["Mit bloßem Auge", "Mit einem Fernrohr", "Mit einer Raumsonde"], "answer": 1, "explain": "Mit einem Fernrohr – von Wilhelm Herschel. Er war der erste Planet, der so entdeckt wurde."},
-    {"id": "q-neptun-1", "card": "neptun-1", "level": 1, "type": "mc", "q": "Welcher Planet ist am weitesten von der Sonne entfernt?", "options": ["Neptun", "Uranus", "Pluto"], "answer": 0, "explain": "Neptun. Pluto ist noch weiter weg – aber er ist ein Zwergplanet."},
-    {"id": "q-neptun-2", "card": "neptun-2", "level": 1, "type": "tf", "q": "Auf Neptun wehen die stärksten Winde im Sonnensystem.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Bis zu 2.000 km/h – schneller als ein Düsenflugzeug."},
-    {"id": "q-neptun-3", "card": "neptun-1", "level": 2, "type": "mc", "q": "Wie lange braucht Neptun für eine Runde um die Sonne?", "options": ["Etwa 1 Jahr", "Etwa 16 Jahre", "Etwa 165 Jahre"], "answer": 2, "explain": "Etwa 165 Erdenjahre. Seit seiner Entdeckung 1846 hat er erst ungefähr eine Runde geschafft."},
-    {"id": "q-pluto-1", "card": "pluto-1", "level": 1, "type": "mc", "q": "Was ist Pluto seit 2006?", "options": ["Ein Zwergplanet", "Ein Stern", "Ein Komet"], "answer": 0, "explain": "Ein Zwergplanet. Er ist sogar kleiner als unser Mond."},
-    {"id": "q-pluto-2", "card": "pluto-2", "level": 1, "type": "mc", "q": "Welche Form hat die helle Fläche auf Pluto?", "options": ["Einen Stern", "Ein Herz", "Einen Kreis"], "answer": 1, "explain": "Ein Herz! Die Raumsonde New Horizons hat es 2015 fotografiert."},
-    {"id": "q-komet-1", "card": "komet-1", "level": 1, "type": "mc", "q": "Woraus bestehen Kometen?", "options": ["Aus Eis, Staub und Gestein", "Aus Feuer", "Aus Metall"], "answer": 0, "explain": "Aus Eis, Staub und Gestein – wie schmutzige Schneebälle."},
-    {"id": "q-komet-2", "card": "komet-2", "level": 1, "type": "tf", "q": "Der Schweif eines Kometen zeigt immer von der Sonne weg.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Egal, in welche Richtung der Komet fliegt."},
-    {"id": "q-komet-3", "card": "komet-2", "level": 2, "type": "mc", "q": "Wann kommt der Halleysche Komet das nächste Mal?", "options": ["2030", "2061", "2100"], "answer": 1, "explain": "Im Jahr 2061 – er kommt etwa alle 76 Jahre vorbei."},
-    {"id": "q-iss-1", "card": "iss-1", "level": 1, "type": "mc", "q": "Wie lange braucht die ISS für eine Runde um die Erde?", "options": ["Etwa 90 Minuten", "Etwa einen Tag", "Etwa eine Woche"], "answer": 0, "explain": "Etwa 90 Minuten! Deshalb sieht die Crew bis zu 16 Sonnenaufgänge am Tag."},
-    {"id": "q-iss-2", "card": "iss-2", "level": 1, "type": "mc", "q": "Welcher Deutsche war schon auf der ISS?", "options": ["Albert Einstein", "Alexander Gerst", "Neil Armstrong"], "answer": 1, "explain": "Alexander Gerst – und auch Matthias Maurer."},
-    {"id": "q-iss-3", "card": "iss-2", "level": 2, "type": "tf", "q": "In der ISS fließt Wasser wie auf der Erde nach unten.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Dort schwebt alles, und Wassertropfen werden zu kleinen Kugeln."},
-    {"id": "q-massstab-1", "card": "massstab", "level": 1, "type": "mc", "q": "Wäre die Sonne ein Fußball – wie groß wäre dann die Erde?", "options": ["Wie ein Tennisball", "Wie ein Pfefferkorn", "Wie ein Auto"], "answer": 1, "explain": "Wie ein Pfefferkorn – und etwa 24 Meter vom Fußball entfernt!"},
-    {"id": "q-groesse-1", "card": "massstab", "level": 2, "type": "order", "q": "Ordne vom größten zum kleinsten.", "options": ["Sonne", "Jupiter", "Erde", "Mond", "Pluto"], "explain": "Die Sonne ist riesig, Jupiter ist der größte Planet, und Pluto ist sogar kleiner als unser Mond."},
-    {"id": "q-wagen-1", "card": "grosser-wagen", "level": 1, "type": "mc", "q": "Wie viele helle Sterne hat der Große Wagen?", "options": ["Drei", "Sieben", "Zwölf"], "answer": 1, "explain": "Sieben helle Sterne."},
-    {"id": "q-wagen-2", "card": "grosser-wagen", "level": 2, "type": "mc", "q": "Wohin zeigt der Polarstern?", "options": ["Nach Norden", "Nach Süden", "Zur Sonne"], "answer": 0, "explain": "Nach Norden. Früher haben Seefahrer so ihren Weg gefunden."},
-    {"id": "q-kassiopeia-1", "card": "kassiopeia", "level": 1, "type": "mc", "q": "Wie sieht das Sternbild Kassiopeia aus?", "options": ["Wie ein W", "Wie ein Kreis", "Wie ein Herz"], "answer": 0, "explain": "Wie ein großes W."},
-    {"id": "q-kassiopeia-2", "card": "kassiopeia", "level": 2, "type": "mc", "q": "Wie viele offizielle Sternbilder gibt es?", "options": ["12", "88", "1.000"], "answer": 1, "explain": "88 offizielle Sternbilder."},
-    {"id": "q-orion-1", "card": "orion", "level": 1, "type": "mc", "q": "Woran erkennt man Orion gut?", "options": ["An drei Gürtelsternen in einer Reihe", "An einem roten Ring", "An einem Schweif"], "answer": 0, "explain": "An den drei Gürtelsternen, die genau in einer Reihe stehen."},
-    {"id": "q-schwerkraft-1", "card": "schwerkraft", "level": 1, "type": "mc", "q": "Wie hoch könntest du auf dem Mond ungefähr springen?", "options": ["Genauso hoch wie auf der Erde", "Etwa halb so hoch", "Etwa sechsmal so hoch"], "answer": 2, "explain": "Etwa sechsmal so hoch – die Schwerkraft ist dort nur ein Sechstel so stark."},
-    {"id": "q-planeten-1", "card": "planeten-reihe", "level": 1, "type": "order", "q": "Bring die Planeten in die richtige Reihenfolge – beginne an der Sonne.", "options": ["Merkur", "Venus", "Erde", "Mars", "Jupiter", "Saturn", "Uranus", "Neptun"], "explain": "Merksatz: „Mein Vater erklärt mir jeden Sonntag unseren Nachthimmel.“"},
-    {"id": "q-planeten-2", "card": "planeten-reihe", "level": 2, "type": "mc", "q": "Der wievielte Planet von der Sonne aus ist die Erde?", "options": ["Der zweite", "Der dritte", "Der vierte"], "answer": 1, "explain": "Der dritte: Merkur, Venus, Erde."}
+    {
+      "id": "q-sonne-1",
+      "card": "sonne-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Was ist die Sonne?",
+      "options": [
+        "Ein Planet",
+        "Ein Stern",
+        "Ein Mond"
+      ],
+      "answer": 1,
+      "explain": "Die Sonne ist ein Stern – eine riesige Kugel aus heißem Gas, die selbst leuchtet."
+    },
+    {
+      "id": "q-sonne-2",
+      "card": "sonne-1",
+      "level": 2,
+      "type": "mc",
+      "q": "Wie heiß ist es ungefähr an der Oberfläche der Sonne?",
+      "options": [
+        "Etwa 100 °C",
+        "Etwa 5.500 °C",
+        "Etwa 1 Million °C"
+      ],
+      "answer": 1,
+      "explain": "An der Oberfläche sind es etwa 5.500 °C. Im Inneren ist es noch viel heißer."
+    },
+    {
+      "id": "q-sonne-3",
+      "card": "sonne-2",
+      "level": 1,
+      "type": "tf",
+      "q": "In die Sonne würden etwa 100 Erden hineinpassen.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Es wären sogar über eine Million Erden – so riesig ist die Sonne."
+    },
+    {
+      "id": "q-sonne-4",
+      "card": "sonne-3",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie lange braucht das Sonnenlicht bis zur Erde?",
+      "options": [
+        "Etwa 8 Sekunden",
+        "Etwa 8 Minuten",
+        "Etwa 8 Tage"
+      ],
+      "answer": 1,
+      "explain": "Etwa 8 Minuten. Licht ist unglaublich schnell, aber die Sonne ist sehr weit weg."
+    },
+    {
+      "id": "q-sonne-5",
+      "card": "sonne-3",
+      "level": 1,
+      "type": "tf",
+      "q": "Mit einer Sonnenbrille darf man direkt in die Sonne schauen.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Auch mit Sonnenbrille schadet das den Augen. Man braucht eine spezielle Sonnenfinsternis-Brille."
+    },
+    {
+      "id": "q-merkur-1",
+      "card": "merkur-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Welcher Planet ist der Sonne am nächsten?",
+      "options": [
+        "Venus",
+        "Mars",
+        "Merkur"
+      ],
+      "answer": 2,
+      "explain": "Merkur ist der Sonne am nächsten – und außerdem der kleinste Planet."
+    },
+    {
+      "id": "q-merkur-2",
+      "card": "merkur-1",
+      "level": 2,
+      "type": "mc",
+      "q": "Wie lange dauert ein Jahr auf dem Merkur?",
+      "options": [
+        "88 Tage",
+        "365 Tage",
+        "12 Jahre"
+      ],
+      "answer": 0,
+      "explain": "Nur 88 Tage! Merkur ist nah an der Sonne und hat einen kurzen Weg."
+    },
+    {
+      "id": "q-merkur-3",
+      "card": "merkur-2",
+      "level": 1,
+      "type": "tf",
+      "q": "Auf dem Merkur ist es nachts eiskalt.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 0,
+      "explain": "Stimmt! Ohne Lufthülle geht die Wärme verloren: Nachts wird es kälter als −170 °C."
+    },
+    {
+      "id": "q-venus-1",
+      "card": "venus-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Welcher Planet ist der heißeste?",
+      "options": [
+        "Merkur",
+        "Venus",
+        "Mars"
+      ],
+      "answer": 1,
+      "explain": "Venus! Ihre dicke Lufthülle hält die Wärme fest – fast 470 °C."
+    },
+    {
+      "id": "q-venus-2",
+      "card": "venus-1",
+      "level": 2,
+      "type": "mc",
+      "q": "Warum ist die Venus heißer als Merkur?",
+      "options": [
+        "Sie ist näher an der Sonne",
+        "Ihre dicke Lufthülle hält die Wärme fest",
+        "Sie hat Vulkane aus Lava"
+      ],
+      "answer": 1,
+      "explain": "Die dicke Lufthülle wirkt wie eine Decke und lässt die Wärme nicht entweichen."
+    },
+    {
+      "id": "q-venus-3",
+      "card": "venus-2",
+      "level": 1,
+      "type": "tf",
+      "q": "Auf der Venus geht die Sonne im Osten auf – genau wie bei uns.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Die Venus dreht sich andersherum. Dort geht die Sonne im Westen auf."
+    },
+    {
+      "id": "q-venus-4",
+      "card": "venus-3",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie nennt man die Venus auch?",
+      "options": [
+        "Polarstern",
+        "Morgenstern",
+        "Sternschnuppe"
+      ],
+      "answer": 1,
+      "explain": "Morgenstern oder Abendstern – obwohl sie ein Planet ist und kein Stern."
+    },
+    {
+      "id": "q-erde-1",
+      "card": "erde-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie viel der Erdoberfläche ist ungefähr mit Wasser bedeckt?",
+      "options": [
+        "Etwa ein Viertel",
+        "Etwa die Hälfte",
+        "Etwa 71 von 100 Teilen"
+      ],
+      "answer": 2,
+      "explain": "Etwa 71 von 100 Teilen – deshalb sieht die Erde aus dem All so blau aus."
+    },
+    {
+      "id": "q-erde-2",
+      "card": "erde-2",
+      "level": 1,
+      "type": "mc",
+      "q": "Welcher Tag ist der Schalttag?",
+      "options": [
+        "Der 29. Februar",
+        "Der 31. April",
+        "Der 1. Januar"
+      ],
+      "answer": 0,
+      "explain": "Der 29. Februar. Es gibt ihn alle vier Jahre, weil ein Erdjahr etwa 365 Tage und 6 Stunden dauert."
+    },
+    {
+      "id": "q-erde-3",
+      "card": "erde-2",
+      "level": 2,
+      "type": "mc",
+      "q": "Warum gibt es Schaltjahre?",
+      "options": [
+        "Weil die Erde jedes Jahr langsamer wird",
+        "Weil ein Erdjahr etwa 365 Tage und 6 Stunden dauert",
+        "Weil der Mond es so will"
+      ],
+      "answer": 1,
+      "explain": "Viermal 6 Stunden ergeben einen ganzen Tag – der kommt alle vier Jahre dazu."
+    },
+    {
+      "id": "q-erde-4",
+      "card": "erde-3",
+      "level": 1,
+      "type": "mc",
+      "q": "Wodurch entstehen die Jahreszeiten?",
+      "options": [
+        "Durch die schräge Erdachse",
+        "Durch den Mond",
+        "Durch Wolken"
+      ],
+      "answer": 0,
+      "explain": "Durch die schräge Erdachse bekommt mal die Nordhälfte, mal die Südhälfte mehr Sonnenlicht."
+    },
+    {
+      "id": "q-erde-5",
+      "card": "erde-3",
+      "level": 2,
+      "type": "tf",
+      "q": "Wenn bei uns Sommer ist, ist in Australien Winter.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 0,
+      "explain": "Stimmt! Australien liegt auf der Südhälfte der Erde. Dort sind die Jahreszeiten genau andersherum."
+    },
+    {
+      "id": "q-mond-1",
+      "card": "mond-1",
+      "level": 1,
+      "type": "tf",
+      "q": "Der Mond leuchtet selbst, wie eine Lampe.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Der Mond wird von der Sonne angestrahlt. Wir sehen das zurückgeworfene Licht."
+    },
+    {
+      "id": "q-mond-2",
+      "card": "mond-2",
+      "level": 1,
+      "type": "mc",
+      "q": "Wer betrat als erster Mensch den Mond?",
+      "options": [
+        "Alexander Gerst",
+        "Neil Armstrong",
+        "Galileo Galilei"
+      ],
+      "answer": 1,
+      "explain": "Neil Armstrong, im Juli 1969."
+    },
+    {
+      "id": "q-mond-3",
+      "card": "mond-2",
+      "level": 2,
+      "type": "mc",
+      "q": "Warum sind die Fußspuren auf dem Mond noch da?",
+      "options": [
+        "Weil dort kein Wind weht",
+        "Weil sie festgeklebt wurden",
+        "Weil es dort immer regnet"
+      ],
+      "answer": 0,
+      "explain": "Auf dem Mond gibt es keine Luft und keinen Wind, der die Spuren verwischen könnte."
+    },
+    {
+      "id": "q-mond-4",
+      "card": "mond-3",
+      "level": 1,
+      "type": "tf",
+      "q": "Wir sehen vom Mond immer dieselbe Seite.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 0,
+      "explain": "Stimmt! Er dreht sich genau einmal um sich selbst, während er einmal um die Erde kreist."
+    },
+    {
+      "id": "q-mond-5",
+      "card": "mond-4",
+      "level": 1,
+      "type": "order",
+      "q": "Bring die Mondphasen in die richtige Reihenfolge – beginne mit Neumond.",
+      "options": [
+        "Neumond",
+        "Zunehmender Halbmond",
+        "Vollmond",
+        "Abnehmender Halbmond"
+      ],
+      "explain": "Vom Neumond nimmt der Mond zu bis zum Vollmond und danach wieder ab."
+    },
+    {
+      "id": "q-mond-6",
+      "card": "mond-4",
+      "level": 2,
+      "type": "mc",
+      "q": "Wie lange dauert es ungefähr von Vollmond zu Vollmond?",
+      "options": [
+        "Etwa 1 Woche",
+        "Etwa 29½ Tage",
+        "Etwa 1 Jahr"
+      ],
+      "answer": 1,
+      "explain": "Etwa 29½ Tage – ungefähr ein Monat. Das Wort „Monat“ kommt sogar von „Mond“."
+    },
+    {
+      "id": "q-mars-1",
+      "card": "mars-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Warum ist der Mars rot?",
+      "options": [
+        "Er ist sehr heiß",
+        "Sein Staub enthält eine Art Rost",
+        "Er ist mit Erdbeeren bedeckt"
+      ],
+      "answer": 1,
+      "explain": "Der Marsstaub enthält viel Eisenoxid – das ist eine Art Rost."
+    },
+    {
+      "id": "q-mars-2",
+      "card": "mars-1",
+      "level": 2,
+      "type": "mc",
+      "q": "Wie viele Monde hat der Mars?",
+      "options": [
+        "Keinen",
+        "Zwei",
+        "Zwanzig"
+      ],
+      "answer": 1,
+      "explain": "Zwei kleine Monde: Phobos und Deimos."
+    },
+    {
+      "id": "q-mars-3",
+      "card": "mars-2",
+      "level": 1,
+      "type": "tf",
+      "q": "Der höchste Vulkan im Sonnensystem steht auf der Erde.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Er steht auf dem Mars: Olympus Mons ist mehr als doppelt so hoch wie der Mount Everest."
+    },
+    {
+      "id": "q-mars-4",
+      "card": "mars-3",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie heißen die Roboter-Fahrzeuge auf dem Mars?",
+      "options": [
+        "Rover",
+        "Drohnen",
+        "Raketen"
+      ],
+      "answer": 0,
+      "explain": "Rover. Sie untersuchen das Gestein und suchen nach Spuren von Wasser."
+    },
+    {
+      "id": "q-jupiter-1",
+      "card": "jupiter-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Welcher Planet ist der größte?",
+      "options": [
+        "Saturn",
+        "Erde",
+        "Jupiter"
+      ],
+      "answer": 2,
+      "explain": "Jupiter – mehr als 1.300 Erden würden hineinpassen."
+    },
+    {
+      "id": "q-jupiter-2",
+      "card": "jupiter-2",
+      "level": 1,
+      "type": "mc",
+      "q": "Was ist der Große Rote Fleck?",
+      "options": [
+        "Ein Wirbelsturm",
+        "Ein Meer",
+        "Ein Vulkan"
+      ],
+      "answer": 0,
+      "explain": "Ein riesiger Wirbelsturm – größer als die ganze Erde."
+    },
+    {
+      "id": "q-jupiter-3",
+      "card": "jupiter-3",
+      "level": 1,
+      "type": "tf",
+      "q": "Auf Jupiter könnte man mit einem Raumschiff auf festem Boden landen.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Jupiter ist ein Gasriese und hat keinen festen Boden."
+    },
+    {
+      "id": "q-jupiter-4",
+      "card": "jupiter-3",
+      "level": 2,
+      "type": "mc",
+      "q": "Welcher Jupitermond ist größer als der Planet Merkur?",
+      "options": [
+        "Ganymed",
+        "Phobos",
+        "Titan"
+      ],
+      "answer": 0,
+      "explain": "Ganymed. Er ist der größte Mond im ganzen Sonnensystem."
+    },
+    {
+      "id": "q-saturn-1",
+      "card": "saturn-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Woraus bestehen Saturns Ringe?",
+      "options": [
+        "Aus Brocken aus Eis und Gestein",
+        "Aus Gold",
+        "Aus Wolken"
+      ],
+      "answer": 0,
+      "explain": "Aus Milliarden Brocken aus Eis und Gestein – von Sandkorn- bis Hausgröße."
+    },
+    {
+      "id": "q-saturn-2",
+      "card": "saturn-2",
+      "level": 1,
+      "type": "tf",
+      "q": "Saturn würde in einer riesigen Badewanne schwimmen.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 0,
+      "explain": "Stimmt! Saturn hat eine geringere Dichte als Wasser."
+    },
+    {
+      "id": "q-saturn-3",
+      "card": "saturn-3",
+      "level": 2,
+      "type": "mc",
+      "q": "Woraus bestehen die Seen auf dem Saturnmond Titan?",
+      "options": [
+        "Aus Wasser",
+        "Aus flüssigem Methan",
+        "Aus Lava"
+      ],
+      "answer": 1,
+      "explain": "Aus flüssigem Methan – auf Titan ist es viel zu kalt für flüssiges Wasser."
+    },
+    {
+      "id": "q-uranus-1",
+      "card": "uranus-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Was ist besonders an Uranus?",
+      "options": [
+        "Er ist rot",
+        "Er liegt fast auf der Seite",
+        "Er ist der größte Planet"
+      ],
+      "answer": 1,
+      "explain": "Uranus liegt fast auf der Seite und rollt sozusagen um die Sonne."
+    },
+    {
+      "id": "q-uranus-2",
+      "card": "uranus-2",
+      "level": 2,
+      "type": "mc",
+      "q": "Womit wurde Uranus 1781 entdeckt?",
+      "options": [
+        "Mit bloßem Auge",
+        "Mit einem Fernrohr",
+        "Mit einer Raumsonde"
+      ],
+      "answer": 1,
+      "explain": "Mit einem Fernrohr – von Wilhelm Herschel. Er war der erste Planet, der so entdeckt wurde."
+    },
+    {
+      "id": "q-neptun-1",
+      "card": "neptun-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Welcher Planet ist am weitesten von der Sonne entfernt?",
+      "options": [
+        "Neptun",
+        "Uranus",
+        "Pluto"
+      ],
+      "answer": 0,
+      "explain": "Neptun. Pluto ist noch weiter weg – aber er ist ein Zwergplanet."
+    },
+    {
+      "id": "q-neptun-2",
+      "card": "neptun-2",
+      "level": 1,
+      "type": "tf",
+      "q": "Auf Neptun wehen die stärksten Winde im Sonnensystem.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 0,
+      "explain": "Stimmt! Bis zu 2.000 km/h – schneller als ein Düsenflugzeug."
+    },
+    {
+      "id": "q-neptun-3",
+      "card": "neptun-1",
+      "level": 2,
+      "type": "mc",
+      "q": "Wie lange braucht Neptun für eine Runde um die Sonne?",
+      "options": [
+        "Etwa 1 Jahr",
+        "Etwa 16 Jahre",
+        "Etwa 165 Jahre"
+      ],
+      "answer": 2,
+      "explain": "Etwa 165 Erdenjahre. Seit seiner Entdeckung 1846 hat er erst ungefähr eine Runde geschafft."
+    },
+    {
+      "id": "q-pluto-1",
+      "card": "pluto-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Was ist Pluto seit 2006?",
+      "options": [
+        "Ein Zwergplanet",
+        "Ein Stern",
+        "Ein Komet"
+      ],
+      "answer": 0,
+      "explain": "Ein Zwergplanet. Er ist sogar kleiner als unser Mond."
+    },
+    {
+      "id": "q-pluto-2",
+      "card": "pluto-2",
+      "level": 1,
+      "type": "mc",
+      "q": "Welche Form hat die helle Fläche auf Pluto?",
+      "options": [
+        "Einen Stern",
+        "Ein Herz",
+        "Einen Kreis"
+      ],
+      "answer": 1,
+      "explain": "Ein Herz! Die Raumsonde New Horizons hat es 2015 fotografiert."
+    },
+    {
+      "id": "q-komet-1",
+      "card": "komet-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Woraus bestehen Kometen?",
+      "options": [
+        "Aus Eis, Staub und Gestein",
+        "Aus Feuer",
+        "Aus Metall"
+      ],
+      "answer": 0,
+      "explain": "Aus Eis, Staub und Gestein – wie schmutzige Schneebälle."
+    },
+    {
+      "id": "q-komet-2",
+      "card": "komet-2",
+      "level": 1,
+      "type": "tf",
+      "q": "Der Schweif eines Kometen zeigt immer in die Richtung, in die er fliegt.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Der Schweif zeigt immer von der Sonne weg – egal, wohin der Komet fliegt."
+    },
+    {
+      "id": "q-komet-3",
+      "card": "komet-2",
+      "level": 2,
+      "type": "mc",
+      "q": "Wann kommt der Halleysche Komet das nächste Mal?",
+      "options": [
+        "2030",
+        "2061",
+        "2100"
+      ],
+      "answer": 1,
+      "explain": "Im Jahr 2061 – er kommt etwa alle 76 Jahre vorbei."
+    },
+    {
+      "id": "q-iss-1",
+      "card": "iss-1",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie lange braucht die ISS für eine Runde um die Erde?",
+      "options": [
+        "Etwa 90 Minuten",
+        "Etwa einen Tag",
+        "Etwa eine Woche"
+      ],
+      "answer": 0,
+      "explain": "Etwa 90 Minuten! Deshalb sieht die Crew bis zu 16 Sonnenaufgänge am Tag."
+    },
+    {
+      "id": "q-iss-2",
+      "card": "iss-2",
+      "level": 1,
+      "type": "mc",
+      "q": "Welcher Deutsche war schon auf der ISS?",
+      "options": [
+        "Albert Einstein",
+        "Alexander Gerst",
+        "Neil Armstrong"
+      ],
+      "answer": 1,
+      "explain": "Alexander Gerst – und auch Matthias Maurer."
+    },
+    {
+      "id": "q-iss-3",
+      "card": "iss-2",
+      "level": 2,
+      "type": "tf",
+      "q": "In der ISS fließt Wasser wie auf der Erde nach unten.",
+      "options": [
+        "Stimmt",
+        "Stimmt nicht"
+      ],
+      "answer": 1,
+      "explain": "Stimmt nicht! Dort schwebt alles, und Wassertropfen werden zu kleinen Kugeln."
+    },
+    {
+      "id": "q-massstab-1",
+      "card": "massstab",
+      "level": 1,
+      "type": "mc",
+      "q": "Wäre die Sonne ein Fußball – wie groß wäre dann die Erde?",
+      "options": [
+        "Wie ein Tennisball",
+        "Wie ein Pfefferkorn",
+        "Wie ein Auto"
+      ],
+      "answer": 1,
+      "explain": "Wie ein Pfefferkorn – und etwa 24 Meter vom Fußball entfernt!"
+    },
+    {
+      "id": "q-groesse-1",
+      "card": "massstab",
+      "level": 2,
+      "type": "order",
+      "q": "Ordne vom größten zum kleinsten.",
+      "options": [
+        "Sonne",
+        "Jupiter",
+        "Erde",
+        "Mond",
+        "Pluto"
+      ],
+      "explain": "Die Sonne ist riesig, Jupiter ist der größte Planet, und Pluto ist sogar kleiner als unser Mond."
+    },
+    {
+      "id": "q-wagen-1",
+      "card": "grosser-wagen",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie viele helle Sterne hat der Große Wagen?",
+      "options": [
+        "Drei",
+        "Sieben",
+        "Zwölf"
+      ],
+      "answer": 1,
+      "explain": "Sieben helle Sterne."
+    },
+    {
+      "id": "q-wagen-2",
+      "card": "grosser-wagen",
+      "level": 2,
+      "type": "mc",
+      "q": "Wohin zeigt der Polarstern?",
+      "options": [
+        "Nach Norden",
+        "Nach Süden",
+        "Zur Sonne"
+      ],
+      "answer": 0,
+      "explain": "Nach Norden. Früher haben Seefahrer so ihren Weg gefunden."
+    },
+    {
+      "id": "q-kassiopeia-1",
+      "card": "kassiopeia",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie sieht das Sternbild Kassiopeia aus?",
+      "options": [
+        "Wie ein W",
+        "Wie ein Kreis",
+        "Wie ein Herz"
+      ],
+      "answer": 0,
+      "explain": "Wie ein großes W."
+    },
+    {
+      "id": "q-kassiopeia-2",
+      "card": "kassiopeia",
+      "level": 2,
+      "type": "mc",
+      "q": "Wie viele offizielle Sternbilder gibt es?",
+      "options": [
+        "12",
+        "88",
+        "1.000"
+      ],
+      "answer": 1,
+      "explain": "88 offizielle Sternbilder."
+    },
+    {
+      "id": "q-orion-1",
+      "card": "orion",
+      "level": 1,
+      "type": "mc",
+      "q": "Woran erkennt man Orion gut?",
+      "options": [
+        "An drei Gürtelsternen in einer Reihe",
+        "An einem roten Ring",
+        "An einem Schweif"
+      ],
+      "answer": 0,
+      "explain": "An den drei Gürtelsternen, die genau in einer Reihe stehen."
+    },
+    {
+      "id": "q-schwerkraft-1",
+      "card": "schwerkraft",
+      "level": 1,
+      "type": "mc",
+      "q": "Wie hoch könntest du auf dem Mond ungefähr springen?",
+      "options": [
+        "Genauso hoch wie auf der Erde",
+        "Etwa halb so hoch",
+        "Etwa sechsmal so hoch"
+      ],
+      "answer": 2,
+      "explain": "Etwa sechsmal so hoch – die Schwerkraft ist dort nur ein Sechstel so stark."
+    },
+    {
+      "id": "q-planeten-1",
+      "card": "planeten-reihe",
+      "level": 1,
+      "type": "order",
+      "q": "Bring die Planeten in die richtige Reihenfolge – beginne an der Sonne.",
+      "options": [
+        "Merkur",
+        "Venus",
+        "Erde",
+        "Mars",
+        "Jupiter",
+        "Saturn",
+        "Uranus",
+        "Neptun"
+      ],
+      "explain": "Merksatz: „Mein Vater erklärt mir jeden Sonntag unseren Nachthimmel.“"
+    },
+    {
+      "id": "q-planeten-2",
+      "card": "planeten-reihe",
+      "level": 2,
+      "type": "mc",
+      "q": "Der wievielte Planet von der Sonne aus ist die Erde?",
+      "options": [
+        "Der zweite",
+        "Der dritte",
+        "Der vierte"
+      ],
+      "answer": 1,
+      "explain": "Der dritte: Merkur, Venus, Erde."
+    }
   ]
 }

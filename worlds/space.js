@@ -172,7 +172,7 @@ addEventListener('rs:scanned', e => { if (e.detail.world === 'space'){ L.P.games
 const quests = [
   {id:'luna', text:'Sprich mit Sternenfee Luna', goal: P => [P.flags['space:talked'] ? 1 : 0, 1]},
   {id:'discover4', text:'Entdecke 4 Himmelskörper', goal: () => [L.discoveredObjects('space'), 4]},
-  {id:'answer5', text:'Beantworte 5 Fragen richtig', goal: () => [L.correctIn('space'), 5]},
+  {id:'answer5', text:'Beantworte 5 Rätselfragen richtig', goal: () => [L.correctIn('space'), 5], action:{label:'Quiz mit Luna', run:() => L.quiz(5), again:true}},
   {id:'planets', text:'Bring die Planeten in die richtige Reihenfolge', goal: P => [P.games.planets ? 1 : 0, 1], action:{label:'Spielen', run:planetsGame}},
   {id:'stars', text:'Verbinde ein Sternbild', goal: P => [['grosser-wagen','kassiopeia','orion'].some(k => P.games['sb-' + k]) ? 1 : 0, 1], action:{label:'Spielen', run:() => starGame(), again:true}},
   {id:'jump', text:'Finde heraus, wie hoch du auf dem Mond springst', goal: P => [P.games.jump ? 1 : 0, 1], action:{label:'Testen', run:jumpGame}},

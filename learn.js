@@ -109,20 +109,39 @@ function showCard(id, {isNew=false, extra}={}){
     const card = el('div', 'kcard'); card.append(el('div', 'ktitle', c.title), el('p', 'cardtext', c.text)); body.append(card);
     const items = [];
     if (canSpeak) items.push(speakBtn(c.title + '. ' + c.text));
+    // gefragt wird nie zur Karte, die man gerade gelesen hat – sondern zu etwas, das man früher entdeckt hat
     const q = nextQuestion(c);
-    if (q) items.push(btn('Frage beantworten ✦', 'main', () => ask(q)));
+    if (q) items.push(btn('Rätselfrage zu früher ✦', 'main', () => ask(q)));
     else if (extra) items.push(btn(extra.label, 'main', extra.run));
     else items.push(btn('Weiter', 'main', closeSheet));
+    if (!q && isNew) body.append(el('p', 'note', 'Merk dir das gut – Luna fragt dich später danach!'));
     row(body, items);
     if (q && extra) row(body, [btn(extra.label, '', extra.run)]);
   });
 }
 // Frage passend zur Karte: erst Stufe 1, dann Stufe 2; ab und zu eine falsch beantwortete zum Wiederholen
-function nextQuestion(card){
-  const due = P.review.map(id => qById[id]).filter(q => q && P.cards[q.card]);
-  if (due.length && Math.random() < .5) return due[0];
-  const mine = Object.values(qById).filter(q => q.card === card.id && !(P.q[q.id] && P.q[q.id].ok));
-  return mine.find(q => q.level === 1) || mine[0] || due[0] || null;
+function nextQuestion(card, skip = []){
+  const known = q => q && P.cards[q.card] && (!card || q.card !== card.id) && !skip.includes(q.id);
+  const due = P.review.map(id => qById[id]).filter(known);   // falsch beantwortete kommen zuerst wieder
+  if (due.length) return due[0];
+  const lvl1done = cid => Object.values(qById).every(q => q.card !== cid || q.level !== 1 || (P.q[q.id] && P.q[q.id].ok));
+  const open = Object.values(qById).filter(q => known(q) && !(P.q[q.id] && P.q[q.id].ok) && (q.level === 1 || lvl1done(q.card)));
+  open.sort((a, b) => (P.cards[a.card] - P.cards[b.card]) || (a.level - b.level));   // was am längsten her ist, zuerst
+  return open[0] || null;
+}
+// Quiz mit Luna: mehrere Fragen hintereinander zu allem, was man schon entdeckt hat
+function quiz(n = 5){
+  let done = 0, right = 0; const asked = [];
+  const step = () => {
+    const q = done < n ? nextQuestion(null, asked) : null;
+    if (!q){ openSheet('Quiz geschafft!', body => {
+      body.append(el('div', 'stamp big', right === done && done ? '★' : '✦'));
+      body.append(el('p', 'cardtext', done ? `Du hast ${right} von ${done} Fragen richtig beantwortet.` : 'Entdecke zuerst ein paar Himmelskörper – dann gibt es Fragen dazu.'));
+      row(body, [btn('Super ✦', 'main', closeSheet)]); }); return; }
+    asked.push(q.id); done++;
+    ask(q, ok => { if (ok) right++; }, {next: step, label: `Frage ${done} von ${n}`});
+  };
+  step();
 }
 const shuffle = a => { const b = a.slice(); for (let i=b.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 function record(q, ok){
@@ -131,9 +150,9 @@ function record(q, ok){
   save();
 }
 const PRAISE = ['Super!', 'Richtig!', 'Klasse!', 'Genau!', 'Spitze!'], CHEER = ['Fast!', 'Knapp daneben!', 'Gut versucht!'];
-function ask(q, onDone){
+function ask(q, onDone, opts = {}){
   const first = !(P.q[q.id] && (P.q[q.id].ok || P.q[q.id].bad));
-  openSheet('Frage', body => {
+  openSheet(opts.label || 'Rätselfrage', body => {
     body.append(el('p', 'qtext', q.q));
     if (canSpeak) row(body, [speakBtn(q.q + ' ' + (q.type === 'order' ? '' : q.options.join(', ')))]);
     const finish = (ok, resultText) => {
@@ -144,7 +163,7 @@ function ask(q, onDone){
       res.append(el('p', 'cardtext', q.explain)); body.append(res);
       if (ok) addStars(q.type === 'order' ? 3 : first ? 2 : 1);
       checkQuests(); if (onDone) onDone(ok);
-      row(body, [btn('Weiter', 'main', closeSheet)]);
+      row(body, [btn(opts.next ? 'Nächste Frage →' : 'Weiter', 'main', opts.next || closeSheet)]);
       res.scrollIntoView({block:'nearest', behavior:'smooth'});
     };
     if (q.type === 'order'){
@@ -371,6 +390,7 @@ function openMine(){
       const acts = el('div', 'fs-row');
       if (r.inWorld) acts.append(btn('Hinlaufen', 'small main', () => { closeSheet(); const res = RS.goToCreature(r.id);
         if (typeof res === 'string'){ travel(res); setTimeout(() => RS.goToCreature(r.id), 1800); } }));
+      acts.append(btn('🎨 Ausmalen', 'small', () => { closeSheet(); RS.paintCreature(r.id); }));
       if ((r.world || 'home') === 'home' && RS.SHARE && !r.uploaded) acts.append(btn('Nochmal senden', 'small', () => { RS.resend(r.id); toast('Wird gesendet …'); }));
       const del = btn('Löschen', 'small', () => {
         if (!del.dataset.sure){ del.dataset.sure = 1; del.textContent = 'Wirklich löschen?'; del.classList.add('danger'); return; }
@@ -385,6 +405,6 @@ function openMine(){
     const revoke = () => { if (sheetEl.hidden){ urls.forEach(URL.revokeObjectURL); obs.disconnect(); } }, obs = new MutationObserver(revoke); obs.observe(sheetEl, {attributes:true, attributeFilter:['hidden']});
   }));
 }
-window.Learn = {openMine, registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
+window.Learn = {quiz, openMine, registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
   addStars, toast, checkQuests, el, btn, row, P, save, discoveredObjects, correctIn, ready, speak, canSpeak, worldOf};
 })();

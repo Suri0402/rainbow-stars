@@ -45,6 +45,9 @@ Inhalt
      Ball (rollt, wird gekickt, die Tiere jagen ihn), Spielzeug (das Mädchen
      trägt es herum), Pflanze/Deko (steht fest), Essen (die Tiere naschen es
      auf, nach einer Minute wächst es nach).
+   - Ausmalen: Beim Scannen auf "🎨 Ausmalen" tippen (Eimer füllt Flächen, Pinsel
+     malt mit dem Finger, Rückgängig). Schon vorhandene Figuren: Album ->
+     "Meine Figuren" -> "🎨 Ausmalen".
    - Löschen: Album -> "Meine Figuren" -> Löschen.
    Damit ALLE die Figuren sehen, einmalig Supabase einrichten:
    siehe SUPABASE-EINRICHTEN.txt
@@ -59,6 +62,8 @@ Inhalt
    - Für Karten, richtige Antworten und Aufträge gibt es Regenbogensterne.
      Wer alle Aufträge einer Welt schafft, bekommt einen Stempel im
      Reisepass und eine Belohnung (Sternen-Haarreif).
+   - Rätselfragen kommen immer zu etwas, das man FRÜHER entdeckt hat – nicht
+     zur Karte, die man gerade gelesen hat. Bei Luna gibt es das "Quiz mit Luna".
    - Falsch beantwortete Fragen kommen später noch einmal – ohne Strafe.
    - "Album" zeigt alle gesammelten Wissenskarten. "🔊 Vorlesen" liest vor.
    - Der Fortschritt wird auf dem Gerät gespeichert.

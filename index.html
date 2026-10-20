@@ -143,6 +143,13 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .figs{display:flex;flex-direction:column;gap:10px}
 .fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
 button.danger{background:#ffd0d6}
+.palette{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.palette button{width:38px;height:38px;padding:0;border-radius:50%;background:var(--c);box-shadow:none}
+.palette button:hover{background:var(--c);transform:scale(1.1)}
+.palette button[aria-checked="true"]{outline:4px solid var(--ink);outline-offset:2px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tools button[aria-pressed="true"]{background:var(--pink)}
+#paintC{cursor:crosshair}
 .verdict{margin-top:12px;border-radius:14px;padding:8px 12px;border:2px solid var(--ink);font-size:16px;line-height:1.25}
 .verdict b{font-size:18px}.verdict p{margin:3px 0 0}
 .verdict.ok{background:#e6f8ef;border-color:#2f9a63}.verdict.ok b{color:#2f7a50}
@@ -215,7 +222,15 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
       </div>
       <div id="scanCheck" class="verdict" role="status" aria-live="polite"></div>
       <p class="note" id="scanNote"></p>
-      <div class="row"><button type="button" id="scanBack">Zurück</button><button type="button" id="scanGo" class="main">In die Welt schicken ✦</button></div>
+      <div class="row"><button type="button" id="scanBack">Zurück</button><button type="button" id="scanPaint">🎨 Ausmalen</button><button type="button" id="scanGo" class="main">In die Welt schicken ✦</button></div>
+    </div>
+    <div class="step" data-step="paint" hidden>
+      <p class="tip">Wähle eine Farbe. Mit dem 🪣 Eimer tippst du in eine Fläche, mit dem 🖌 Pinsel malst du mit dem Finger. Die Bleistiftstriche bleiben sichtbar.</p>
+      <div class="view paperbg"><canvas id="paintC"></canvas></div>
+      <div class="palette" id="palette" role="radiogroup" aria-label="Farbe"></div>
+      <div class="tools" role="group" aria-label="Werkzeug"><button type="button" class="small main" id="toolFill" aria-pressed="true">🪣 Eimer</button><button type="button" class="small" id="toolBrush" aria-pressed="false">🖌 Pinsel</button><button type="button" class="small" id="toolErase" aria-pressed="false">🧽 Radierer</button><button type="button" class="small" id="paintUndo">↶ Rückgängig</button></div>
+      <p class="note" id="paintNote"></p>
+      <div class="row"><button type="button" id="paintBack">Zurück</button><button type="button" id="paintGo" class="main">In die Welt schicken ✦</button></div>
     </div>
   </div>
 </div>
