@@ -1,6 +1,6 @@
 // Rainbow Stars: speichert die App für die Offline-Nutzung
-const CACHE = 'rainbow-stars-v17';
-const FILES = ['./', './index.html', './three.min.js', './app.js', './learn.js', './math.js', './rewards.js', './raetsel.js', './profiles.js', './parents.js', './books.js', './needs.js', './worlds/space.js', './worlds/time.js', './worlds/house.js', './content/time.json', './content/space.json', './content/quiz.json', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
+const CACHE = 'rainbow-stars-v18';
+const FILES = ['./', './index.html', './three.min.js', './app.js', './learn.js', './math.js', './rewards.js', './raetsel.js', './profiles.js', './parents.js', './books.js', './needs.js', './friends.js', './worlds/space.js', './worlds/time.js', './worlds/house.js', './content/time.json', './content/space.json', './content/quiz.json', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
 self.addEventListener('fetch', e => {

@@ -113,7 +113,7 @@ function chip(p){ const c = $('profileChip'); c.textContent = p.avatar + ' ' + p
 function menu(p){
   L.openSheet(p.avatar + ' ' + p.name, body => {
     body.append(el('p', 'tip', 'Dein Profil. Deine Figuren, Sterne und Goodies gehören nur dir.'));
-    L.row(body, [btn('🔄 Spieler wechseln', 'main', async () => { await RS.idb.setP('autologin', null); location.reload(); })]);
+    L.row(body, [btn('🔄 Spieler wechseln', 'main', async () => { await RS.idb.setP('autologin', null); location.reload(); }), btn('👫 Freunde', '', () => window.Friends && Friends.open())]);
     L.row(body, [btn('🔑 PIN ändern', 'small', () => { L.closeSheet(); askOld(p, () => setPin(p, () => { ov.hidden = true; })); }),
                  btn('🗑 Profil löschen', 'small', () => { L.closeSheet(); askOld(p, () => confirmDelete(p)); })]);
     L.row(body, [btn('👪 Eltern-Bereich', 'small', () => { L.closeSheet(); window.Parents && Parents.openArea(); }), btn('Schließen', '', L.closeSheet)]);

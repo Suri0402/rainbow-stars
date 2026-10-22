@@ -375,7 +375,9 @@ function chooseNext(){
 }
 function approachPoint(act, out){
   const off = act.off ?? (act.kind === 'tree' ? 1.0 : act.kind === 'flower' ? .62 : .78);
-  return out.copy(act.ref.pos).addScaledVector(camRight(), off*st.side).add(new V3(0,0,.05));
+  out.copy(act.ref.pos).addScaledVector(camRight(), off*st.side).add(new V3(0,0,.05));
+  const bd = W[worldId].bounds; if (bd){ out.x = Math.max(bd.x0, Math.min(bd.x1, out.x)); out.z = Math.max(bd.z0, Math.min(bd.z1, out.z)); }   // im Zimmer: nicht durch die Wand
+  return out;
 }
 const angLerp = (a,b,t) => { let d = ((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI; return a + d*t; };
 const lerp = (a,b,t) => a + (b-a)*t;
@@ -804,9 +806,13 @@ async function syncShared(first){
 }
 function retryUploads(){ idb.all().then(recs => recs.filter(r => r.mine && !r.uploaded && (r.world || 'home') === 'home').forEach(r => uploadCreature(r).catch(() => {}))); }
 // erst wenn alle Skripte (auch die Zusatz-Welten) geladen sind, die gespeicherten Figuren einsetzen
-addEventListener('DOMContentLoaded', () => idb.all().then(recs => { recs.sort((a,b) => a.created - b.created).forEach(r => showCreature(r)); retryUploads(); syncShared(true); }));
-addEventListener('online', () => { retryUploads(); syncShared(false); });
-setInterval(() => { if (document.visibilityState === 'visible') syncShared(false); }, 90000);
+// Wer sieht welche Figuren? Nach der Anmeldung: die eigenen und die von Freunden (friends.js)
+const canSee = rec => !!owner && (!rec.mine || !rec.owner || rec.owner === owner || !!(window.Friends && Friends.isFriend(rec.owner)));
+async function refreshVisibility(){
+  const recs = (await idb.all()).sort((a,b) => a.created - b.created);
+  for (const r of recs){ const should = canSee(r), has = world.has(r.id); if (should && !has) showCreature(r); else if (!should && has) removeCreature(r.id); }
+}
+addEventListener('rs:profile', refreshVisibility); addEventListener('rs:friends', refreshVisibility);
 
 // --- Scanner: Foto -> Ausschnitt -> Papier entfernen -> Figur ---
 function photoCanvas(file){ return new Promise((ok, bad) => { const u = URL.createObjectURL(file), im = new Image();
@@ -1114,7 +1120,6 @@ $('scanGo').onclick = () => {
     const saved = (await idb.put(rec)) !== undefined; closeScan(); $('scanName').value = '';
     const a = await showCreature(rec, {near:true, arrive:true});
     dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:rec.world, name, inWorld:!!a, saved, thumb:blob, bookId: ctx && ctx.bookId}}));
-    if (rec.world === 'home') shareCreature(rec);
     } catch(err){ closeScan(); scanFail('send', 'Die Figur konnte nicht in die Welt geschickt werden: ' + (err.message || err)); }
   }, 'image/png');
 };
@@ -1144,6 +1149,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
   deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
   walkTo: act => { userPick = act; startActivity(act); manualUntil = performance.now() + 20000; },   // wie Antippen
+  refreshVisibility, canSee,
   setMood: (m, speed = 1) => { mood = m; speedFactor = speed; },
   setScanContext: c => { scanContext = c && {...c, at:Date.now()}; }, setView, get ctrl(){ return ctrl; }, get view(){ return view; }, goTo,
   onTick: f => tickHooks.push(f), addThing, removeFromWorld: removeCreature, world, camRight, uuid,

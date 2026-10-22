@@ -358,13 +358,8 @@ addEventListener('rs:world', () => { $('viewBtn').textContent = '👁 Mädchen';
 // ---------- Eigene Figuren: Statuskarte nach dem Scannen + Übersicht "Meine Figuren" ----------
 const worldName = id => (RS.W[id] && RS.W[id].name) || 'Heimatwiese';
 function shareLine(r){   // r: gespeicherte Figur (oder Live-Zustand aus der Statuskarte)
-  if ((r.world || 'home') !== 'home') return ['info', 'Bleibt in der ' + worldName(r.world) + ' auf diesem Gerät'];
-  if (!RS.SHARE) return ['info', 'Nur auf diesem Gerät – Teilen ist noch nicht eingerichtet'];
-  if (r.approved || r.state === 'approved') return ['ok', 'Für alle sichtbar'];
-  if (r.state === 'error' || r.shareError) return ['bad', 'Senden hat nicht geklappt – neuer Versuch später'];
-  if (r.state === 'offline') return ['wait', 'Kein Internet – wird später an alle geschickt'];
-  if (r.uploaded || r.state === 'uploaded') return ['ok', 'Eingereicht – erscheint bei allen nach der Freigabe'];
-  return ['wait', 'Wird an alle geschickt …'];
+  if ((r.world || 'home') !== 'home') return ['info', 'Wohnt in der ' + worldName(r.world)];
+  return ['info', 'Sichtbar für dich und deine Freunde 👫'];
 }
 const ICON = {ok:'✔', bad:'⚠', wait:'⏳', info:'ⓘ'};
 const line = ([k, t]) => { const li = el('li', k); li.append(el('span', 'ic', ICON[k]), el('span', '', t)); return li; };
