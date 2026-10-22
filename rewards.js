@@ -110,6 +110,7 @@ function actionFor(it){
 const GIFT_EVERY = 3;
 function renderGiftHud(){ const g = RS.$('giftHud'); if (!g) return; g.textContent = '🎁 ' + (P.giftCount || 0) + '/' + GIFT_EVERY; g.hidden = !L.profileId; }
 function solved(container){
+  dispatchEvent(new CustomEvent('rs:solved', {detail:{container}}));   // needs.js: Wissen + Essen
   P.giftCount = (P.giftCount || 0) + 1;
   if (P.giftCount >= GIFT_EVERY){ P.giftCount = 0; L.save(); renderGiftHud(); giftInto(container); return; }
   L.save(); renderGiftHud(); const left = GIFT_EVERY - P.giftCount;

@@ -149,7 +149,7 @@ async function talk(id, kid, {parent = false} = {}){
     body.append(el('p', 'cardtext', parent ? `Sprecht mit dem Kind über „${b.title}“:` : `Hol einen Erwachsenen und erzähl ihm von „${b.title}“. Diese Fragen helfen euch:`));
     const ul = el('ul', 'talk'); [...TALK, ...(b.talk || [])].forEach(t => ul.append(el('li', '', t))); body.append(ul);
     row(body, [btn('Später', '', L.closeSheet), btn('👪 Erwachsener: bestätigen', 'main', () => window.Parents.verify(async () => {
-      s.confirmed = Date.now(); await store();
+      s.confirmed = Date.now(); await store(); if (kid === RS.owner) dispatchEvent(new CustomEvent('rs:bookdone', {detail:{id:b.id}}));
       L.openSheet('Buch geschafft! 📚✦', b2 => { b2.append(el('div', 'stamp big', '📚'), el('p', 'cardtext', `„${b.title}“ ist gelesen und bestätigt!`));
         const n = books.filter(x => ((x.status || {})[kid] || {}).confirmed).length;
         if (kid === RS.owner && n <= UNLOCKS.length) b2.append(el('p', 'cardtext', '🔓 Neu freigeschaltet: ' + UNLOCKS[n - 1] + '! Reise mit dem Regenbogen-Tor hin.'));

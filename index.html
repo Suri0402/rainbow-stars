@@ -143,6 +143,20 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .figs{display:flex;flex-direction:column;gap:10px}
 .fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
 button.danger{background:#ffd0d6}
+.needs-hud{position:fixed;top:calc(100px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:5;display:flex;flex-direction:column;gap:3px;padding:6px 10px;background:#fff;border-radius:14px}
+.needs-hud .need{display:flex;align-items:center;gap:5px;font-size:14px}
+.needs-hud em{font-style:normal;width:18px;text-align:center}
+.needs-hud b,.needrow b{display:block;width:64px;height:9px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;background:#f1ece2}
+.needs-hud i,.needrow i{display:block;height:100%;background:linear-gradient(90deg,#7fdca4,#ffe066)}
+.needs-hud .low i,.needrow .low i{background:#ff8fb1}
+.needs-hud .low{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.55}}
+.needrow{display:flex;align-items:center;gap:8px;font-size:18px;margin:6px 0}
+.needrow b{flex:1;width:auto;height:14px}
+.nicon{width:26px;text-align:center}.nname{width:76px}.nval{width:52px;text-align:right;color:var(--muted)}
+.needgain{margin:6px 0 0;font-size:16px;color:#2f7a50}
+.quest.wish{background:#ffe0ea}
+@media (max-width:560px){.needs-hud{top:calc(138px + env(safe-area-inset-top,0px));padding:4px 8px}.needs-hud b{width:44px}}
 .gift-hud{position:fixed;top:calc(62px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:5;font-size:16px;padding:2px 12px 4px;background:#fff}
 .giftprog{margin:8px 0 0;font-size:17px;color:#9a6a10}
 @media (max-width:560px){.gift-hud{top:calc(100px + env(safe-area-inset-top,0px))}}
@@ -245,10 +259,12 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
   <h1>Rainbow Stars</h1>
   <div class="bubble" aria-live="polite"><small>gerade</small><span id="status">lädt …</span></div>
   <button type="button" id="questChip" class="quest" hidden><small>AUFTRAG</small><span></span></button>
+  <button type="button" id="wishChip" class="quest wish" hidden><small>WUNSCH</small><span></span></button>
 </div>
 <button type="button" id="starsHud" class="stars-hud" aria-label="Regenbogensterne – Album öffnen">★ <b>0</b></button>
 <button type="button" id="profileChip" class="profile-chip" hidden aria-label="Profil"></button>
 <button type="button" id="giftHud" class="gift-hud" hidden aria-label="Fortschritt bis zum nächsten Geschenk">🎁 0/3</button>
+<button type="button" id="needsHud" class="needs-hud" hidden aria-label="Wie geht es deiner Figur?"></button>
 <div id="login" class="login" role="dialog" aria-modal="true" aria-label="Anmelden"><div class="sheet" id="loginBox"><h2>Rainbow Stars lädt …</h2></div></div>
 <div id="toast" class="toast" hidden aria-live="polite"></div>
 <div id="figStatus" class="figstatus" hidden role="status" aria-live="polite"></div>
@@ -330,6 +346,7 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 <script src="profiles.js"></script>
 <script src="parents.js"></script>
 <script src="books.js"></script>
+<script src="needs.js"></script>
 <script src="worlds/space.js"></script>
 <script src="worlds/time.js"></script>
 <script>

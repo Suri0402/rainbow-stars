@@ -104,7 +104,7 @@ const speakBtn = text => btn('🔊 Vorlesen', 'speak', () => speak(text));
 // ---------- Wissenskarten ----------
 function unlockCard(id){
   if (!cardById[id] || P.cards[id]) return false;
-  P.cards[id] = Date.now(); save(); addStars(1, 'neue Wissenskarte'); checkQuests(); return true;
+  P.cards[id] = Date.now(); save(); addStars(1, 'neue Wissenskarte'); checkQuests(); dispatchEvent(new CustomEvent('rs:card', {detail:{id}})); return true;
 }
 // Objekt erkundet: nächste unbekannte Karte zeigen (oder eine bekannte zum Wiederholen)
 function discover(wid, key, extra){

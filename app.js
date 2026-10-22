@@ -357,6 +357,7 @@ const st = {state:'idle', timer:1.2, act:null, last:null, phase:0, actT:0, pos:n
 let paused = false, az = 0, el = .22, dist = 5.6, tAz = 0, tEl = .22, tDist = 5.6, lastDrag = -1e9;
 // Steuern & Sicht: ctrl = gesteuerte Figur (null = das Mädchen), view = 'follow' oder 'overview'
 let ctrl = null, view = 'follow', manualUntil = 0;
+let mood = null, speedFactor = 1;   // von needs.js gesetzt: müde -> langsamer
 const statusEl = $('status');
 const setStatus = t => { if (statusEl.textContent !== t) statusEl.textContent = t; };
 const camRight = () => new V3(Math.cos(az), 0, -Math.sin(az));
@@ -389,6 +390,7 @@ function updateGirl(dt, t){
   let armL = Math.sin(t*1.3)*.04, armR = -Math.sin(t*1.3+.6)*.04;
   let hipSway = Math.sin(t*.8)*.02, breathe = Math.sin(t*2.4)*.012;
   let eye = 'open', mouth = 'smile', blush = 1, legLift = [0,0], legRot = [0,0];
+  if (mood === 'tired') eye = 'half'; else if (mood === 'sad'){ mouth = 'o'; blush = .6; }   // Bedürfnisse (needs.js) zeigen sich im Gesicht
   if (st.state === 'idle' && st.timer <= 0 && performance.now() > manualUntil) chooseNext();
   if (st.state === 'walk'){
     approachPoint(st.act, st.approach);
@@ -400,7 +402,7 @@ function updateGirl(dt, t){
       setStatus(st.act.doing + (st.act.mark || (st.act.kind === 'animal' ? ' ♡' : ' ✿')));
       if (st.act.kind === 'animal'){ const a = st.act.ref; a.state = 'play'; a.playA = Math.atan2(a.pos.x - st.pos.x, a.pos.z - st.pos.z); }
     } else {
-      const sp = Math.min(1.3 + Math.max(0, len-3)*.3, 2.3, len*2.5);   // weite Wege etwas schneller
+      const sp = Math.min(1.3 + Math.max(0, len-3)*.3, 2.3, len*2.5)*speedFactor;   // weite Wege etwas schneller
       st.pos.addScaledVector(d.normalize(), sp*dt);
       st.phase += dt*sp*8.2; walk = Math.min(1, sp/1.1);
       const s = d.dot(camRight()); if (Math.abs(s) > .12) st.face = s > 0 ? 1 : -1;
@@ -1139,6 +1141,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   setOwner: id => { owner = id; }, get owner(){ return owner; },
   claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
   deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
+  setMood: (m, speed = 1) => { mood = m; speedFactor = speed; },
   setScanContext: c => { scanContext = c && {...c, at:Date.now()}; }, setView, get ctrl(){ return ctrl; }, get view(){ return view; }, goTo,
   onTick: f => tickHooks.push(f), addThing, removeFromWorld: removeCreature, world, camRight, uuid,
   resend: id => idb.all().then(l => { const r = l.find(x => x.id === id); if (r){ delete r.shareError; shareCreature(r); } }),
