@@ -143,6 +143,9 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .figs{display:flex;flex-direction:column;gap:10px}
 .fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
 button.danger{background:#ffd0d6}
+body[data-world="house"]{background:linear-gradient(180deg,#fbe9d7 0%,#f7efe2 100%)}
+button.swatch{width:38px;height:38px;padding:0;border-radius:50%;box-shadow:none}
+button.swatch.main{outline:4px solid var(--ink);outline-offset:2px}
 .needs-hud{position:fixed;top:calc(100px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:5;display:flex;flex-direction:column;gap:3px;padding:6px 10px;background:#fff;border-radius:14px}
 .needs-hud .need{display:flex;align-items:center;gap:5px;font-size:14px}
 .needs-hud em{font-style:normal;width:18px;text-align:center}
@@ -349,6 +352,7 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 <script src="needs.js"></script>
 <script src="worlds/space.js"></script>
 <script src="worlds/time.js"></script>
+<script src="worlds/house.js"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

@@ -83,7 +83,7 @@ function rollGift(){
 }
 function grant(it){
   if (it.type === 'sticker') P.stickers[it.id] = (P.stickers[it.id] || 0) + 1; else P.items[it.id] = true;
-  L.save();
+  L.save(); dispatchEvent(new CustomEvent('rs:goodie', {detail:{id:it.id}}));   // z. B. fürs Regal im Haus
 }
 function giftInto(container){
   const box = L.el('div', 'gift'), b = L.btn('🎁 Geschenk öffnen!', 'main giftbtn', () => {

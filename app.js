@@ -578,7 +578,9 @@ function pick(x,y){
     userPick = act; startActivity(userPick); manualUntil = performance.now() + 20000; return; }
   // auf den Boden getippt: dorthin laufen
   const p = ray.ray.intersectPlane(groundPlane, new V3()); if (!p) return;
-  const r = Math.hypot(p.x, p.z); if (r > 16){ p.x *= 16/r; p.z *= 16/r; }
+  const bd = W[worldId].bounds;   // kleine Welten (z. B. das Zimmer) haben Wände
+  if (bd){ p.x = clamp(p.x, bd.x0, bd.x1); p.z = clamp(p.z, bd.z0, bd.z1); }
+  else { const r = Math.hypot(p.x, p.z); if (r > 16){ p.x *= 16/r; p.z *= 16/r; } }
   goTo(p);
 }
 const groundPlane = new THREE.Plane(new V3(0, 1, 0), 0);
@@ -1141,6 +1143,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   setOwner: id => { owner = id; }, get owner(){ return owner; },
   claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
   deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
+  walkTo: act => { userPick = act; startActivity(act); manualUntil = performance.now() + 20000; },   // wie Antippen
   setMood: (m, speed = 1) => { mood = m; speedFactor = speed; },
   setScanContext: c => { scanContext = c && {...c, at:Date.now()}; }, setView, get ctrl(){ return ctrl; }, get view(){ return view; }, goTo,
   onTick: f => tickHooks.push(f), addThing, removeFromWorld: removeCreature, world, camRight, uuid,
@@ -1172,6 +1175,7 @@ function tick(){
   // Kamera folgt sanft, Blick bleibt eher frontal
   if (performance.now() - lastDrag > 6000) tAz = angLerp(tAz, Math.round(tAz/(Math.PI*2))*Math.PI*2 + Math.sin(t*.05)*.25, dtR*.15);
   const k = 1 - Math.pow(.03, dtR);
+  if (W[worldId].azLimit) tAz = clamp(tAz, -W[worldId].azLimit, W[worldId].azLimit);   // im Zimmer nicht hinter die Wände schauen
   az = angLerp(az, tAz, k); el += (tEl-el)*k; dist += (tDist-dist)*k;
   if (ctrl && !animals.includes(ctrl)) setView({figure:null});   // gesteuerte Figur gelöscht -> zurück zum Mädchen
   const fp = view === 'overview' ? new V3(0, 0, 0) : (ctrl ? ctrl.pos : st.pos);
