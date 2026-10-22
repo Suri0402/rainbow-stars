@@ -98,6 +98,8 @@ const UNLOCKS = ['die Zeitmaschine: Dino-Tal', 'die Zeitmaschine: Altes Ägypten
 async function openRead(){
   await load(); const me = RS.owner, mine = books.filter(b => (b.kids || []).includes(me));
   L.openSheet('📚 Lesen', body => {
+    readingBox(body, mine);
+    body.append(el('h3', 'albumh', '📖 Deine Lesebücher'));
     body.append(el('p', 'tip', count < UNLOCKS.length ? `Du hast ${count} ${count === 1 ? 'Buch' : 'Bücher'} gelesen. Dein nächstes Buch schaltet ${UNLOCKS[count]} frei!` : `Du hast ${count} Bücher gelesen – alle Stationen der Zeitmaschine sind offen! ✦`));
     if (!mine.length){ body.append(el('p', 'cardtext', 'Du hast noch kein Lesebuch. Bitte einen Erwachsenen, im Eltern-Bereich ein Buch für dich anzumelden.'));
       row(body, [btn('👪 Eltern-Bereich', 'small', () => window.Parents.openArea()), btn('Schließen', 'main', L.closeSheet)]); return; }
@@ -158,6 +160,89 @@ async function talk(id, kid, {parent = false} = {}){
     }, {reason:'Hat das Kind das Buch wirklich gelesen? Dann bestätigt es bitte mit der Eltern-PIN.'}))]);
   });
 }
+
+// ---------- Lesezeit: mindestens 30 Minuten lesen, dann 2–3 Seiten fotografieren -> Frage (KI) oder Eltern-Bestätigung ----------
+const MIN_READ = 30*60e3, P = L.P;
+const fmtMin = ms => { const m = Math.floor(ms/60e3), s2 = Math.floor(ms/1000) % 60; return m + ':' + String(s2).padStart(2, '0'); };
+let tick = 0;
+function readingBox(body, mine){
+  body.append(el('h3', 'albumh', '⏱ Lesezeit'));
+  const r = P.reading, box = el('div', 'readbox'); body.append(box);
+  if (!r){
+    box.append(el('p', 'cardtext', 'Lies mindestens 30 Minuten in deinem Buch. Danach fotografierst du 2–3 Seiten, die du gelesen hast, und beantwortest eine Frage dazu. Das vertreibt die Langeweile! 📚'));
+    const pickRow = el('div', 'things');
+    mine.forEach(b => pickRow.append(btn('▶ ' + b.title, 'small main', () => startReading(b.id, b.title))));
+    pickRow.append(btn('▶ anderes Buch', 'small', () => { const t = prompt('Wie heißt dein Buch?'); if (t && t.trim()) startReading(null, t.trim().slice(0, 60)); }));
+    box.append(pickRow); return;
+  }
+  const t = el('p', 'readclock', ''), info = el('p', 'note', ''); box.append(el('b', '', '📖 ' + r.title), t, info);
+  const act = el('div', 'fs-row'); box.append(act);
+  const upd = () => { if (!t.isConnected){ clearInterval(tick); return; } const d = Date.now() - r.start; t.textContent = fmtMin(d);
+    if (d < MIN_READ){ info.textContent = `Noch ${Math.ceil((MIN_READ - d)/60e3)} Minuten bis zur Lese-Frage. Du kannst die App ruhig zumachen.`; act.replaceChildren(btn('Lesezeit abbrechen', 'small', () => { P.reading = null; L.save(); openRead(); })); }
+    else if (!act.dataset.done){ act.dataset.done = 1; info.textContent = 'Super, 30 Minuten geschafft! Jetzt fotografiere 2–3 Seiten, die du gerade gelesen hast.'; act.replaceChildren(btn('📷 Seiten fotografieren', 'small main', () => photoPages())); } };
+  clearInterval(tick); tick = setInterval(upd, 1000); upd();
+}
+function startReading(bookId, title){ P.reading = {bookId, title, start:Date.now()}; L.save(); L.toast('⏱ Viel Spaß beim Lesen von „' + title + '“!'); openRead(); }
+// Fotos sammeln (eins nach dem anderen – so klappt es mit der Kamera auf jedem Handy)
+const pages = [];
+function photoPages(){
+  L.openSheet('📷 Seiten fotografieren', body => {
+    body.append(el('p', 'cardtext', `Fotografiere 2–3 Seiten aus „${P.reading.title}“, die du gerade gelesen hast. Halte das Handy gerade, damit man die Schrift gut lesen kann.`));
+    const thumbs = el('div', 'things'); pages.forEach(c => { const im = document.createElement('img'); im.src = c.toDataURL('image/jpeg', .6); im.className = 'pagethumb'; thumbs.append(im); }); body.append(thumbs);
+    const add = el('label', 'btn' + (pages.length < 2 ? ' main' : ''), pages.length ? '📷 Noch eine Seite' : '📷 Erste Seite'); add.htmlFor = 'pageFile';
+    const r2 = el('div', 'row'); r2.append(btn('Abbrechen', '', () => { pages.length = 0; L.closeSheet(); }));
+    if (pages.length < 3) r2.append(add);
+    if (pages.length >= 2) r2.append(btn('Weiter ✦', 'main', () => askReading()));
+    body.append(r2);
+  });
+}
+RS.$('pageFile').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { const u = URL.createObjectURL(f), im = new Image(); im.src = u; await im.decode(); const k = Math.min(1, 1024/Math.max(im.naturalWidth, im.naturalHeight)), [c, x] = RS.cnv(Math.round(im.naturalWidth*k), Math.round(im.naturalHeight*k)); x.drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); pages.push(c); }
+  catch(err){ L.toast('⚠ Das Foto ließ sich nicht öffnen'); }
+  photoPages(); };
+async function askReading(){
+  const r = P.reading, minutes = Math.round((Date.now() - r.start)/60e3);
+  const ai = window.Sync && Sync.aiReady && Sync.aiReady();
+  if (!ai) return writeSummary(minutes);   // ohne KI: ein Satz + Bestätigung durch Erwachsene
+  L.openSheet('🤔 Die Lese-Eule denkt nach …', b2 => b2.append(el('p', 'cardtext', 'Sie liest deine Seiten und überlegt sich eine Frage …')));
+  let res; try { res = await Sync.bookQuestion({title:r.title, grade:(window.Profiles && Profiles.current && Profiles.current.grade) || 4, images:pages.map(c => c.toDataURL('image/jpeg', .8).split(',')[1])}); }
+  catch(err){ return L.openSheet('⚠ Das hat nicht geklappt', b2 => { b2.append(el('p', 'cardtext', 'Die Frage konnte gerade nicht erstellt werden (' + err.message + '). Versuch es gleich noch einmal.')); row(b2, [btn('Nochmal', 'main', askReading), btn('Später', '', L.closeSheet)]); }); }
+  if (!res.lesbar || !res.fragen || !res.fragen.length){ pages.length = 0; return L.openSheet('📷 Nicht lesbar', b2 => { b2.append(el('p', 'cardtext', 'Auf den Fotos konnte die Lese-Eule keinen Text erkennen. Fotografiere die Seiten bitte noch einmal – gerade, hell und scharf.')); row(b2, [btn('📷 Nochmal fotografieren', 'main', photoPages)]); }); }
+  const qs = res.fragen.slice(0, 2).map((f, i) => ({id:'read-' + r.start + '-' + i, type:'mc', q:f.frage, options:f.antworten.slice(0, 3), answer:f.richtig|0, explain:''}));
+  let i = 0;
+  const next = () => { const q = qs[i++]; if (!q) return done(false, minutes);
+    L.ask(q, ok => { if (ok) setTimeout(() => done(true, minutes), 50); }, {label:'Lese-Frage zu „' + r.title + '“', gift:false, noReveal:true, next: () => { const last = P.q[q.id]; if (last && last.ok) return; next(); }}); };
+  next();
+}
+function done(ok, minutes){
+  const r = P.reading; pages.length = 0;
+  P.readLog = (P.readLog || []).concat([{title:r.title, minutes, at:Date.now(), ok}]).slice(-50);
+  if (ok){ P.reading = null; L.save(); if (window.Needs) Needs.change('spass', 60); L.addStars(5, 'Lesezeit');
+    if (window.Needs) P.food.brezel = (P.food.brezel || 0) + 1;
+    L.openSheet('📚 Super gelesen!', b2 => { b2.append(el('div', 'stamp big', '📚'), el('p', 'cardtext', `${minutes} Minuten gelesen und die Frage richtig beantwortet! Dir ist jetzt gar nicht mehr langweilig. 📚 +60 Spaß · 🥨 +1 Brezel`)); row(b2, [btn('Juhu ✦', 'main', L.closeSheet)]); }); }
+  else { L.save(); L.openSheet('Noch einmal lesen', b2 => { b2.append(el('p', 'cardtext', 'Die Fragen waren diesmal nicht richtig. Lies den Abschnitt noch einmal genau – dann fotografiere die Seiten neu.')); row(b2, [btn('📷 Neue Fotos', 'main', photoPages), btn('Später', '', L.closeSheet)]); }); }
+}
+// ohne KI: einen Satz schreiben, ein Erwachsener bestätigt später im Eltern-Bereich
+function writeSummary(minutes){
+  const r = P.reading;
+  L.openSheet('✍ Was ist passiert?', body => {
+    body.append(el('p', 'cardtext', `Schreib in einem oder zwei Sätzen, was in dem Abschnitt von „${r.title}“ passiert ist. Ein Erwachsener schaut es sich an und bestätigt deine Lesezeit.`));
+    const t = document.createElement('textarea'); t.className = 'pininput name talkedit'; t.rows = 4; t.maxLength = 400; body.append(t);
+    const msg = el('p', 'note', ''); body.append(msg);
+    row(body, [btn('Abbrechen', '', L.closeSheet), btn('Abschicken ✦', 'main', async () => {
+      if (t.value.trim().length < 15) return msg.textContent = 'Schreib bitte etwas mehr – mindestens einen ganzen Satz.';
+      const list = (await RS.idb.getP('parent:reading')) || [];
+      list.push({id:RS.uuid(), kid:RS.owner, title:r.title, minutes, text:t.value.trim(), at:Date.now(), status:'pending', pages:pages.slice(0, 3).map(c => c.toDataURL('image/jpeg', .5))});
+      await RS.idb.setP('parent:reading', list.slice(-30)); P.reading = null; pages.length = 0; L.save();
+      L.openSheet('✔ Abgeschickt', b2 => { b2.append(el('p', 'cardtext', 'Super! Sobald ein Erwachsener deine Lesezeit bestätigt, ist dir nicht mehr langweilig. 📚')); row(b2, [btn('OK', 'main', L.closeSheet)]); }); })]);
+  });
+}
+// bestätigte Lesezeiten beim Anmelden gutschreiben
+addEventListener('rs:profile', async () => { const list = (await RS.idb.getP('parent:reading')) || []; let n = 0;
+  list.forEach(x => { if (x.kid === RS.owner && x.status === 'ok' && !x.claimed){ x.claimed = true; n++; } });
+  if (!n) return; await RS.idb.setP('parent:reading', list);
+  setTimeout(() => { if (window.Needs) Needs.change('spass', 60*n); L.addStars(5*n, 'Lesezeit bestätigt'); L.toast('📚 Deine Lesezeit wurde bestätigt – kein bisschen langweilig mehr!'); }, 3000); });
+
 $('readBtn').onclick = openRead;
 window.Books = {get count(){ return count; }, all: load, edit, talk, openRead, decodeISBN, lookup, isbnOk};
 })();

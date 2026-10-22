@@ -70,7 +70,7 @@ function recover(){
 // jedes Öffnen verlangt die Eltern-PIN – sonst könnte das Kind kurz danach selbst hinein
 function openArea(){ ready.then(() => { if (!cfg) return setup(); verify(showArea, {reason:'Willkommen im Eltern-Bereich. Bitte die Eltern-PIN eingeben.'}); }); }
 async function showArea(){
-  const books = window.Books ? await Books.all() : [], kids = PR.list || [];
+  const books = window.Books ? await Books.all() : [], kids = PR.list || [], reads = (await RS.idb.getP('parent:reading')) || [];
   const kidName = id => (kids.find(k => k.id === id) || {}).name || '?';
   overLogin();
   L.openSheet('👪 Eltern-Bereich', body => {
@@ -79,6 +79,16 @@ async function showArea(){
     const open = []; books.forEach(b => (b.kids || []).forEach(k => { const s = (b.status || {})[k] || {}; if (s.quiz && s.scanId && !s.confirmed) open.push([b, k]); }));
     if (open.length){ body.append(el('h3', 'albumh', '⏳ Wartet auf euer Lesegespräch'));
       open.forEach(([b, k]) => row(body, [el('span', 'cardtext', `${kidName(k)}: „${b.title}“`), btn('Lesegespräch führen', 'small main', () => Books.talk(b.id, k, {parent:true}))])); }
+    const pend = reads.filter(r => r.status === 'pending');
+    if (pend.length){ body.append(el('h3', 'albumh', '⏱ Lesezeiten bestätigen'));
+      pend.forEach(r => { const card = el('div', 'bookrow'), info = el('div', 'bookinfo');
+        info.append(el('b', '', `${kidName(r.kid)}: „${r.title}“ · ${r.minutes} Min.`), el('p', 'cardtext', '„' + r.text + '“'));
+        const th = el('div', 'things'); (r.pages || []).forEach(src => { const im = document.createElement('img'); im.src = src; im.className = 'pagethumb'; th.append(im); }); info.append(th);
+        const acts = el('div', 'fs-row');
+        const decide = async st => { const all = (await RS.idb.getP('parent:reading')) || [], x = all.find(y => y.id === r.id); if (x) x.status = st; await RS.idb.setP('parent:reading', all);
+          if (st === 'ok' && r.kid === RS.owner){ x.claimed = true; await RS.idb.setP('parent:reading', all); if (window.Needs) Needs.change('spass', 60); L.addStars(5, 'Lesezeit bestätigt'); }
+          L.toast(st === 'ok' ? '✔ Lesezeit bestätigt' : 'Lesezeit abgelehnt'); showArea(); };
+        acts.append(btn('✔ Bestätigen', 'small main', () => decide('ok')), btn('Ablehnen', 'small', () => decide('no'))); info.append(acts); card.append(info); body.append(card); }); }
     body.append(el('h3', 'albumh', '📚 Bücher'));
     if (!books.length) body.append(el('p', 'note', 'Noch kein Buch angemeldet.'));
     books.forEach(b => { const card = el('div', 'bookrow');

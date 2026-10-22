@@ -143,6 +143,9 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .figs{display:flex;flex-direction:column;gap:10px}
 .fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
 button.danger{background:#ffd0d6}
+.readbox{border:2px solid var(--ink);border-radius:16px;padding:10px 12px;background:#fff;display:flex;flex-direction:column;gap:6px}
+.readclock{font-family:var(--f-display);font-size:40px;margin:0;text-align:center}
+.pagethumb{width:72px;height:96px;object-fit:cover;border:2px solid var(--ink);border-radius:8px}
 body[data-world="house"]{background:linear-gradient(180deg,#fbe9d7 0%,#f7efe2 100%)}
 button.swatch{width:38px;height:38px;padding:0;border-radius:50%;box-shadow:none}
 button.swatch.main{outline:4px solid var(--ink);outline-offset:2px}
@@ -289,6 +292,7 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 </div>
 <input id="scanFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
 <input id="isbnFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+<input id="pageFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
 <div id="scan" class="scan" hidden role="dialog" aria-modal="true" aria-labelledby="scanTitle">
   <div class="sheet">
     <h2 id="scanTitle">Neue Figur</h2>
