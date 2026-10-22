@@ -2,7 +2,9 @@
 (() => {
 const RS = window.RS, L = window.Learn, PR = window.Profiles, { el, btn, row } = L, $ = RS.$;
 let cfg = null, fails = 0, lockUntil = 0;
-const ready = RS.idb.getP('parent').then(v => { cfg = v || null; });
+const reload = () => RS.idb.getP('parent').then(v => { cfg = v || null; });
+const ready = reload();
+addEventListener('rs:sync', reload);   // Eltern-PIN kann von einem anderen Gerät kommen
 const save = () => RS.idb.setP('parent', cfg);
 const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const newCode = () => { const a = new Uint8Array(12); crypto.getRandomValues(a); const s = [...a].map(x => ALPH[x % ALPH.length]).join(''); return s.slice(0,4) + '-' + s.slice(4,8) + '-' + s.slice(8); };
@@ -39,7 +41,8 @@ function showCode(code, then){
 }
 
 // ---------- Prüfen ----------
-function verify(onOk, {title = '👪 Eltern-PIN', reason = 'Hier muss ein Erwachsener die Eltern-PIN eingeben.', inLogin = false} = {}){
+async function verify(onOk, {title = '👪 Eltern-PIN', reason = 'Hier muss ein Erwachsener die Eltern-PIN eingeben.', inLogin = false} = {}){
+  await reload();
   if (!cfg) return setup(() => onOk());
   overLogin();
   L.openSheet(title, body => {
@@ -68,7 +71,7 @@ function recover(){
 
 // ---------- Eltern-Bereich ----------
 // jedes Öffnen verlangt die Eltern-PIN – sonst könnte das Kind kurz danach selbst hinein
-function openArea(){ ready.then(() => { if (!cfg) return setup(); verify(showArea, {reason:'Willkommen im Eltern-Bereich. Bitte die Eltern-PIN eingeben.'}); }); }
+function openArea(){ reload().then(() => { if (!cfg) return setup(); verify(showArea, {reason:'Willkommen im Eltern-Bereich. Bitte die Eltern-PIN eingeben.'}); }); }
 async function showArea(){
   const books = window.Books ? await Books.all() : [], kids = PR.list || [], reads = (await RS.idb.getP('parent:reading')) || [];
   const kidName = id => (kids.find(k => k.id === id) || {}).name || '?';
@@ -100,6 +103,7 @@ async function showArea(){
     body.append(el('h3', 'albumh', '👧 Kinder'));
     if (!kids.length) body.append(el('p', 'note', 'Noch kein Kinderprofil.'));
     kids.forEach(k => row(body, [el('span', 'cardtext', k.avatar + ' ' + k.name), btn('PIN zurücksetzen', 'small', () => PR.setPin(k, () => { L.toast('PIN von ' + k.name + ' geändert ✔'); showArea(); }))]));
+    if (window.Sync) Sync.accountBox(body, {after: showArea});
     body.append(el('h3', 'albumh', '🔑 Eltern-PIN'));
     row(body, [btn('Eltern-PIN ändern', 'small', () => { cfg = null; save().then(() => setup()); }), btn('Bereich schließen', '', L.closeSheet)]);
   });

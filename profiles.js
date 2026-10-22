@@ -38,7 +38,8 @@ function chooser(){
     profiles.forEach(p => g.append(btn(p.avatar + '\n' + p.name, 'profbtn', () => askPin(p))));
     g.append(btn('＋\nNeues Profil', 'profbtn new', () => create()));
     b.append(g);
-    L.row(b, [btn('👪 Eltern', 'small', () => window.Parents && Parents.openArea({fromLogin:true}))]);
+    L.row(b, [btn('👪 Eltern', 'small', () => window.Parents && Parents.openArea({fromLogin:true})),
+      ...(window.Sync && Sync.configured && !Sync.session ? [btn('☁️ Familien-Konto', 'small', () => view(b2 => { b2.append(el('h2', '', '☁️ Familien-Konto')); Sync.accountBox(b2, {after: async () => { await reload(); chooser(); }}); L.row(b2, [btn('← Zurück', '', chooser)]); }))] : [])]);
     if (!profiles.length) b.append(el('p', 'tip', 'Leg zuerst ein Profil für dich an. Jedes Kind bekommt sein eigenes Profil mit eigenen Figuren und Sternen.'));
   });
 }
@@ -137,5 +138,7 @@ addEventListener('DOMContentLoaded', async () => {
   const auto = await RS.idb.getP('autologin'), p = profiles.find(q => q.id === auto);
   if (p) login(p, true); else chooser();
 });
-window.Profiles = {get list(){ return profiles; }, hash, pinPad, setPin, view, chooser, saveProfiles, get current(){ return profiles.find(p => p.id === RS.owner); }};
+// nach einem Abgleich (anderes Gerät hat Profile angelegt) neu laden
+async function reload(){ profiles = (await RS.idb.getP('profiles')) || []; if (!ov.hidden && box.querySelector('.profgrid')) chooser(); }
+window.Profiles = {reload, get list(){ return profiles; }, hash, pinPad, setPin, view, chooser, saveProfiles, get current(){ return profiles.find(p => p.id === RS.owner); }};
 })();

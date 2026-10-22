@@ -9,6 +9,11 @@ Inhalt
   parents.js              Eltern-Bereich mit eigener Eltern-PIN
   books.js                Bücher: Strichcode scannen, Buch-Quiz, Bild, Lesegespräch
   worlds/time.js          die Zeitmaschine (Dino-Tal, Ägypten, Ritterburg)
+  worlds/house.js         das eigene Haus (Zimmer mit Regal, Bett, Rätsel-Tisch …)
+  needs.js                Bedürfnisse der Figur (Wissen, Hunger, Spaß, Energie)
+  friends.js              Freundschaften zwischen Profilen
+  sync.js                 Familien-Konto: Abgleich zwischen Handy und iPad (Supabase)
+  supabase/functions/…    KI-Funktion für die Lese-Fragen (Gemini), siehe SUPABASE-EINRICHTEN.txt
   content/time.json       Wissenskarten und Fragen der Zeitmaschine
   raetsel.js, math.js     Rätsel-Zeit: Wissens-Quiz und Rechen-Geschichten
   rewards.js              Geschenke, Laden, Meine Sachen (Sticker, Anziehsachen, Haustiere, Deko)
@@ -122,3 +127,31 @@ Inhalt
    3. Lesegespräch mit einem Erwachsenen, der mit der Eltern-PIN bestätigt.
    Freischaltung: 1. Buch -> Zeitmaschine Dino-Tal, 2. -> Altes Ägypten,
    3. -> Ritterburg. Jedes Kind schaltet für sich selbst frei.
+
+11) Die Figur hat Bedürfnisse (oben rechts, vier Balken)
+   - 🧠 Wissen, 🍎 Satt, 📚 Spaß, 😴 Energie – sie sinken gemütlich über den Tag,
+     auch wenn die App zu ist. Die Figur wird nie krank, sie ist höchstens
+     traurig oder müde und sagt, was ihr fehlt.
+   - Rätsel: +Wissen und ein Essen für den Vorrat. Füttern: "Wie geht's dir?"
+     oder am Küchentisch im Haus. Schlafen: im Bett im eigenen Haus.
+   - Gegen Langeweile hilft Lesen (siehe 12).
+   - Ein Geschenk gibt es nach je 3 gelösten Rätseln (🎁 1/3).
+
+12) Lesezeit
+   - "📚 Lesen" -> Lesezeit starten. Nach mindestens 30 Minuten 2–3 Seiten
+     fotografieren, die gerade gelesen wurden.
+   - Mit eingerichteter KI stellt die Lese-Eule zwei Fragen dazu. Ohne KI
+     schreibt das Kind einen Satz, und ein Erwachsener bestätigt die Lesezeit
+     im Eltern-Bereich (mit den Seitenfotos zum Nachschauen).
+
+13) Eigenes Haus und Freunde
+   - Jedes Profil hat ein Haus auf der Wiese. Hinein darf nur, wem es gehört.
+     Innen: Goodie-Regal, Rätsel-Tisch, Bilderwand, Bücherregal, Bett,
+     Küchentisch und die Staffelei zum Einrichten.
+   - Auf der Wiese gibt es außerdem die Rätsel-Eule.
+   - Profil-Menü -> "👫 Freunde": Erst wenn eine Anfrage angenommen ist, sieht
+     man Haus und Figuren des anderen.
+
+14) Handy und iPad (Familien-Konto)
+   - Siehe SUPABASE-EINRICHTEN.txt. Danach im Eltern-Bereich (oder beim Start
+     unter "☁️ Familien-Konto") auf jedem Gerät einmal anmelden.

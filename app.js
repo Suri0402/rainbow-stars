@@ -618,9 +618,9 @@ function resize(){ renderer.setSize(innerWidth, innerHeight); camera.aspect = in
 addEventListener('resize', resize); resize();
 
 // ================= EIGENE FIGUREN: einscannen, speichern, mit allen teilen =================
-// Zum Teilen mit allen ein Supabase-Projekt anlegen (siehe SUPABASE-EINRICHTEN.txt) und URL + anon-Schlüssel hier eintragen.
-// Leer gelassen bleiben gescannte Figuren nur auf diesem Gerät.
-const SUPA = {url:'', key:''};
+// Familien-Konto (Supabase): Projekt-URL und öffentlichen Schlüssel (anon/publishable) eintragen – siehe SUPABASE-EINRICHTEN.txt.
+// ai: true, sobald die KI-Funktion "book-question" (Gemini) im Projekt angelegt ist. Leer gelassen bleibt alles auf diesem Gerät.
+const SUPA = {url:'', key:'', ai:false};
 const SHARE = !!(SUPA.url && SUPA.key), MAX_SHARED = 30, BUCKET = 'creatures';
 // neue "publishable keys" (sb_…) nur als apikey senden, ältere anon-Schlüssel (JWT) zusätzlich als Bearer
 const supaH = (extra={}) => ({apikey:SUPA.key, ...(SUPA.key.startsWith('sb_') ? {} : {Authorization:'Bearer '+SUPA.key}), ...extra});
@@ -1149,7 +1149,7 @@ window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, st
   claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
   deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
   walkTo: act => { userPick = act; startActivity(act); manualUntil = performance.now() + 20000; },   // wie Antippen
-  refreshVisibility, canSee,
+  SUPA, refreshVisibility, canSee,
   setMood: (m, speed = 1) => { mood = m; speedFactor = speed; },
   setScanContext: c => { scanContext = c && {...c, at:Date.now()}; }, setView, get ctrl(){ return ctrl; }, get view(){ return view; }, goTo,
   onTick: f => tickHooks.push(f), addThing, removeFromWorld: removeCreature, world, camRight, uuid,

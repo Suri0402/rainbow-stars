@@ -435,7 +435,6 @@ function openMine(){
       if (r.inWorld) acts.append(btn('Hinlaufen', 'small main', () => { closeSheet(); const res = RS.goToCreature(r.id);
         if (typeof res === 'string'){ travel(res); setTimeout(() => RS.goToCreature(r.id), 1800); } }));
       acts.append(btn('🎨 Ausmalen', 'small', () => { closeSheet(); RS.paintCreature(r.id); }));
-      if ((r.world || 'home') === 'home' && RS.SHARE && !r.uploaded) acts.append(btn('Nochmal senden', 'small', () => { RS.resend(r.id); toast('Wird gesendet …'); }));
       const del = btn('Löschen', 'small', () => {
         if (!del.dataset.sure){ del.dataset.sure = 1; del.textContent = 'Wirklich löschen?'; del.classList.add('danger'); return; }
         RS.deleteCreature(r.id).then(() => { toast(r.name + ' wurde gelöscht'); openMine(); }).catch(e => toast('⚠ ' + e.message));
@@ -444,7 +443,6 @@ function openMine(){
     });
     body.append(wrap);
     problems();
-    if (RS.SHARE && list.some(r => r.uploaded)) body.append(el('p', 'note', 'Gelöschte Figuren verschwinden nur auf diesem Gerät. Bei allen anderen werden sie im Supabase-Dashboard gelöscht.'));
     row(body, [btn('Neue Figur scannen ✎', '', () => { closeSheet(); RS.openScan(); }), btn('Schließen', 'main', closeSheet)]);
     const revoke = () => { if (sheetEl.hidden){ urls.forEach(URL.revokeObjectURL); obs.disconnect(); } }, obs = new MutationObserver(revoke); obs.observe(sheetEl, {attributes:true, attributeFilter:['hidden']});
   }));

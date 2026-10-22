@@ -1,79 +1,109 @@
-RAINBOW STARS – gescannte Figuren mit allen teilen (Supabase)
-============================================================
+RAINBOW STARS – Familien-Konto und Lese-KI einrichten (Supabase + Gemini)
+=========================================================================
 
-Ohne diese Einrichtung funktioniert das Scannen auch, die Figuren bleiben
-dann aber nur auf dem Gerät, mit dem sie gescannt wurden.
-Mit Supabase (kostenloser Tarif reicht) sehen alle Nutzer die Figuren.
-
-So funktioniert es
-  - Jemand scannt eine Figur. Sie erscheint sofort auf dem eigenen Gerät und
-    wird an Supabase geschickt, zunächst als "nicht freigegeben".
-  - Du gibst sie im Supabase-Dashboard frei. Danach erscheint sie bei allen
-    (beim Öffnen der App und sonst spätestens nach ca. 1,5 Minuten).
-  - Nimmst du die Freigabe zurück oder löschst den Eintrag, verschwindet die
-    Figur bei allen anderen wieder.
-  - In der Welt sind höchstens die 30 neuesten freigegebenen Figuren.
+Wozu?
+  - Familien-Konto: Handy und iPad zeigen dieselben Profile, Figuren, Häuser,
+    Bücher, Freundschaften und Spielstände. Jede Familie sieht nur ihre eigenen
+    Daten (dafür sorgen die Regeln unten).
+  - Lese-KI: Nach 30 Minuten Lesezeit stellt eine KI (Gemini) eine Frage zu
+    den fotografierten Buchseiten. Ohne KI bestätigt ein Erwachsener die
+    Lesezeit im Eltern-Bereich.
+  Ohne diese Einrichtung funktioniert alles weiter – nur eben auf jedem Gerät
+  getrennt.
 
 1) Projekt anlegen
-   - https://supabase.com öffnen, Konto erstellen, "New project".
-   - Name z. B. "rainbow-stars", Region "Central EU (Frankfurt)".
+   - https://supabase.com -> "New project", Name z. B. "rainbow-stars",
+     Region "Central EU (Frankfurt)".
 
-2) Tabelle und Bildspeicher anlegen
-   Im Projekt links auf "SQL Editor" klicken, alles zwischen den Linien
-   einfügen und "Run" drücken:
+2) Datenbank einrichten
+   Links "SQL Editor", alles zwischen den Linien einfügen, "Run":
 
 ------------------------------------------------------------------------
-create table public.creatures (
-  id         uuid primary key,
-  name       text not null check (char_length(name) between 1 and 24),
-  kind       text not null check (kind in ('bunny', 'bear', 'float', 'ball', 'toy', 'deco', 'food')),
-  image_path text not null check (image_path ~ '^[0-9a-f-]{36}\.png$'),
-  approved   boolean not null default false,
-  created_at timestamptz not null default now()
+-- Alle Spielstände der Familie (Schlüssel/Wert)
+create table public.family_kv (
+  family_id  uuid not null references auth.users(id) on delete cascade,
+  key        text not null,
+  value      jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (family_id, key)
 );
+create index family_kv_changes on public.family_kv (family_id, updated_at);
+alter table public.family_kv enable row level security;
+create policy "kv lesen"    on public.family_kv for select to authenticated using (family_id = auth.uid());
+create policy "kv anlegen"  on public.family_kv for insert to authenticated with check (family_id = auth.uid());
+create policy "kv ändern"   on public.family_kv for update to authenticated using (family_id = auth.uid()) with check (family_id = auth.uid());
+create policy "kv löschen"  on public.family_kv for delete to authenticated using (family_id = auth.uid());
 
-alter table public.creatures enable row level security;
+-- Eingescannte Figuren (das Bild liegt im privaten Speicher "family")
+create table public.family_creatures (
+  id         uuid primary key,
+  family_id  uuid not null references auth.users(id) on delete cascade,
+  owner      text,
+  name       text,
+  kind       text,
+  world      text,
+  book       text,
+  created    bigint,
+  deleted    boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+create index family_creatures_changes on public.family_creatures (family_id, updated_at);
+alter table public.family_creatures enable row level security;
+create policy "fig lesen"   on public.family_creatures for select to authenticated using (family_id = auth.uid());
+create policy "fig anlegen" on public.family_creatures for insert to authenticated with check (family_id = auth.uid());
+create policy "fig ändern"  on public.family_creatures for update to authenticated using (family_id = auth.uid()) with check (family_id = auth.uid());
 
--- alle dürfen freigegebene Figuren sehen
-create policy "Freigegebene Figuren lesen" on public.creatures
-  for select to anon using (approved = true);
-
--- alle dürfen neue Figuren einreichen, aber nicht selbst freigeben
-create policy "Neue Figuren einreichen" on public.creatures
-  for insert to anon with check (approved = false);
-
-grant select, insert on public.creatures to anon;
-
--- öffentlicher Bildspeicher, nur PNG bis 1 MB
+-- Privater Bildspeicher: jede Familie nur in ihrem eigenen Ordner
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('creatures', 'creatures', true, 1048576, array['image/png']);
-
-create policy "Figurenbilder hochladen" on storage.objects
-  for insert to anon with check (bucket_id = 'creatures');
+values ('family', 'family', false, 2097152, array['image/png']);
+create policy "bild lesen"   on storage.objects for select to authenticated using (bucket_id = 'family' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "bild anlegen" on storage.objects for insert to authenticated with check (bucket_id = 'family' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "bild ändern"  on storage.objects for update to authenticated using (bucket_id = 'family' and (storage.foldername(name))[1] = auth.uid()::text);
 ------------------------------------------------------------------------
 
-3) Schlüssel in die App eintragen
-   - Links "Project Settings" -> "API" (bzw. "API Keys").
-   - "Project URL" und den öffentlichen Schlüssel kopieren
-     ("anon public" oder "Publishable key").
+3) Anmeldung per E-Mail
+   - Links "Authentication" -> "Sign In / Providers" -> "Email" muss an sein.
+   - Am einfachsten: "Confirm email" AUSschalten. Dann kann man sich nach dem
+     Erstellen des Kontos sofort anmelden.
+   - Wenn ihr die Bestätigung per E-Mail behalten wollt: unter
+     "Authentication" -> "URL Configuration" die "Site URL" auf
+     https://suri0402.github.io/rainbow-stars/ setzen. Nach dem Klick auf den
+     Link in der E-Mail meldet ihr euch in der App an.
+
+4) Schlüssel in die App eintragen (oder mir schicken)
+   - "Project Settings" -> "API" (bzw. "API Keys"): "Project URL" und den
+     öffentlichen Schlüssel ("anon public" oder "Publishable key").
      NIEMALS den "service_role"- oder "secret"-Schlüssel verwenden!
-   - In app.js nach dieser Zeile suchen:
-         const SUPA = {url:'', key:''};
-     und ausfüllen, zum Beispiel:
-         const SUPA = {url:'https://abcdefgh.supabase.co', key:'eyJhbGciOi...'};
-   - Speichern und auf GitHub pushen (oder mir die Werte schicken).
+   - In app.js diese Zeile ausfüllen:
+         const SUPA = {url:'', key:'', ai:false};
+     z. B.
+         const SUPA = {url:'https://abcdefgh.supabase.co', key:'eyJhbGciOi...', ai:false};
+   - In der App: Eltern-Bereich -> "☁️ Familien-Konto" -> "Neues Konto
+     erstellen" (einmal), auf jedem weiteren Gerät "Anmelden".
+     Beim ersten Anmelden werden die Daten dieses Geräts ins Konto übernommen.
 
-4) Figuren freigeben
-   - Links "Table Editor" -> Tabelle "creatures".
-   - Bei einer neuen Figur in der Spalte "approved" das Häkchen setzen (true).
-   - Das Bild ansehen: "Storage" -> "creatures" -> Datei mit dem Namen aus
-     "image_path".
-   - Unpassende Figur: Zeile löschen (und das Bild im Storage).
+5) Lese-KI (Gemini) – optional
+   a) Gemini-Schlüssel: https://aistudio.google.com -> "Get API key" ->
+      neuen Schlüssel nur für Rainbow Stars erstellen.
+      (Kostenloser Tarif reicht für ein paar Fragen am Tag. Hinweis: Im
+      kostenlosen Tarif darf Google die Anfragen zur Verbesserung nutzen –
+      es werden nur Fotos von Buchseiten und der Buchtitel geschickt.)
+   b) Im Supabase-Projekt links "Edge Functions" -> "Deploy a new function" ->
+      "Via Editor". Name: book-question
+      Den Inhalt der Datei supabase/functions/book-question/index.ts
+      (liegt in diesem Ordner) komplett einfügen -> "Deploy".
+      "Verify JWT" eingeschaltet lassen.
+   c) "Edge Functions" -> "Secrets" -> neues Secret:
+         Name: GEMINI_API_KEY    Wert: euer Gemini-Schlüssel
+      Optional: GEMINI_MODEL, falls Google ein neueres Modell empfiehlt
+      (Standard: gemini-2.5-flash).
+   d) In app.js ai:true setzen:
+         const SUPA = {url:'…', key:'…', ai:true};
+   Der Gemini-Schlüssel steht NIE in der App – nur in Supabase.
 
-Ohne Freigabe (nicht empfohlen, jede Figur erscheint sofort bei allen):
-------------------------------------------------------------------------
-alter table public.creatures alter column approved set default true;
-drop policy "Neue Figuren einreichen" on public.creatures;
-create policy "Neue Figuren einreichen" on public.creatures
-  for insert to anon with check (true);
-------------------------------------------------------------------------
+6) Gut zu wissen
+   - Eltern-PIN, Buchfragen und Profile liegen dann im Familien-Konto und
+     sind auf allen Geräten gleich.
+   - "Angemeldet bleiben" gilt pro Gerät.
+   - Abmelden (Eltern-Bereich) stoppt nur den Abgleich auf diesem Gerät; die
+     Daten auf dem Gerät bleiben erhalten.
