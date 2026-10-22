@@ -67,7 +67,7 @@ function mathTask(round){
         checkB.disabled = true; round.right++;
         res.append(el('b', '', ['Super gerechnet!', 'Richtig!', 'Klasse!', 'Spitze!'][Math.floor(Math.random()*4)]), el('p', 'cardtext', 'Rechenweg: ' + way() + '.'));
         L.addStars(tries === 1 ? t.level + 1 : 1, 'Rechen-Geschichte'); adapt(tries === 1);
-        if (window.Rewards) window.Rewards.giftInto(res);
+        if (window.Rewards) window.Rewards.solved(res);
         res.append(nextRow());
       } else if (tries === 1){
         res.append(el('b', '', 'Noch nicht ganz.'), el('p', 'cardtext', 'Lies die Geschichte noch einmal genau: Was wird gefragt? Welche Zahlen brauchst du? Versuch es noch einmal!'));
@@ -106,5 +106,16 @@ function openHub(){
   });
 }
 RS.$('raetselBtn').onclick = openHub;
+// Rätsel-Eule auf der Heimatwiese: ein fester Ort zum Rätseln
+{ const [c, x] = RS.cnv(260, 330);
+  const top = [[30,150],[230,150],[210,190],[50,190]]; RS.pencil(x, top, '#c99a76'); RS.ink(x, top, true, 3);
+  const leg = [[110,190],[150,190],[156,320],[104,320]]; RS.pencil(x, leg, '#b98866'); RS.ink(x, leg, true, 3);
+  const foot = RS.wob(130, 318, 70, 12, 24, .03); RS.pencil(x, foot, '#a5703f'); RS.ink(x, foot, true, 2.4);
+  const book = [[60,150],[128,136],[200,150],[128,160]]; RS.pencil(x, book, '#fff4e6'); RS.ink(x, book, true, 2);
+  x.drawImage(window.Rewards.emojiCanvas('🦉', 150), 55, 0);
+  const W = RS.W.home, g = new RS.THREE.Group(); g.position.set(5, 0, .5); W.group.add(g);
+  const m = RS.bill(c, 1.3, g); RS.shadow(1.2, g);
+  const act = {kind:'sight', ref:{pos:g.position.clone(), name:'Rätsel-Eule'}, go:'läuft zur Rätsel-Eule', doing:'spricht mit der Rätsel-Eule', mark:' 🦉', marvel:true, off:.95, fxH:1.6, onArrive: openHub};
+  m.userData.act = act; W.acts.push(act); W.picks.push(m); }
 window.Raetsel = {openHub, knowledgeQuiz, mathRound};
 })();

@@ -17,6 +17,7 @@ async function loadProfile(id, {migrate = false, mathLevel} = {}){
   if (v){
     P.stars += v.stars || 0;
     ['cards','q','quests','stamps','items','wear','games','flags','stickers','deco'].forEach(k => P[k] = Object.assign({}, v[k], P[k]));
+    Object.keys(v).forEach(k => { if (!(k in P)) P[k] = v[k]; });
     P.review = [...new Set([...(v.review || []), ...P.review])];
     if (v.math) P.math = Object.assign({}, P.math, v.math);
     if (v.pet && !P.pet) P.pet = v.pet;
@@ -111,20 +112,28 @@ function discover(wid, key, extra){
   const id = fresh || ids[Math.floor(Math.random()*ids.length)];
   if (!id) return;
   if (fresh) unlockCard(fresh);
-  showCard(id, {isNew:!!fresh, extra});
+  showCard(id, {isNew:!!fresh, extra, wid, key});
 }
-function showCard(id, {isNew=false, extra}={}){
+// Rätsel zum Ort, an dem man steht: erst zu einer früher gelesenen Karte dieses Objekts, sonst als Lese-Check zur eben gelesenen
+function objectQuestion(wid, key, current){
+  const ids = (worlds[wid].content.objects[key] || []), open = q => !(P.q[q.id] && P.q[q.id].ok), all = Object.values(qById);
+  const earlier = ids.filter(i => i !== current && P.cards[i]);
+  const pick = list => list.find(q => q.level === 1) || list[0] || null;
+  return pick(all.filter(q => earlier.includes(q.card) && open(q))) || pick(all.filter(q => q.card === current && open(q)))
+      || pick(all.filter(q => ids.includes(q.card) && P.cards[q.card]).sort(() => Math.random() - .5));   // alles schon gekonnt: zum Wiederholen
+}
+function showCard(id, {isNew=false, extra, wid, key}={}){
   const c = cardById[id];
   openSheet(isNew ? 'Neue Wissenskarte!' : 'Wissenskarte', body => {
     const card = el('div', 'kcard'); card.append(el('div', 'ktitle', c.title), el('p', 'cardtext', c.text)); body.append(card);
     const items = [];
     if (canSpeak) items.push(speakBtn(c.title + '. ' + c.text));
-    // gefragt wird nie zur Karte, die man gerade gelesen hat – sondern zu etwas, das man früher entdeckt hat
-    const q = nextQuestion(c);
-    if (q) items.push(btn('Rätselfrage zu früher ✦', 'main', () => ask(q)));
+    // am Objekt: Rätsel genau dazu; im Album: ein Wiederholungs-Rätsel zu früher Entdecktem
+    const place = key && worlds[wid] && worlds[wid].names && worlds[wid].names[key];
+    const q = key ? objectQuestion(wid, key, c.id) : nextQuestion(c);
+    if (q) items.push(btn(place ? 'Rätsel ' + place + ' ✦' : key ? 'Rätsel dazu ✦' : 'Wiederholungs-Rätsel ✦', 'main', () => ask(q)));
     else if (extra) items.push(btn(extra.label, 'main', extra.run));
     else items.push(btn('Weiter', 'main', closeSheet));
-    if (!q && isNew) body.append(el('p', 'note', 'Merk dir das gut – Luna fragt dich später danach!'));
     row(body, items);
     if (q && extra) row(body, [btn(extra.label, '', extra.run)]);
   });

@@ -140,7 +140,7 @@ const quests = [
 // Belohnung am Ende: Forscherhut
 L.ITEMS.forscherhut = {name:'Forscherhut', slot:'head', w:1.0, y:200, draw(){ const [c, x] = cnv(300, 190); const brim = wob(150, 150, 140, 30, 30, .03); pencil(x, brim, '#d8b77c'); ink(x, brim, true, 3);
   const top = wob(150, 100, 90, 70, 30, .03); pencil(x, top, '#e6c88e'); ink(x, top, true, 3); x.lineWidth = 12; x.strokeStyle = '#8a5a3c'; x.beginPath(); x.moveTo(64, 128); x.quadraticCurveTo(150, 150, 236, 128); x.stroke(); return c; }};
-fetch('content/time.json').then(r => r.json()).then(content => L.registerWorld({id:'time', name:'Zeitmaschine', content, quests, guide:'Schildkröte Tempo', stampIcon:'⌛',
+fetch('content/time.json').then(r => r.json()).then(content => L.registerWorld({id:'time', name:'Zeitmaschine', content, quests, names:Object.fromEntries([...STATIONS.flatMap(s => s.items.map(i => [i[0], i[3]])), ['tempo', 'von Tempo']]), guide:'Schildkröte Tempo', stampIcon:'⌛',
   guideText:'Willkommen in der Zeitmaschine! Jede Station öffnet sich durch ein Buch, das du gelesen hast. Tippe auf alles, was du entdecken willst.',
   reward:{id:'forscherhut', name:'der Forscherhut'}})).catch(e => console.warn('Inhalte der Zeitmaschine fehlen', e));
 world.update = (dt, t) => {};

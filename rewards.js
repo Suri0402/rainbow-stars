@@ -106,7 +106,17 @@ function actionFor(it){
   if (it.type === 'deco') return {label:'Auf die Wiese stellen', done:'steht auf der Wiese', run:() => placeDeco(it.id, true)};
   return null;
 }
-L.setGift(giftInto);
+// Geschenk erst nach 3 gelösten Rätseln – dazwischen zeigt eine Anzeige den Fortschritt
+const GIFT_EVERY = 3;
+function renderGiftHud(){ const g = RS.$('giftHud'); if (!g) return; g.textContent = '🎁 ' + (P.giftCount || 0) + '/' + GIFT_EVERY; g.hidden = !L.profileId; }
+function solved(container){
+  P.giftCount = (P.giftCount || 0) + 1;
+  if (P.giftCount >= GIFT_EVERY){ P.giftCount = 0; L.save(); renderGiftHud(); giftInto(container); return; }
+  L.save(); renderGiftHud(); const left = GIFT_EVERY - P.giftCount;
+  container.append(L.el('p', 'giftprog', `🎁 ${P.giftCount}/${GIFT_EVERY} – noch ${left} ${left === 1 ? 'Rätsel' : 'Rätsel'} bis zum Geschenk`));
+}
+L.setGift(solved);
+addEventListener('rs:profile', renderGiftHud);
 
 // ---------- Anziehen, Haustier, Deko ----------
 function wear(id, on){
@@ -181,5 +191,5 @@ function openShop(){
 RS.$('thingsBtn').onclick = openThings;
 // Haar-Auswahl gehört jetzt zu "Meine Sachen": nach dem Schließen wieder verstecken
 new MutationObserver(() => { const sw = RS.$('swatches'); if (RS.$('learn').hidden && sw.parentElement !== RS.$('swatchHome')){ RS.$('swatchHome').append(sw); sw.hidden = true; } }).observe(RS.$('learn'), {attributes:true, attributeFilter:['hidden']});
-window.Rewards = {CATALOG, giftInto, openThings, openShop, emojiCanvas, rollGift};
+window.Rewards = {solved, CATALOG, giftInto, openThings, openShop, emojiCanvas, rollGift};
 })();

@@ -143,6 +143,9 @@ button.acard.locked{background:#ece6f5;color:var(--muted);font-size:22px;box-sha
 .figs{display:flex;flex-direction:column;gap:10px}
 .fig{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff}
 button.danger{background:#ffd0d6}
+.gift-hud{position:fixed;top:calc(62px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:5;font-size:16px;padding:2px 12px 4px;background:#fff}
+.giftprog{margin:8px 0 0;font-size:17px;color:#9a6a10}
+@media (max-width:560px){.gift-hud{top:calc(100px + env(safe-area-inset-top,0px))}}
 body[data-world="time"]{background:linear-gradient(180deg,#ffd9a8 0%,#ffe9c6 40%,#f6e7d0 70%,#efe4d2 100%)}
 .reccode{font-family:var(--f-display);font-size:30px;letter-spacing:.08em;text-align:center;background:#fff;border:3px dashed var(--ink);border-radius:14px;padding:10px;margin:8px 0}
 .bookrow{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:16px;padding:8px 10px;background:#fff;margin-bottom:8px}
@@ -245,6 +248,7 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 </div>
 <button type="button" id="starsHud" class="stars-hud" aria-label="Regenbogensterne – Album öffnen">★ <b>0</b></button>
 <button type="button" id="profileChip" class="profile-chip" hidden aria-label="Profil"></button>
+<button type="button" id="giftHud" class="gift-hud" hidden aria-label="Fortschritt bis zum nächsten Geschenk">🎁 0/3</button>
 <div id="login" class="login" role="dialog" aria-modal="true" aria-label="Anmelden"><div class="sheet" id="loginBox"><h2>Rainbow Stars lädt …</h2></div></div>
 <div id="toast" class="toast" hidden aria-live="polite"></div>
 <div id="figStatus" class="figstatus" hidden role="status" aria-live="polite"></div>

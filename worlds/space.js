@@ -180,7 +180,7 @@ const quests = [
   {id:'all', text:'Entdecke alle 13 Himmelskörper', goal: () => [L.discoveredObjects('space'), 13], reward:5},
 ];
 
-fetch('content/space.json').then(r => r.json()).then(content => L.registerWorld({id:'space', name:'Sternenwelt', content, quests, guide:'Sternenfee Luna', stampIcon:'☾',
+fetch('content/space.json').then(r => r.json()).then(content => L.registerWorld({id:'space', name:'Sternenwelt', content, quests, names:Object.fromEntries([...BODIES.map(b => [b[0], b[2]]), ['luna', 'von Luna']]), guide:'Sternenfee Luna', stampIcon:'☾',
   guideText:'Willkommen in der Sternenwelt! Tippe auf die Sonne, die Planeten und alles, was leuchtet. Für jede Entdeckung und jede richtige Antwort bekommst du Regenbogensterne.',
   reward:{id:'tiara', name:'der Sternen-Haarreif'}})).catch(e => console.warn('Inhalte der Sternenwelt fehlen', e));
 
