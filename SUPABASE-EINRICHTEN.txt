@@ -99,7 +99,7 @@ create policy "bild ändern"  on storage.objects for update to authenticated usi
    c) "Edge Functions" -> "Secrets" -> neues Secret:
          Name: GEMINI_API_KEY    Wert: euer Gemini-Schlüssel
       Optional: GEMINI_MODEL, falls Google ein neueres Modell empfiehlt
-      (Standard: gemini-2.5-flash).
+      (sonst gemini-flash-latest, mit Ausweich-Modellen).
    d) In app.js ai:true setzen:
          const SUPA = {url:'…', key:'…', ai:true};
    Der Gemini-Schlüssel steht NIE in der App – nur in Supabase.

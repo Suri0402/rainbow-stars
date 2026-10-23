@@ -117,7 +117,8 @@ setInterval(() => { if (document.visibilityState === 'visible') sync(); }, 60e3)
 // ---------- KI-Frage zur Lesezeit (Edge Function "book-question") ----------
 const aiReady = () => on() && !!C.ai && !!session;
 async function bookQuestion(payload){
-  const r = await api('/functions/v1/book-question', {method:'POST', body:JSON.stringify(payload)});
+  let r; try { r = await api('/functions/v1/' + (C.fn || 'book-question'), {method:'POST', body:JSON.stringify(payload)}); }
+  catch(e){ console.warn('Lese-Eule', e); throw new Error(/ 401/.test(e.message) ? 'bitte im Eltern-Bereich neu anmelden' : 'die Lese-Eule ist gerade nicht erreichbar'); }
   return r.json();
 }
 
