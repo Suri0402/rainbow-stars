@@ -620,7 +620,7 @@ addEventListener('resize', resize); resize();
 // ================= EIGENE FIGUREN: einscannen, speichern, mit allen teilen =================
 // Familien-Konto (Supabase): Projekt-URL und öffentlichen Schlüssel (anon/publishable) eintragen – siehe SUPABASE-EINRICHTEN.txt.
 // ai: true, sobald die KI-Funktion "book-question" (Gemini) im Projekt angelegt ist. Leer gelassen bleibt alles auf diesem Gerät.
-const SUPA = {url:'', key:'', ai:false};
+const SUPA = {url:'https://iobycagrsxsbqqlpatbt.supabase.co', key:'sb_publishable_NnbTRAKk9ffh0QVNSsLcFg_i988B3cs', ai:false};
 const SHARE = !!(SUPA.url && SUPA.key), MAX_SHARED = 30, BUCKET = 'creatures';
 // neue "publishable keys" (sb_…) nur als apikey senden, ältere anon-Schlüssel (JWT) zusätzlich als Bearer
 const supaH = (extra={}) => ({apikey:SUPA.key, ...(SUPA.key.startsWith('sb_') ? {} : {Authorization:'Bearer '+SUPA.key}), ...extra});

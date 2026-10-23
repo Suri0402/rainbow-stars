@@ -16,7 +16,10 @@ Wozu?
      Region "Central EU (Frankfurt)".
 
 2) Datenbank einrichten
-   Links "SQL Editor", alles zwischen den Linien einfügen, "Run":
+   Links "SQL Editor" -> "New query". Den GANZEN Inhalt der Datei
+   supabase/setup.sql einfügen (nicht diese Textdatei!) und "Run" drücken.
+   Unten erscheint "Success. No rows returned". Zur Info steht dasselbe SQL
+   auch hier zwischen den Linien:
 
 ------------------------------------------------------------------------
 -- Alle Spielstände der Familie (Schlüssel/Wert)
