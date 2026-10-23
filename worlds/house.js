@@ -1,36 +1,38 @@
-// Rainbow Stars – Eigenes Haus: auf der Wiese steht für jedes Profil ein Haus (sichtbar: eigenes + Freunde),
-// hinein darf nur, wem es gehört. Innen: Goodie-Regal, Rätsel-Tisch, Bilderwand, Bücherregal, Bett, Küchentisch, Einrichten.
+// Rainbow Stars – Eigenes Haus: Jedes Profil zeichnet sein Haus selbst auf Papier und scannt es ein. Es steht dann auf der Wiese
+// (alle Profile sehen alle Häuser), hinein darf nur, wem es gehört. Nach dem Anmelden startet man im eigenen Haus.
+// Innen gibt es anfangs nur den Rätsel-Tisch – weitere Möbel bekommt man für gelöste Rätsel.
 (() => {
 const RS = window.RS, L = window.Learn, { THREE, V3, cnv, wob, pencil, ink, star, bill, shadow, tex } = RS;
 const P = L.P, E = (e, s = 160) => window.Rewards.emojiCanvas(e, s);
 const COLORS = ['#ffb3cf', '#c4f0dc', '#ffe9a3', '#cde6ff', '#d9c9ff', '#ffd2b0'];
 const hashIdx = (id, n) => { let h = 0; for (const c of String(id)) h = (h*31 + c.charCodeAt(0)) >>> 0; return h % n; };
-const visible = id => id === RS.owner || !!(window.Friends && Friends.isFriend(id));
 const profiles = () => (window.Profiles && Profiles.list) || [];
 
 // ---------- Häuser auf der Wiese ----------
-function houseCanvas(p){
-  const [c, x] = cnv(360, 400), col = COLORS[hashIdx(p.id, COLORS.length)];
-  const wall = [[50,170],[310,170],[310,360],[50,360]]; pencil(x, wall, col); ink(x, wall, true, 3.2);
-  const roof = [[20,180],[180,40],[340,180]]; pencil(x, roof, '#e86f7d'); ink(x, roof, true, 3.2);
-  const door = [[150,250],[210,250],[210,360],[150,360]]; pencil(x, door, '#b98866'); ink(x, door, true, 2.6);
-  x.fillStyle = '#3b2a3a'; x.beginPath(); x.arc(200, 305, 5, 0, 7); x.fill();
-  [[75,210],[235,210]].forEach(([a, b]) => { const w = [[a,b],[a+55,b],[a+55,b+50],[a,b+50]]; pencil(x, w, '#cde6ff', false); ink(x, w, true, 2.4); ink(x, [[a+27,b],[a+27,b+50]], false, 1.6); ink(x, [[a,b+25],[a+55,b+25]], false, 1.6); });
-  x.drawImage(E(p.avatar, 110), 125, 85);   // Profilbild im Giebel
-  const sign = [[90,368],[270,368],[270,398],[90,398]]; pencil(x, sign, '#fbf7ee', false); ink(x, sign, true, 2);
-  x.fillStyle = '#342c3a'; x.font = '24px "Patrick Hand", cursive'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.name, 180, 384);
+async function houseRecs(){   // Profil-ID -> neuestes gezeichnetes Haus
+  const m = new Map(); (await RS.idb.all()).filter(r => r.kind === 'house' && r.owner).sort((a, b) => a.created - b.created).forEach(r => m.set(r.owner, r)); return m; }
+async function houseCanvas(p, rec){
+  const [c, x] = cnv(360, 410); let pic;
+  try { pic = await createImageBitmap(rec.blob); } catch(e){ return null; }
+  const s2 = Math.min(350/pic.width, 340/pic.height), w = pic.width*s2, h = pic.height*s2; x.drawImage(pic, 180 - w/2, 346 - h, w, h);
+  const sign = [[90,360],[270,360],[270,400],[90,400]]; pencil(x, sign, '#fbf7ee', false); ink(x, sign, true, 2);   // Namensschild mit Profilbild
+  x.fillStyle = '#342c3a'; x.font = '24px "Patrick Hand", cursive'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.avatar + ' ' + p.name, 180, 381);
   return c;
 }
 const homeHouses = new Map();   // Profil-ID -> {g, mesh, act}
-function placeHouses(){
+let placing = 0;
+async function placeHouses(){
+  const my = ++placing, recs = await houseRecs(), pics = new Map();
+  for (const p of profiles()) if (recs.has(p.id)){ const c = await houseCanvas(p, recs.get(p.id)); if (c) pics.set(p.id, c); }
+  if (my !== placing) return;   // inzwischen neu angefordert
   const W = RS.W.home;
   homeHouses.forEach((h, id) => { W.group.remove(h.g); [[W.acts, h.act], [W.picks, h.mesh]].forEach(([a, v]) => { const i = a.indexOf(v); if (i >= 0) a.splice(i, 1); }); });
   homeHouses.clear();
   if (!RS.owner) return;
-  profiles().filter(p => visible(p.id)).forEach(p => {
+  profiles().filter(p => pics.has(p.id)).forEach(p => {
     const ang = hashIdx(p.id + 'h', 360)/360*Math.PI*2, pos = new V3(Math.cos(ang)*11, 0, Math.sin(ang)*11);
     const g = new THREE.Group(); g.position.copy(pos); W.group.add(g);
-    const m = bill(houseCanvas(p), 3.2, g); shadow(3, g);
+    const m = bill(pics.get(p.id), 3.2, g); shadow(3, g);
     const own = p.id === RS.owner;
     const act = {kind:'sight', ref:{pos:pos.clone(), name:'Haus von ' + p.name}, go: own ? 'läuft nach Hause' : 'läuft zum Haus von ' + p.name, doing: own ? 'schließt die Haustür auf' : 'steht vor dem Haus von ' + p.name,
       marvel:true, off:1.5, fxH:2, onArrive: () => own ? L.travel('house') : knock(p)};
@@ -46,8 +48,23 @@ function knock(p){
 async function showGreets(){ const g = (await RS.idb.getP('greets')) || [], mine = g.filter(x => x.to === RS.owner); if (!mine.length) return;
   const names = [...new Set(mine.map(x => (profiles().find(p => p.id === x.from) || {}).name).filter(Boolean))];
   await RS.idb.setP('greets', g.filter(x => x.to !== RS.owner)); if (names.length) setTimeout(() => L.toast('👋 ' + names.join(' und ') + ' hat dir zugewinkt!'), 2500); }
-addEventListener('rs:profile', () => setTimeout(() => { placeHouses(); showGreets(); }, 200));
-addEventListener('rs:friends', placeHouses);
+const hasHouse = () => homeHouses.has(RS.owner);
+// Nach dem Anmelden: im eigenen Haus starten – oder die Figur bittet darum, dass man ihr ein Haus zeichnet
+let askT = 0;
+function askForHouse(){
+  clearInterval(askT);
+  const ask = () => { if (hasHouse() || !RS.owner){ clearInterval(askT); return; } if (RS.worldId !== 'home' || RS.paused || !document.getElementById('learn').hidden) return;
+    RS.say('Kannst du für mich ein Haus zeichnen? 🏠 Dann habe ich ein Zuhause! Mal es auf Papier und scanne es ein.', {label:'✎ Haus scannen', labelFor:'scanFile', prio:3, ms:30000,
+      onClick: () => RS.setScanContext({house:true})}); };
+  setTimeout(ask, 2500); askT = setInterval(ask, 4*60e3);
+}
+addEventListener('rs:profile', () => setTimeout(async () => { await placeHouses(); showGreets();
+  if (hasHouse()) RS.enterWorld('house'); else askForHouse(); }, 200));
+['rs:sync', 'rs:painted', 'rs:deleted'].forEach(ev => addEventListener(ev, () => { if (RS.owner) placeHouses(); }));
+addEventListener('rs:scanned', async e => { if (!e.detail.house) return; await placeHouses(); clearInterval(askT);
+  L.toast('🏠 Dein Haus steht jetzt auf der Wiese!');
+  RS.say('Juhu, mein eigenes Haus! 🏠 Komm, wir gehen hinein!', {prio:3, ms:9000});
+  setTimeout(() => { const h = homeHouses.get(RS.owner); if (h && RS.worldId === 'home') RS.walkTo(h.act); }, 2500); });
 
 // ---------- Das Zimmer ----------
 const world = RS.addWorld({id:'house', name:'Zuhause', fog:0xf7efe2, spawn:new V3(1, 0, 1.4), hello:'ist zu Hause 🏠', bounds:{x0:-3.8, x1:3.8, z0:-1.9, z1:2.6}, azLimit:.55});
@@ -74,10 +91,23 @@ function buildRoom(){
   const ft = tex(floorCanvas()); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(2, 1.5);
   floorM = new THREE.Mesh(new THREE.PlaneGeometry(9, 6), new THREE.MeshBasicMaterial({map:ft})); floorM.rotation.x = -Math.PI/2; floorM.position.set(0, .002, .4); G.add(floorM);
   const [rc, rx] = cnv(256, 256), rp = wob(128, 128, 120, 120, 40, .03); pencil(rx, rp, ROOM().rug); ink(rx, rp, true, 3); rx.strokeStyle = 'rgba(255,255,255,.6)'; rx.lineWidth = 6; rx.beginPath(); rx.arc(128, 128, 80, 0, 7); rx.stroke();
+  if (!has('teppich')){ rugM = null; return; }
   rugM = new THREE.Mesh(new THREE.CircleGeometry(1.5, 40), new THREE.MeshBasicMaterial({map:tex(rc), transparent:true})); rugM.rotation.x = -Math.PI/2; rugM.position.set(0, .006, .7); G.add(rugM);
 }
-// Möbel: gezeichnete Billboards, Inhalt aus dem Besitz
+// Möbel: gezeichnete Billboards, Inhalt aus dem Besitz. Anfangs nur der Rätsel-Tisch, alle 2 gelösten Rätsel kommt ein Möbelstück dazu.
+const FURN = [['tisch', '🧠 Rätsel-Tisch'], ['bett', '🛏 Bett'], ['kueche', '🍽 Küchentisch'], ['regal', '🧸 Goodie-Regal'], ['teppich', '🟢 Teppich'], ['buecher', '📚 Bücherregal'], ['bilder', '🖼 Bilderwand'], ['staffelei', '🎨 Staffelei zum Einrichten']];
+const PER = 2;
+const unlockedN = () => Math.min(FURN.length, 1 + Math.floor((P.furnPts || 0)/PER));
+const has = key => FURN.findIndex(f => f[0] === key) < unlockedN();
+addEventListener('rs:solved', e => {
+  const before = unlockedN(); P.furnPts = (P.furnPts || 0) + 1; L.save(); const now = unlockedN(), c = e.detail && e.detail.container;
+  if (now > before){ const f = FURN[now - 1][1]; if (c) c.append(L.el('p', 'needgain', '🎉 Neues Möbelstück für dein Haus: ' + f + '!'));
+    setTimeout(() => RS.say('Juhu, neu in meinem Zimmer: ' + f + '! Danke! 💖', {prio:2, ms:8000}), 1200);
+    if (RS.worldId === 'house') furnish(); }
+  else if (now < FURN.length && c){ const left = PER - (P.furnPts % PER); c.append(L.el('p', 'needgain', `🪑 Noch ${left} Rätsel bis: ${FURN[now][1]}`)); }
+});
 const furn = {};
+function unplace(key){ const f = furn[key]; if (!f) return; G.remove(f.g || f.mesh); const i = world.picks.indexOf(f.mesh); if (i >= 0) world.picks.splice(i, 1); if (f.act){ const j = world.acts.indexOf(f.act); if (j >= 0) world.acts.splice(j, 1); } delete furn[key]; }
 function place(key, canvas, w, x, z, act){
   if (furn[key]){ G.remove(furn[key].g); const i = world.picks.indexOf(furn[key].mesh); if (i >= 0) world.picks.splice(i, 1); const j = world.acts.indexOf(furn[key].act); if (j >= 0) world.acts.splice(j, 1); }
   const g = new THREE.Group(); g.position.set(x, 0, z); G.add(g); const m = bill(canvas, w, g); shadow(Math.min(2.4, w*.8), g);
@@ -125,26 +155,34 @@ function easelCanvas(){ const [c, x] = cnv(220, 320); ink(x, [[40,310],[110,30],
 async function furnish(){
   if (!RS.owner) return;
   buildRoom();
-  place('regal', shelfCanvas(), 2.0, -2.7, -2.1, {name:'Goodie-Regal', go:'läuft zum Goodie-Regal', doing:'schaut sich ihre Schätze an', onArrive: () => window.Rewards && Rewards.openThings()});
-  place('tisch', deskCanvas(), 1.8, -.5, -2.1, {name:'Rätsel-Tisch', go:'setzt sich an den Rätsel-Tisch', doing:'denkt nach', mark:' 🧠', onArrive: () => window.Raetsel && Raetsel.openHub()});
-  place('bett', bedCanvas(), 2.3, 2.7, -1.9, {name:'Bett', go:'geht ins Bett', doing:'kuschelt sich ins Bett', mark:' 💤', onArrive: () => goToBed(true)});
-  place('kueche', kitchenCanvas(), 1.5, 3.2, 1.0, {name:'Küchentisch', go:'läuft zum Küchentisch', doing:'schaut, was es zu essen gibt', mark:' 🍎', onArrive: () => window.Needs && Needs.open()});
-  place('buecher', await booksCanvas(), 1.4, -3.7, .2, {name:'Bücherregal', go:'läuft zum Bücherregal', doing:'stöbert im Bücherregal', mark:' 📚', onArrive: () => window.Books && Books.openRead()});
+  const put = async (key, mk, w, x, z, act) => { if (has(key)) place(key, await mk(), w, x, z, act); else unplace(key); };
+  await put('regal', shelfCanvas, 2.0, -2.7, -2.1, {name:'Goodie-Regal', go:'läuft zum Goodie-Regal', doing:'schaut sich ihre Schätze an', onArrive: () => window.Rewards && Rewards.openThings()});
+  await put('tisch', deskCanvas, 1.8, -.5, -2.1, {name:'Rätsel-Tisch', go:'setzt sich an den Rätsel-Tisch', doing:'denkt nach', mark:' 🧠', onArrive: () => window.Raetsel && Raetsel.openHub()});
+  await put('bett', bedCanvas, 2.3, 2.7, -1.9, {name:'Bett', go:'geht ins Bett', doing:'kuschelt sich ins Bett', mark:' 💤', onArrive: () => goToBed(true)});
+  await put('kueche', kitchenCanvas, 1.5, 3.2, 1.0, {name:'Küchentisch', go:'läuft zum Küchentisch', doing:'schaut, was es zu essen gibt', mark:' 🍎', onArrive: () => window.Needs && Needs.open()});
+  await put('buecher', booksCanvas, 1.4, -3.7, .2, {name:'Bücherregal', go:'läuft zum Bücherregal', doing:'stöbert im Bücherregal', mark:' 📚', onArrive: () => window.Books && Books.openRead()});
   place('tuer', doorCanvas(), 1.0, -3.6, 2.2, {name:'Tür', go:'läuft zur Haustür', doing:'öffnet die Tür', onArrive: () => { const h = homeHouses.get(RS.owner); if (h) RS.W.home.spawn = h.g.position.clone().multiplyScalar(.82); L.travel('home'); }});
-  place('staffelei', easelCanvas(), .9, 1.6, 2.2, {name:'Einrichten', go:'läuft zur Staffelei', doing:'überlegt, wie das Zimmer aussehen soll', mark:' 🎨', onArrive: openDecorate});
+  await put('staffelei', easelCanvas, .9, 1.6, 2.2, {name:'Einrichten', go:'läuft zur Staffelei', doing:'überlegt, wie das Zimmer aussehen soll', mark:' 🎨', onArrive: openDecorate});
   // Bilderwand hängt flach an der Rückwand über dem Tisch
-  const pic = await picsCanvas(); if (furn.bilder){ G.remove(furn.bilder.mesh); const i = world.picks.indexOf(furn.bilder.mesh); if (i >= 0) world.picks.splice(i, 1); }
+  unplace('bilder'); if (!has('bilder')) return;
+  const pic = await picsCanvas();
   const pm = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4*pic.height/pic.width), new THREE.MeshBasicMaterial({map:tex(pic), transparent:true})); pm.position.set(.9, 2.9, -2.58); G.add(pm);
   pm.userData.act = {kind:'sight', ref:{pos:new V3(.6, 0, -1.7), name:'Bilderwand'}, go:'läuft zur Bilderwand', doing:'bewundert ihre Bilder', marvel:true, off:.8, fxH:2.4, onArrive: () => L.openMine()};
   world.picks.push(pm); furn.bilder = {mesh:pm};
 }
-world.onEnter = () => { furnish(); };
+let emptyAt = 0;
+world.onEnter = () => { furnish();
+  if (unlockedN() < FURN.length && Date.now() - emptyAt > 3*60e3){ emptyAt = Date.now(); const next = FURN[unlockedN()][1];
+    setTimeout(() => RS.say((unlockedN() <= 2 ? 'Mein Zimmer ist noch so leer … ' : '') + 'Löst du ein paar Rätsel mit mir? Als Nächstes bekomme ich: ' + next + ' 🪑', {label:'🧠 Rätsel lösen', prio:2, ms:20000, onClick: () => window.Raetsel && Raetsel.openHub()}), 2500); } };
 addEventListener('rs:world', () => { if (RS.worldId === 'home') RS.W.home.spawn = undefined; });   // nur einmal vor der Haustür ankommen
 ['rs:goodie', 'rs:scanned', 'rs:books', 'rs:painted'].forEach(ev => addEventListener(ev, () => { if (RS.worldId === 'house') furnish(); }));
-addEventListener('rs:profile', () => furnish());
 let zzzT = 0;
 function goToBed(arrived){
-  if (!arrived){ const b = furn.bett; if (b) RS.walkTo(b.act); return; }
+  if (!arrived){
+    if (!hasHouse()){ RS.say('Ich habe noch kein Haus … Zeichnest du mir eins? 🏠', {prio:2}); return false; }
+    if (!has('bett')){ RS.say('Ich habe noch kein Bett 🛏 … Löst du ein paar Rätsel? Dann bekomme ich eins!', {label:'🧠 Rätsel lösen', prio:2, onClick: () => window.Raetsel && Raetsel.openHub()}); if (RS.worldId !== 'house') L.travel('house'); return false; }
+    if (RS.worldId !== 'house'){ L.travel('house'); setTimeout(() => goToBed(false), 1800); return true; }
+    const b = furn.bett; if (b) RS.walkTo(b.act); return true; }
   if (window.Needs) Needs.sleep(); clearInterval(zzzT);
   const zC = (() => { const [c, x] = cnv(80, 80); x.font = '56px "Patrick Hand", cursive'; x.fillStyle = '#7d6f80'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Z', 40, 42); return tex(c); })();
   zzzT = setInterval(() => { if (!(window.Needs && Needs.sleeping) || RS.worldId !== 'house'){ clearInterval(zzzT); return; }
@@ -165,5 +203,5 @@ function openDecorate(){
     L.row(body, [L.btn('Fertig ✦', 'main', L.closeSheet)]);
   });
 }
-window.House = {goToBed: () => goToBed(false), furnish, placeHouses, openDecorate};
+window.House = {goToBed: () => goToBed(false), furnish, placeHouses, openDecorate, get hasHouse(){ return hasHouse(); }, get furniture(){ return FURN.slice(0, unlockedN()).map(f => f[0]); }, FURN};
 })();

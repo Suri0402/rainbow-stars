@@ -360,6 +360,18 @@ let ctrl = null, view = 'follow', manualUntil = 0;
 let mood = null, speedFactor = 1;   // von needs.js gesetzt: müde -> langsamer
 const statusEl = $('status');
 const setStatus = t => { if (statusEl.textContent !== t) statusEl.textContent = t; };
+// Sprechblase über dem Kopf der Figur: Wünsche und Bitten („Mir ist langweilig …“), auf Wunsch mit Knopf
+const sayEl = $('say'); let sayUntil = 0, sayPrio = 0;
+const hideSay = () => { sayEl.hidden = true; sayPrio = 0; };
+function say(text, {label, onClick, labelFor, ms = 15000, prio = 1} = {}){
+  if (!sayEl.hidden && prio < sayPrio && Date.now() < sayUntil) return false;   // Wichtigeres steht gerade da
+  sayPrio = prio; sayUntil = Date.now() + ms;
+  const p = document.createElement('p'); p.textContent = text; sayEl.replaceChildren(p);
+  if (label){ const b = document.createElement(labelFor ? 'label' : 'button'); b.className = 'btn small main'; b.textContent = label;
+    if (labelFor) b.htmlFor = labelFor; else b.type = 'button'; b.onclick = () => { hideSay(); if (onClick) onClick(); }; sayEl.append(b); }
+  const x = document.createElement('button'); x.type = 'button'; x.className = 'sayx'; x.textContent = '×'; x.setAttribute('aria-label', 'Sprechblase schließen'); x.onclick = hideSay; sayEl.append(x);
+  sayEl.hidden = false; return true;
+}
 const camRight = () => new V3(Math.cos(az), 0, -Math.sin(az));
 function startActivity(act){
   if (st.act && st.act.kind === 'animal' && st.act !== act){ st.act.ref.state = 'idle'; st.act.ref.timer = .4; }
@@ -643,7 +655,7 @@ const idb = (() => {
 // --- Figuren in der Welt ---
 const world = new Map();   // id -> Tier-Objekt (null, solange das Bild noch lädt)
 let owner = null;          // angemeldetes Profil: nur dessen Figuren erscheinen in "Meine Figuren" und dürfen gelöscht/ausgemalt werden
-const mayEdit = rec => rec && rec.mine && (!rec.owner || !owner || rec.owner === owner);
+const mayEdit = rec => !!(rec && rec.mine && owner && rec.owner === owner);   // jedes Bild gehört genau einem Profil – nur dieses darf es ausmalen oder löschen
 async function blobCanvas(blob){ const b = await createImageBitmap(blob); const [c,x] = cnv(b.width, b.height); x.drawImage(b,0,0); if (b.close) b.close(); return c; }
 function arrivalFx(a){
   for (let i=0;i<26;i++){ const ang = i/26*Math.PI*2;
@@ -651,6 +663,7 @@ function arrivalFx(a){
   setTimeout(() => { for (let i=0;i<5;i++) spawn(fxTex.heart, a.pos.clone().add(new V3((Math.random()-.5)*.6, .9 + Math.random()*.3, 0)), new V3((Math.random()-.5)*.2, .5, 0), 2, .16); }, 1300);
 }
 async function showCreature(rec, {near=false, arrive=false}={}){
+  if (rec.kind === 'house') return null;   // gezeichnete Häuser stellt worlds/house.js auf die Wiese
   if (world.has(rec.id)) return world.get(rec.id); world.set(rec.id, null);
   let c; try { c = await blobCanvas(rec.blob); } catch(e){ world.delete(rec.id); console.warn('Figurenbild nicht lesbar', e); return null; }
   if (!world.has(rec.id)) return null;   // in der Zwischenzeit entfernt
@@ -806,8 +819,8 @@ async function syncShared(first){
 }
 function retryUploads(){ idb.all().then(recs => recs.filter(r => r.mine && !r.uploaded && (r.world || 'home') === 'home').forEach(r => uploadCreature(r).catch(() => {}))); }
 // erst wenn alle Skripte (auch die Zusatz-Welten) geladen sind, die gespeicherten Figuren einsetzen
-// Wer sieht welche Figuren? Nach der Anmeldung: die eigenen und die von Freunden (friends.js)
-const canSee = rec => !!owner && (!rec.mine || !rec.owner || rec.owner === owner || !!(window.Friends && Friends.isFriend(rec.owner)));
+// Wer sieht welche Figuren? Nach der Anmeldung sehen sich alle Profile der Familie auf der Wiese (bearbeiten darf nur, wem das Bild gehört)
+const canSee = rec => !!owner && rec.kind !== 'house';
 async function refreshVisibility(){
   const recs = (await idb.all()).sort((a,b) => a.created - b.created);
   for (const r of recs){ const should = canSee(r), has = world.has(r.id); if (should && !has) showCreature(r); else if (!should && has) removeCreature(r.id); }
@@ -983,9 +996,8 @@ function renderCut(){
   $('scanGo').disabled = $('scanPaint').disabled = v.level === 'bad';
   $('scanGo').textContent = v.level === 'warn' ? 'Trotzdem in die Welt schicken' : 'In die Welt schicken ✦';
   $('scanNote').textContent = !c ? ''
-    : worldId !== 'home' ? 'Deine Figur zieht in die ' + (W[worldId].name || 'Welt') + ' ein und bleibt auf diesem Gerät.'
-    : SHARE ? 'Deine Figur erscheint sofort bei dir. Für alle anderen erscheint sie, sobald sie freigegeben ist.'
-    : 'Teilen ist noch nicht eingerichtet. Die Figur bleibt auf diesem Gerät.';
+    : worldId !== 'home' ? 'Deine Figur zieht in die ' + (W[worldId].name || 'Welt') + ' ein. Alle Profile der Familie können sie dort sehen.'
+    : 'Deine Figur erscheint auf der Wiese. Alle Profile der Familie können sie sehen – ausmalen und löschen kannst nur du.';
 }
 // Vorab-Prüfung: Ist das Ergebnis brauchbar, bevor es in die Welt geht?
 function scanVerdict(c){
@@ -1017,6 +1029,7 @@ $('scanFile').onchange = async e => {
   catch(err){ scanFail('photo', `Das Foto konnte nicht geöffnet werden (${info}).`); return; }
   const p = scanS.photo; cropC.width = p.width; cropC.height = p.height;
   scanS.crop = {x:p.width*.03, y:p.height*.03, w:p.width*.94, h:p.height*.94}; drawCrop(); scanStep('crop');
+  if (scanContext && scanContext.house){ const r = scanEl.querySelector('input[name="scanType"][value="house"]'); r.checked = true; r.onchange(); $('scanName').value = 'Mein Haus'; }   // die Figur hat um ein Haus gebeten
 };
 let cropDown = null;
 const cropPt = e => { const b = cropC.getBoundingClientRect(); return [clamp((e.clientX-b.left)/b.width*cropC.width, 0, cropC.width), clamp((e.clientY-b.top)/b.height*cropC.height, 0, cropC.height)]; };
@@ -1103,7 +1116,7 @@ async function paintCreature(id){
   let c; try { c = await blobCanvas(rec.blob); } catch(e){ scanFail('photo', 'Das Bild der Figur ließ sich nicht öffnen.'); return; }
   openPaint(c, {goLabel:'Speichern ✦', back: closeScan, note: rec.uploaded ? 'Die neuen Farben siehst du auf diesem Gerät.' : '',
     done: out => out.toBlob(async blob => { if (!blob) return; rec.blob = blob; await idb.put(rec); closeScan();
-      removeCreature(rec.id); const a = await showCreature(rec, {}); setStatus(rec.name + (a ? ' hat neue Farben ✦' : ' konnte nicht neu geladen werden ⚠'));
+      removeCreature(rec.id); const a = rec.kind === 'house' || await showCreature(rec, {}); setStatus(rec.name + (a ? ' hat neue Farben ✦' : ' konnte nicht neu geladen werden ⚠'));
       dispatchEvent(new CustomEvent('rs:painted', {detail:{id:rec.id, ok:!!a}})); }, 'image/png')});
 }
 
@@ -1116,8 +1129,11 @@ $('scanGo').onclick = () => {
   c.toBlob(async blob => {
     if (!blob){ $('scanGo').disabled = false; $('scanNote').textContent = '⚠ Das Bild konnte nicht erstellt werden. Zieh den Rahmen etwas kleiner und versuch es nochmal.'; scanFail('save', 'Das Bild der Figur konnte nicht erstellt werden.'); return; }
     try {
-    const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world:worldId, owner, book: ctx && ctx.bookTitle || undefined};
+    const house = kind === 'house';
+    const rec = {id:uuid(), name, kind, blob, mine:true, uploaded:false, created:Date.now(), world: house ? 'home' : worldId, owner, book: ctx && ctx.bookTitle || undefined};
+    if (house) for (const old of (await idb.all()).filter(r => r.kind === 'house' && r.owner === owner)){ await idb.del(old.id); dispatchEvent(new CustomEvent('rs:deleted', {detail:{id:old.id}})); }   // pro Profil ein Haus
     const saved = (await idb.put(rec)) !== undefined; closeScan(); $('scanName').value = '';
+    if (house){ dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:'home', name, house:true, inWorld:true, saved, thumb:blob}})); return; }
     const a = await showCreature(rec, {near:true, arrive:true});
     dispatchEvent(new CustomEvent('rs:scanned', {detail:{id:rec.id, world:rec.world, name, inWorld:!!a, saved, thumb:blob, bookId: ctx && ctx.bookId}}));
     } catch(err){ closeScan(); scanFail('send', 'Die Figur konnte nicht in die Welt geschickt werden: ' + (err.message || err)); }
@@ -1141,10 +1157,10 @@ function enterWorld(id){
   dispatchEvent(new CustomEvent('rs:world', {detail:{id}}));
 }
 window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
-  addCreature, addWorld, enterWorld, W, st, setStatus, startActivity, girl, J, K, TP, CX, TOPY, LAYER, idb, $,
+  addCreature, addWorld, enterWorld, W, st, setStatus, say, hideSay, startActivity, girl, J, K, TP, CX, TOPY, LAYER, idb, $,
   myCreatures: () => idb.all().then(l => l.filter(r => r.mine && (!owner || r.owner === owner)).sort((a,b) => b.created - a.created).map(r => ({...r, inWorld:!!world.get(r.id)}))),
   goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },
-  deleteCreature: id => idb.all().then(l => { const rec = l.find(r => r.id === id); if (!mayEdit(rec)) throw new Error('Diese Figur gehört jemand anderem.'); removeCreature(id); return idb.del(id); }),
+  deleteCreature: id => idb.all().then(async l => { const rec = l.find(r => r.id === id); if (!mayEdit(rec)) throw new Error('Diese Figur gehört jemand anderem.'); removeCreature(id); await idb.del(id); dispatchEvent(new CustomEvent('rs:deleted', {detail:{id}})); }),
   setOwner: id => { owner = id; }, get owner(){ return owner; },
   claimUnowned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && !r.owner).map(r => { r.owner = id; return idb.put(r); }))),
   deleteOwned: id => idb.all().then(l => Promise.all(l.filter(r => r.mine && r.owner === id).map(r => { removeCreature(r.id); return idb.del(r.id); }))),
@@ -1192,6 +1208,9 @@ function tick(){
   gBill.rotation.y = az + st.turn;
   // Dinge direkt vor der Kamera ausblenden, damit sie die Sicht nicht verdecken
   fadeables.forEach(m => { const d = m.getWorldPosition(tmpW).distanceTo(camera.position); m.material.opacity = Math.min(1, Math.max(0, (d - 1.6)/2.2)); m.visible = m.material.opacity > .02; });
+  if (!sayEl.hidden){ if (Date.now() > sayUntil) hideSay(); else {   // Sprechblase folgt dem Kopf
+    const p = tmpW.copy(st.pos); p.y += 2.05; p.project(camera); const r = renderer.domElement.getBoundingClientRect(), half = sayEl.offsetWidth/2, right = r.width < 560 ? 104 : 16;   // rechts stehen die Bedürfnis-Balken
+    sayEl.style.left = clamp((p.x + 1)/2*r.width, half + 16, r.width - half - right) + 'px'; sayEl.style.top = Math.max(150, (1 - p.y)/2*r.height) + 'px'; } }
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
 }

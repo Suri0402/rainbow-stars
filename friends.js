@@ -1,4 +1,4 @@
-// Rainbow Stars – Freundschaften: Profile sehen Haus und Figuren der anderen nur, wenn eine Anfrage angenommen wurde.
+// Rainbow Stars – Freundschaften zwischen den Profilen (sehen können sich auf der Wiese alle; Freunde gelten erst, wenn beide Ja gesagt haben).
 // Gespeichert pro Familie im Schlüssel "friends" (mit dem Familien-Konto später auch zwischen Geräten).
 (() => {
 const RS = window.RS, L = window.Learn, { el, btn, row } = L;
@@ -17,7 +17,7 @@ async function end(id){ await load(); const p = find(RS.owner, id); if (p){ pair
 async function openFriends(){
   await load();
   L.openSheet('👫 Freunde', body => {
-    body.append(el('p', 'tip', 'Nur Freunde sehen dein Haus und deine Figuren in der Welt – und du ihre. Eine Freundschaft gilt erst, wenn beide Ja gesagt haben.'));
+    body.append(el('p', 'tip', 'Auf der Wiese seht ihr euch alle. Hier könnt ihr euch befreunden – eine Freundschaft gilt, wenn beide Ja gesagt haben.'));
     const list = others();
     if (!list.length) body.append(el('p', 'cardtext', 'Es gibt noch keine anderen Profile. Wenn Geschwister ein eigenes Profil anlegen, könnt ihr euch hier befreunden.'));
     list.forEach(o => { const p = find(RS.owner, o.id), r = el('div', 'bookrow'), info = el('div', 'bookinfo');
@@ -36,7 +36,7 @@ addEventListener('rs:profile', async () => { await load(); dispatchEvent(new Cus
   const open = pairs.filter(p => p.status === 'pending' && p.from !== RS.owner && (p.a === RS.owner || p.b === RS.owner));
   if (!open.length) return;
   setTimeout(() => { const o = nameOf(open[0].from);
-    L.openSheet('💌 Freundschaftsanfrage', body => { body.append(el('p', 'cardtext', `${o.avatar} ${o.name} möchte mit dir befreundet sein. Dann seht ihr gegenseitig eure Häuser und Figuren.`));
+    L.openSheet('💌 Freundschaftsanfrage', body => { body.append(el('p', 'cardtext', `${o.avatar} ${o.name} möchte mit dir befreundet sein.`));
       row(body, [btn('Ablehnen', '', async () => { await respond(open[0].from, false); L.closeSheet(); }), btn('✔ Annehmen', 'main', async () => { await respond(open[0].from, true); L.closeSheet(); L.toast('👫 Ihr seid jetzt Freunde!'); })]); }); }, 2000);
 });
 window.Friends = {isFriend, request, respond, end, open:openFriends, get pairs(){ return pairs.slice(); }, load};

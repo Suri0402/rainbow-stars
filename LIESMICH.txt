@@ -145,12 +145,22 @@ Inhalt
      im Eltern-Bereich (mit den Seitenfotos zum Nachschauen).
 
 13) Eigenes Haus und Freunde
-   - Jedes Profil hat ein Haus auf der Wiese. Hinein darf nur, wem es gehört.
-     Innen: Goodie-Regal, Rätsel-Tisch, Bilderwand, Bücherregal, Bett,
-     Küchentisch und die Staffelei zum Einrichten.
+   - Jedes Profil zeichnet sein Haus selbst: Beim Anmelden fragt die Figur in
+     einer Sprechblase "Kannst du für mich ein Haus zeichnen?". Haus auf Papier
+     malen, "✎ Haus scannen" (oder beim Scannen "ein Haus" wählen). Ein neues
+     Haus ersetzt das alte.
+   - Wer ein Haus hat, startet nach dem Anmelden immer im eigenen Haus.
+     Hinein darf nur, wem es gehört.
+   - Möbel gibt es für Rätsel: Anfangs steht nur der Rätsel-Tisch da. Alle 2
+     gelösten Rätsel kommt etwas dazu, in dieser Reihenfolge: Bett,
+     Küchentisch, Goodie-Regal, Teppich, Bücherregal, Bilderwand, Staffelei
+     zum Einrichten.
+   - Auf der Wiese sehen sich alle Profile: alle Häuser und alle Figuren.
+     Ausmalen und löschen kann ein Bild nur das Profil, dem es gehört.
+   - Die Figur sagt in Sprechblasen, was ihr fehlt (z. B. "Mir ist
+     langweilig! Wann liest du ein Buch mit mir?"), mit passendem Knopf.
    - Auf der Wiese gibt es außerdem die Rätsel-Eule.
-   - Profil-Menü -> "👫 Freunde": Erst wenn eine Anfrage angenommen ist, sieht
-     man Haus und Figuren des anderen.
+   - Profil-Menü -> "👫 Freunde": Freundschaftsanfragen zwischen Profilen.
 
 14) Handy und iPad (Familien-Konto)
    - Siehe SUPABASE-EINRICHTEN.txt. Danach im Eltern-Bereich (oder beim Start

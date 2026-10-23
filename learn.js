@@ -359,7 +359,7 @@ addEventListener('rs:world', () => { $('viewBtn').textContent = '👁 Mädchen';
 const worldName = id => (RS.W[id] && RS.W[id].name) || 'Heimatwiese';
 function shareLine(r){   // r: gespeicherte Figur (oder Live-Zustand aus der Statuskarte)
   if ((r.world || 'home') !== 'home') return ['info', 'Wohnt in der ' + worldName(r.world)];
-  return ['info', 'Sichtbar für dich und deine Freunde 👫'];
+  return ['info', 'Alle Profile der Familie sehen sie auf der Wiese – ausmalen und löschen kannst nur du'];
 }
 const ICON = {ok:'✔', bad:'⚠', wait:'⏳', info:'ⓘ'};
 const line = ([k, t]) => { const li = el('li', k); li.append(el('span', 'ic', ICON[k]), el('span', '', t)); return li; };
@@ -403,7 +403,8 @@ function showProblem(step, msg){
 }
 addEventListener('rs:scanfail', e => { const d = e.detail; logProblem(d.step, d.msg); showProblem(d.step, d.msg); });
 addEventListener('rs:scanned', e => {
-  const d = e.detail; if (figLive) URL.revokeObjectURL(figLive.url);
+  const d = e.detail; if (d.house){ if (!d.saved) logProblem('save', 'Das Haus wurde nicht gespeichert.', d.name); return; }   // Häuser meldet worlds/house.js mit Sprechblase
+  if (figLive) URL.revokeObjectURL(figLive.url);
   figLive = {...d, url:URL.createObjectURL(d.thumb)};
   if (!d.inWorld) logProblem('world', 'Die Figur ist nicht in der Welt erschienen – das Bild ließ sich nicht lesen.', d.name);
   if (!d.saved) logProblem('save', 'Die Figur wurde nicht gespeichert und ist nach dem Neuladen weg.', d.name);
@@ -430,7 +431,7 @@ function openMine(){
     list.forEach(r => {
       const card = el('div', 'fig'), img = el('img', 'thumb'), u = URL.createObjectURL(r.blob); urls.push(u); img.src = u; img.alt = '';
       const info = el('div', 'fig-info'); info.append(el('b', '', r.name)); if (r.book) info.append(el('small', 'note', '📚 aus „' + r.book + '“'));
-      const ul = el('ul', 'checks'); ul.append(line(r.inWorld ? ['ok', 'In der ' + worldName(r.world)] : ['bad', 'Nicht geladen – lade die Seite neu'])); ul.append(line(shareLine(r))); info.append(ul);
+      const ul = el('ul', 'checks'); ul.append(line(r.kind === 'house' ? ['ok', 'Dein Haus auf der Heimatwiese 🏠'] : r.inWorld ? ['ok', 'In der ' + worldName(r.world)] : ['bad', 'Nicht geladen – lade die Seite neu'])); ul.append(line(shareLine(r))); info.append(ul);
       const acts = el('div', 'fs-row');
       if (r.inWorld) acts.append(btn('Hinlaufen', 'small main', () => { closeSheet(); const res = RS.goToCreature(r.id);
         if (typeof res === 'string'){ travel(res); setTimeout(() => RS.goToCreature(r.id), 1800); } }));

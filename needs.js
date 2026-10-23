@@ -7,7 +7,7 @@ const H = 3600e3;
 const NEEDS = [
   {id:'wissen', icon:'🧠', name:'Wissen', per:100/36, low:'Ich möchte etwas Neues lernen – lösen wir ein Rätsel?', act:'rätseln'},
   {id:'hunger', icon:'🍎', name:'Satt', per:100/24, low:'Ich hab Hunger! Für jedes gelöste Rätsel gibt es etwas zu essen.', act:'füttern'},
-  {id:'spass', icon:'📚', name:'Spaß', per:100/48, low:'Mir ist langweilig … liest du heute 30 Minuten in deinem Buch?', act:'lesen'},
+  {id:'spass', icon:'📚', name:'Spaß', per:100/48, low:'Mir ist langweilig! Wann liest du ein Buch mit mir? 📚', act:'lesen'},
   {id:'energie', icon:'😴', name:'Energie', per:0, low:'Ich bin so müde … ich möchte in meinem Bett schlafen.', act:'schlafen'},
 ];
 const FOOD = {apfel:{icon:'🍎', name:'Apfel', v:15, w:45}, brezel:{icon:'🥨', name:'Brezel', v:20, w:25}, erdbeere:{icon:'🍓', name:'Erdbeeren', v:20, w:22}, kuchen:{icon:'🍰', name:'Kuchen', v:35, w:8}};
@@ -71,7 +71,7 @@ function openNeeds(){
     have.forEach(([k, f]) => box.append(btn(`${f.icon} ${f.name} ×${P.food[k]} · füttern`, 'small main', () => { feed(k); openNeeds(); })));
     body.append(box);
     row(body, [btn('🧠 Rätsel lösen', '', () => window.Raetsel && Raetsel.openHub()), btn('📚 Lesen', '', () => window.Books && Books.openRead()),
-               btn('😴 Schlafen gehen', '', () => { L.closeSheet(); if (RS.W.house){ if (RS.worldId !== 'house') L.travel('house'); setTimeout(() => window.House && House.goToBed(), RS.worldId === 'house' ? 0 : 1800); } else sleep(); })]);
+               btn('😴 Schlafen gehen', '', () => { L.closeSheet(); if (window.House) House.goToBed(); else sleep(); })]);
     row(body, [btn('Schließen', '', L.closeSheet)]);
   });
 }
@@ -85,7 +85,8 @@ function mood(){
   if (v >= 30 || sleeping){ chip.hidden = true; return; }
   chip.hidden = false; chip.querySelector('span').textContent = d.icon + ' ' + d.low; chip.onclick = () => {
     if (d.id === 'spass') window.Books && Books.openRead(); else if (d.id === 'energie') openNeeds(); else if (d.id === 'hunger' && Object.values(P.food || {}).some(x => x > 0)) openNeeds(); else window.Raetsel && Raetsel.openHub(); };
-  if (Date.now() - wishAt > 120e3 && RS.st.state === 'idle'){ wishAt = Date.now(); RS.setStatus(d.low); }
+  if (Date.now() - wishAt > 180e3 && RS.st.state === 'idle' && !RS.paused){ wishAt = Date.now();   // als Sprechblase über dem Kopf, mit passendem Knopf
+    RS.say(d.low, {label:{wissen:'🧠 Rätsel lösen', hunger:'🍎 Essen geben', spass:'📚 Lesen', energie:'😴 Schlafen gehen'}[d.id], onClick:chip.onclick}); }
 }
 window.Needs = {get values(){ return {...N()}; }, change, feed, sleep, wake, open:openNeeds, catchUp, FOOD, get sleeping(){ return sleeping; }};
 })();
