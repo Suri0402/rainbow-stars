@@ -48,6 +48,8 @@ Inhalt
    Danach startet Rainbow Stars wie eine App im Vollbild, auch ohne Internet.
 
 4) Eigene Figuren einscannen
+   - Auf Handy und iPad öffnet sich direkt die Kamera (kein Fotoalbum), damit
+     wirklich Zeichnungen auf Papier eingescannt werden.
    - Eine Figur auf weißes Papier zeichnen, am besten mit dunklem Umriss.
    - In der App "Figur scannen" tippen, Foto machen oder aus der Galerie wählen.
    - Einen Rahmen um die Figur ziehen, "Weiter", mit dem Regler "Papier
@@ -81,6 +83,12 @@ Inhalt
 
 6) Profile
    - Beim Start wählt jedes Kind sein Profil und gibt seine 4-stellige PIN ein.
+   - Hauptfigur: Jedes Profil spielt mit seiner eigenen eingescannten Figur
+     (die älteste eigene Figur, oder unter "Meine Figuren" -> "⭐ Als
+     Hauptfigur" wählen). Ohne eigene Figur – oder mit "👧 Wieder mit dem
+     Mädchen spielen" – ist es das Mädchen. Die Hauptfigur spricht in den
+     Sprechblasen, bittet um ein Haus und wohnt darin. Anziehsachen und
+     Haarfarbe gibt es nur für das Mädchen.
    - Alle Figuren sind in der Welt zu sehen, aber nur die eigenen stehen in
      "Meine Figuren" und können gelöscht oder ausgemalt werden.
    - Sterne, Wissenskarten, Goodies und Rechen-Stufe gehören jedem Profil allein.

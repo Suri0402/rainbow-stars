@@ -348,7 +348,7 @@ function openView(){
       if (canvas){ const t = document.createElement('canvas'), k = Math.min(56/canvas.width, 56/canvas.height); t.width = Math.round(canvas.width*k); t.height = Math.round(canvas.height*k); t.getContext('2d').drawImage(canvas, 0, 0, t.width, t.height); b.append(t); }
       else b.append(el('span', 'vicon', '👧'));
       b.append(el('span', '', name + (active ? ' ✔' : ''))); list.append(b); };
-    opt('Das Mädchen', null, !cur && !over, () => RS.setView({figure:null}));
+    opt(RS.heroId ? '⭐ ' + RS.heroName : 'Das Mädchen', null, !cur && !over, () => RS.setView({figure:null}));
     RS.animals.filter(a => a.wid === RS.worldId && (!a.owner || a.owner === RS.owner)).forEach(a => opt(a.name, a.mesh.material.map.image, cur === a && !over, () => RS.setView({figure:a})));   // fremde Figuren steuert nur ihr Profil
     body.append(list);
     body.append(el('h3', 'albumh', 'Kamera'));
@@ -357,8 +357,29 @@ function openView(){
   });
 }
 $('viewBtn').onclick = openView;
-addEventListener('rs:view', e => { $('viewBtn').textContent = '👁 ' + (e.detail.overview ? 'Übersicht' : (e.detail.name || 'Mädchen')); });
-addEventListener('rs:world', () => { $('viewBtn').textContent = '👁 Mädchen'; });
+const heroLabel = () => RS.heroName || 'Mädchen';
+addEventListener('rs:view', e => { $('viewBtn').textContent = '👁 ' + (e.detail.overview ? 'Übersicht' : (e.detail.name || heroLabel())); });
+addEventListener('rs:world', () => { $('viewBtn').textContent = '👁 ' + heroLabel(); });
+
+// ---------- Hauptfigur: jedes Profil spielt mit seiner eigenen eingescannten Figur (oder dem Mädchen) ----------
+const isFigure = r => r && r.kind !== 'house' && !RS.THING_TYPES.includes(r.kind);
+async function heroRec(){
+  if (P.hero === 'girl') return null;
+  const mine = (await RS.myCreatures()).filter(isFigure);
+  return mine.find(r => r.id === P.hero) || mine.sort((a, b) => a.created - b.created)[0] || null;   // sonst die älteste eigene Figur
+}
+let heroRun = 0;
+async function applyHero(force = false){
+  const my = ++heroRun, r = profileId ? await heroRec() : null; if (my !== heroRun) return;
+  if (!r){ if (RS.heroId){ RS.setHero(null); $('viewBtn').textContent = '👁 Mädchen'; } return; }
+  if (RS.heroId === r.id && !force) return;
+  let c; try { c = await RS.blobCanvas(r.blob); } catch(e){ return; } if (my !== heroRun) return;
+  const first = !RS.heroId && !P.hero; RS.setHero(r, c); if (!RS.ctrl) $('viewBtn').textContent = '👁 ' + r.name;
+  if (first){ P.hero = r.id; save(); setTimeout(() => toast('⭐ ' + r.name + ' ist deine Hauptfigur – ändern unter „Meine Figuren“'), 1500); }
+}
+function chooseHero(id){ P.hero = id; save(); applyHero(true); }
+['rs:profile', 'rs:scanned', 'rs:deleted', 'rs:sync'].forEach(ev => addEventListener(ev, () => applyHero()));
+addEventListener('rs:painted', e => { if (e.detail && e.detail.id === RS.heroId) applyHero(true); });
 
 // ---------- Eigene Figuren: Statuskarte nach dem Scannen + Übersicht "Meine Figuren" ----------
 const worldName = id => (RS.W[id] && RS.W[id].name) || 'Heimatwiese';
@@ -371,6 +392,7 @@ const line = ([k, t]) => { const li = el('li', k); li.append(el('span', 'ic', IC
 const figEl = $('figStatus'); let figT = 0, figLive = null;
 function renderFig(){
   const f = figLive; if (!f) return;
+  if (f.id === RS.heroId && f.saved){ figEl.hidden = true; return; }   // neue Hauptfigur: läuft schon als Spielfigur, der Hinweis kommt als Toast
   figEl.replaceChildren();
   const ok = f.inWorld && f.saved, img = el('img', 'thumb'); img.src = f.url; img.alt = '';
   const box = el('div', 'fs-body'); box.append(el('b', '', ok ? `✔ ${f.name} ist da!` : `⚠ ${f.name} hat nicht ganz geklappt`));
@@ -432,12 +454,15 @@ function openMine(){
       body.append(ul); row(body, [btn('Liste leeren', 'small', () => { scanLog = []; saveLog(); openMine(); })]); };
     if (!list.length){ body.append(el('p', 'tip', 'Du hast noch keine Figur eingescannt. Mal eine Figur auf Papier und tippe auf „✎ Figur scannen“.')); problems(); row(body, [btn('Schließen', 'main', closeSheet)]); return; }
     body.append(el('p', 'tip', `${list.length} ${list.length === 1 ? 'Figur' : 'Figuren'} von dir`));
+    if (RS.heroId) row(body, [btn('👧 Wieder mit dem Mädchen spielen', 'small', () => { chooseHero('girl'); closeSheet(); toast('👧 Das Mädchen ist wieder deine Hauptfigur'); })]);
     const urls = [], wrap = el('div', 'figs');
     list.forEach(r => {
       const card = el('div', 'fig'), img = el('img', 'thumb'), u = URL.createObjectURL(r.blob); urls.push(u); img.src = u; img.alt = '';
       const info = el('div', 'fig-info'); info.append(el('b', '', r.name)); if (r.book) info.append(el('small', 'note', '📚 aus „' + r.book + '“'));
-      const ul = el('ul', 'checks'); ul.append(line(r.kind === 'house' ? ['ok', 'Dein Haus auf der Heimatwiese 🏠'] : r.inWorld ? ['ok', 'In der ' + worldName(r.world)] : ['bad', 'Nicht geladen – lade die Seite neu'])); ul.append(line(shareLine(r))); info.append(ul);
+      const hero = r.id === RS.heroId;
+      const ul = el('ul', 'checks'); ul.append(line(hero ? ['ok', '⭐ Deine Hauptfigur – sie läuft mit dir herum'] : r.kind === 'house' ? ['ok', 'Dein Haus auf der Heimatwiese 🏠'] : r.inWorld ? ['ok', 'In der ' + worldName(r.world)] : ['bad', 'Nicht geladen – lade die Seite neu'])); ul.append(line(shareLine(r))); info.append(ul);
       const acts = el('div', 'fs-row');
+      if (isFigure(r) && !hero) acts.append(btn('⭐ Als Hauptfigur', 'small', () => { chooseHero(r.id); toast('⭐ ' + r.name + ' ist jetzt deine Hauptfigur'); closeSheet(); }));
       if (r.inWorld) acts.append(btn('Hinlaufen', 'small main', () => { closeSheet(); const res = RS.goToCreature(r.id);
         if (typeof res === 'string'){ travel(res); setTimeout(() => RS.goToCreature(r.id), 1800); } }));
       acts.append(btn('🎨 Ausmalen', 'small', () => { closeSheet(); RS.paintCreature(r.id); }));

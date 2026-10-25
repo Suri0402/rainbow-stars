@@ -167,6 +167,7 @@ addEventListener('rs:profile', () => { L.applyWear(); if (P.pet) spawnPet(); Obj
 function openThings(){
   L.openSheet('🎒 Meine Sachen', body => {
     body.append(L.el('p', 'tip', `Du hast ★ ${P.stars} Sterne. Neue Sachen gibt es im Laden – Sterne bekommst du für Rätsel bei der Eule, am Rätsel-Tisch und an den Planeten.`));
+    if (RS.heroId) body.append(L.el('p', 'note', `⭐ Deine Hauptfigur ist ${RS.heroName}. Haarfarbe und Anziehsachen gelten für das Mädchen (unter „Meine Figuren“ kannst du wieder mit ihm spielen).`));
     // Haare
     const sw = RS.$('swatches'); sw.hidden = false; body.append(sw);
     const section = (title, items, render) => { body.append(L.el('h3', 'albumh', title)); const g = L.el('div', 'things'); if (!items.length) g.append(L.el('p', 'note', 'Noch nichts – schau in den Laden.')); items.forEach(it => g.append(render(it))); body.append(g); };

@@ -173,6 +173,15 @@ const gShadow = shadow(1.05, girl);
 const gBill = new THREE.Group(); girl.add(gBill);
 const flip = new THREE.Group(); gBill.add(flip);
 const hop = new THREE.Group(); flip.add(hop);           // Drehpunkt an den Füßen: Springen, Stauchen
+// Hauptfigur des Profils: das gezeichnete Mädchen – oder eine eigene eingescannte Figur, die dann statt ihm herumläuft
+const heroG = new THREE.Group(); gBill.add(heroG); let heroMesh = null, heroId = null, heroName = '', heroTop = 2.05, heroMouth = 1.18;   // Kopf-Oberkante und Mundhöhe (für die Sprechblase)
+function setHero(rec, c){
+  if (heroMesh){ heroG.remove(heroMesh); heroMesh.material.map.dispose(); heroMesh.geometry.dispose(); heroMesh = null; }
+  const old = heroId; heroId = rec && c ? rec.id : null; heroName = heroId ? rec.name : ''; flip.visible = !heroId; heroTop = 2.05; heroMouth = 1.18;
+  if (heroId){ const w = Math.min(1.5, 1.6*c.width/c.height); heroMesh = bill(c, w, heroG); bills.splice(bills.indexOf(heroMesh), 1); fadeables.splice(fadeables.indexOf(heroMesh), 1);
+    const h = w*c.height/c.width; heroTop = h + .35; heroMouth = h*.62; removeCreature(heroId); }   // nicht doppelt in der Welt
+  if (old && old !== heroId) idb.all().then(l => { const r = l.find(x => x.id === old); if (r && canSee(r)) showCreature(r); });
+}
 const ROOT = [CX, FOOT];
 function joint(parent, piv, ppiv){ const g = new THREE.Group(); g.position.set((piv[0]-ppiv[0])*K, (ppiv[1]-piv[1])*K, 0); g.userData.piv = piv; parent.add(g); return g; }
 const J = {};
@@ -362,7 +371,20 @@ const statusEl = $('status');
 const setStatus = t => { if (statusEl.textContent !== t) statusEl.textContent = t; };
 // Sprechblase über dem Kopf der Figur: Wünsche und Bitten („Liest du mir ein Buch vor?“), auf Wunsch mit Knopf
 const sayEl = $('say'); let sayUntil = 0, sayPrio = 0;
-const hideSay = () => { sayEl.hidden = true; sayPrio = 0; document.body.classList.remove('saying'); };
+const sayTail = $('sayTail'), tailPoly = sayTail.querySelector('polygon');
+const hideSay = () => { sayEl.hidden = true; sayTail.setAttribute('hidden', '');   // SVG kennt .hidden nicht – Attribut setzen
+  sayPrio = 0; document.body.classList.remove('saying'); };
+// Blase über dem Kopf, etwas zur freien Seite versetzt; ein gezeichneter Zipfel führt von der Blase zum Mund
+const scr = (y, side = 0) => { const p = new V3(st.pos.x, st.pos.y + y, st.pos.z).addScaledVector(camRight(), side).project(camera), r = renderer.domElement.getBoundingClientRect();
+  return [(p.x + 1)/2*r.width, (1 - p.y)/2*r.height, r.width]; };
+function placeSay(){
+  const [hx, hy, W2] = scr(heroTop), side = hx > W2/2 ? -1 : 1, [mx, my] = scr(heroMouth, -side*.45);   // Mund-Ecke auf der Seite der Blase
+  const bw = sayEl.offsetWidth, bh = sayEl.offsetHeight, right = W2 < 560 && hy < 260 ? 104 : 16;   // oben rechts stehen auf dem Handy die Bedürfnis-Balken
+  const cx = clamp(hx + side*Math.min(90, bw*.3), bw/2 + 16, W2 - bw/2 - right), bottom = clamp(hy - 14, bh + 70, my - 40);
+  sayEl.style.left = cx + 'px'; sayEl.style.top = bottom + 'px';
+  const bx = clamp(hx + side*20, cx - bw/2 + 22, cx + bw/2 - 22 - 26), b2 = bx + 26;
+  tailPoly.setAttribute('points', `${bx},${bottom - 4} ${b2},${bottom - 4} ${mx},${my}`); sayTail.removeAttribute('hidden');
+}
 function say(text, {label, onClick, labelFor, ms = 15000, prio = 1} = {}){
   if (!sayEl.hidden && prio < sayPrio && Date.now() < sayUntil) return false;   // Wichtigeres steht gerade da
   sayPrio = prio; sayUntil = Date.now() + ms;
@@ -370,7 +392,7 @@ function say(text, {label, onClick, labelFor, ms = 15000, prio = 1} = {}){
   if (label){ const b = document.createElement(labelFor ? 'label' : 'button'); b.className = 'btn small main'; b.textContent = label;
     if (labelFor) b.htmlFor = labelFor; else b.type = 'button'; b.onclick = () => { hideSay(); if (onClick) onClick(); }; sayEl.append(b); }
   const x = document.createElement('button'); x.type = 'button'; x.className = 'sayx'; x.textContent = '×'; x.setAttribute('aria-label', 'Sprechblase schließen'); x.onclick = hideSay; sayEl.append(x);
-  sayEl.hidden = false; document.body.classList.add('saying'); return true;   // solange sie spricht, ist der Wunsch-Hinweis oben ausgeblendet
+  sayEl.hidden = false; document.body.classList.add('saying'); placeSay(); return true;   // solange sie spricht, ist der Wunsch-Hinweis oben ausgeblendet
 }
 const camRight = () => new V3(Math.cos(az), 0, -Math.sin(az));
 function startActivity(act){
@@ -499,6 +521,7 @@ function updateGirl(dt, t){
 
   // Pose anwenden
   girl.position.copy(st.pos);
+  if (heroMesh){ heroG.position.y = jump + (st.state === 'walk' ? Math.abs(Math.sin(t*9))*.09 : Math.sin(t*2.2)*.02); heroG.rotation.z = -st.turn*.6; heroG.scale.x = sx; }   // eingescannte Hauptfigur hüpft beim Laufen
   const sm = 1 - Math.pow(.0006, dt), smA = 1 - Math.pow(.003, dt);
   hop.position.y = jump;
   hop.scale.y = lerp(hop.scale.y, sqY, 1 - Math.pow(1e-6, dt)); hop.scale.x = 1 + (1 - hop.scale.y)*.85;
@@ -664,7 +687,7 @@ function arrivalFx(a){
   setTimeout(() => { for (let i=0;i<5;i++) spawn(fxTex.heart, a.pos.clone().add(new V3((Math.random()-.5)*.6, .9 + Math.random()*.3, 0)), new V3((Math.random()-.5)*.2, .5, 0), 2, .16); }, 1300);
 }
 async function showCreature(rec, {near=false, arrive=false}={}){
-  if (rec.kind === 'house') return null;   // gezeichnete Häuser stellt worlds/house.js auf die Wiese
+  if (rec.kind === 'house' || rec.id === heroId) return null;   // gezeichnete Häuser stellt worlds/house.js auf die Wiese; die Hauptfigur läuft schon als Spielfigur herum
   if (world.has(rec.id)) return world.get(rec.id); world.set(rec.id, null);
   let c; try { c = await blobCanvas(rec.blob); } catch(e){ world.delete(rec.id); console.warn('Figurenbild nicht lesbar', e); return null; }
   if (!world.has(rec.id)) return null;   // in der Zwischenzeit entfernt
@@ -1160,7 +1183,7 @@ function enterWorld(id){
 }
 // für eine zweite Kamera (Fenster im Haus): Bilder zu ihr drehen und nichts ausblenden – das nächste Bild stellt alles wieder her
 function faceOther(yaw){ bills.forEach(b => b.rotation.y = yaw); fadeables.forEach(m => { m.material.opacity = 1; m.visible = true; }); }
-window.RS = {renderer, faceOther, THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
+window.RS = {renderer, faceOther, setHero, blobCanvas, get heroId(){ return heroId; }, get heroName(){ return heroName; }, THING_TYPES, THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
   addCreature, addWorld, enterWorld, W, st, setStatus, say, hideSay, startActivity, girl, J, K, TP, CX, TOPY, LAYER, idb, $,
   myCreatures: () => idb.all().then(l => l.filter(r => r.mine && (!owner || r.owner === owner)).sort((a,b) => b.created - a.created).map(r => ({...r, inWorld:!!world.get(r.id)}))),
   goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },
@@ -1212,9 +1235,7 @@ function tick(){
   gBill.rotation.y = az + st.turn;
   // Dinge direkt vor der Kamera ausblenden, damit sie die Sicht nicht verdecken
   fadeables.forEach(m => { const d = m.getWorldPosition(tmpW).distanceTo(camera.position); m.material.opacity = Math.min(1, Math.max(0, (d - 1.6)/2.2)); m.visible = m.material.opacity > .02; });
-  if (!sayEl.hidden){ if (Date.now() > sayUntil) hideSay(); else {   // Sprechblase folgt dem Kopf
-    const p = tmpW.copy(st.pos); p.y += 2.05; p.project(camera); const r = renderer.domElement.getBoundingClientRect(), half = sayEl.offsetWidth/2, right = r.width < 560 ? 104 : 16;   // rechts stehen die Bedürfnis-Balken
-    sayEl.style.left = clamp((p.x + 1)/2*r.width, half + 16, r.width - half - right) + 'px'; sayEl.style.top = Math.max(150, (1 - p.y)/2*r.height) + 'px'; } }
+  if (!sayEl.hidden){ if (Date.now() > sayUntil) hideSay(); else placeSay(); }   // Sprechblase folgt der Figur, Zipfel zeigt auf den Mund
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
 }

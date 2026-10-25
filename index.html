@@ -256,7 +256,7 @@ button.giftbtn{font-size:20px;animation:wiggle 1.4s infinite}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .say{position:fixed;z-index:6;transform:translate(-50%,-100%);width:max-content;max-width:min(300px,calc(100% - 32px));background:var(--paper);border:2px solid var(--ink);border-radius:20px;padding:8px 30px 10px 14px;box-shadow:3px 3px 0 var(--ink);font-size:18px;line-height:1.2;pointer-events:auto;animation:sayIn .35s ease-out}
-.say::after{content:'';position:absolute;left:50%;bottom:-13px;width:18px;height:18px;background:var(--paper);border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.saytail{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;overflow:visible}.saytail polygon{fill:var(--paper);stroke:var(--ink);stroke-width:2;stroke-linejoin:round}
 .say p{margin:0 0 6px}.say .btn{position:relative;z-index:1}
 .say .sayx{position:absolute;top:2px;right:6px;border:0;background:none;font:inherit;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:2px 4px}
 @keyframes sayIn{from{opacity:0;margin-top:10px}to{opacity:1;margin-top:0}}
@@ -281,6 +281,7 @@ body.saying #wishChip{visibility:hidden}
 <button type="button" id="needsHud" class="needs-hud" hidden aria-label="Wie geht es deiner Figur?"></button>
 <div id="login" class="login" role="dialog" aria-modal="true" aria-label="Anmelden"><div class="sheet" id="loginBox"><h2>Rainbow Stars lädt …</h2></div></div>
 <div id="toast" class="toast" hidden aria-live="polite"></div>
+<svg id="sayTail" class="saytail" hidden aria-hidden="true"><polygon points="0,0 0,0 0,0"/></svg>
 <div id="say" class="say" hidden role="status" aria-live="polite"></div>
 <div id="figStatus" class="figstatus" hidden role="status" aria-live="polite"></div>
 <div id="warp" class="warp" hidden></div>
@@ -299,9 +300,9 @@ body.saying #wishChip{visibility:hidden}
   </div>
   <div class="hint">Tippe auf den Boden: die Figur läuft hin · Tippe auf Dinge zum Entdecken · 👁 Sicht: andere Figur steuern · Ziehen dreht die Kamera</div>
 </div>
-<input id="scanFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+<input id="scanFile" class="vh" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
 <input id="isbnFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
-<input id="pageFile" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+<input id="pageFile" class="vh" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
 <div id="scan" class="scan" hidden role="dialog" aria-modal="true" aria-labelledby="scanTitle">
   <div class="sheet">
     <h2 id="scanTitle">Neue Figur</h2>
