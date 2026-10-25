@@ -159,6 +159,20 @@ Inhalt
    - Die Figur führt: 1. müde -> "Liest du mir ein Buch vor?", 2. Hunger,
      3. Wissen, 4. ihr Wunsch ("Dafür fehlen noch 8 Sterne – zur Eule?").
 
+11b) Man sieht, wer viel liest
+   - Lese-Abzeichen nach bestätigten Büchern: 1 = 🥉 Leseratte, 3 = 🥈 Bücherwurm,
+     5 = 🥇 Lese-Profi, 10 = 👑 Lese-Star. Es schwebt über der Hauptfigur, steht
+     am Namensschild des Hauses, im Profil oben und in der Profilauswahl.
+   - Lese-Münzen 📖 gibt es NUR fürs Lesen: 1 pro bestätigter Lesezeit, 5 pro
+     bestätigtem Buch (auch wenn die Eltern es auf einem anderen Gerät bestätigen).
+   - Mit Lese-Münzen kauft man im Laden Fahrzeuge: Roller (2), Fahrrad (4),
+     Heißluftballon (8), Einhorn-Kutsche (12), Rakete (20). Auswählen unter
+     "Meine Sachen" -> Fahrzeug. Die Figur fährt damit schneller über die Wiese,
+     im Stand parkt es daneben. Die Geschwister sehen Abzeichen und Fahrzeug an
+     ihrer Figur.
+   - Das Haus wächst mit: 1 Buch Fahne, 2 Blumen, 3 Bücherturm, 5 Sterne,
+     10 Regenbogen.
+
 12) Lesezeit
    - "📚 Lesen" -> Lesezeit starten. Nach mindestens 30 Minuten 2–3 Seiten
      fotografieren, die gerade gelesen wurden.

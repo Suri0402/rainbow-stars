@@ -182,6 +182,18 @@ function setHero(rec, c){
     const h = w*c.height/c.width; heroTop = h + .35; heroMouth = h*.62; removeCreature(heroId); }   // nicht doppelt in der Welt
   if (old && old !== heroId) idb.all().then(l => { const r = l.find(x => x.id === old); if (r && canSee(r)) showCreature(r); });
 }
+// Lese-Belohnungen an der Hauptfigur: Abzeichen über dem Kopf und ein Fahrzeug (beim Laufen steht sie darauf, im Stand parkt es daneben)
+let badgeMesh = null;
+function setBadge(c){
+  if (badgeMesh){ gBill.remove(badgeMesh); badgeMesh.material.map.dispose(); badgeMesh = null; }
+  if (c){ badgeMesh = bill(c, .42, gBill); bills.splice(bills.indexOf(badgeMesh), 1); fadeables.splice(fadeables.indexOf(badgeMesh), 1); }
+}
+const rideG = new THREE.Group(); girl.add(rideG); let rideMesh = null, ride = null;
+function setRide(c, opt = {}){
+  if (rideMesh){ rideG.remove(rideMesh); const i = bills.indexOf(rideMesh); if (i >= 0) bills.splice(i, 1); rideMesh.material.map.dispose(); rideMesh = null; }
+  ride = c ? {w:1.4, lift:.3, float:0, ox:0, ...opt} : null;
+  if (c){ rideMesh = bill(c, ride.w, rideG); fadeables.splice(fadeables.indexOf(rideMesh), 1); if (ride.ox) rideMesh.geometry.translate(ride.ox, 0, 0); }
+}
 const ROOT = [CX, FOOT];
 function joint(parent, piv, ppiv){ const g = new THREE.Group(); g.position.set((piv[0]-ppiv[0])*K, (ppiv[1]-piv[1])*K, 0); g.userData.piv = piv; parent.add(g); return g; }
 const J = {};
@@ -378,7 +390,7 @@ const hideSay = () => { sayEl.hidden = true; sayTail.setAttribute('hidden', '');
 const scr = (y, side = 0) => { const p = new V3(st.pos.x, st.pos.y + y, st.pos.z).addScaledVector(camRight(), side).project(camera), r = renderer.domElement.getBoundingClientRect();
   return [(p.x + 1)/2*r.width, (1 - p.y)/2*r.height, r.width]; };
 function placeSay(){
-  const [hx, hy, W2] = scr(heroTop), side = hx > W2/2 ? -1 : 1, [mx, my] = scr(heroMouth, -side*.45);   // Mund-Ecke auf der Seite der Blase
+  const [hx, hy, W2] = scr(heroTop + gBill.position.y + (badgeMesh ? .4 : 0)), side = hx > W2/2 ? -1 : 1, [mx, my] = scr(heroMouth + gBill.position.y, -side*.45);   // Mund-Ecke auf der Seite der Blase
   const bw = sayEl.offsetWidth, bh = sayEl.offsetHeight, right = W2 < 560 && hy < 260 ? 104 : 16;   // oben rechts stehen auf dem Handy die Bedürfnis-Balken
   const cx = clamp(hx + side*Math.min(90, bw*.3), bw/2 + 16, W2 - bw/2 - right), bottom = clamp(hy - 14, bh + 70, my - 40);
   sayEl.style.left = cx + 'px'; sayEl.style.top = bottom + 'px';
@@ -438,7 +450,7 @@ function updateGirl(dt, t){
       setStatus(st.act.doing + (st.act.mark || (st.act.kind === 'animal' ? ' ♡' : ' ✿')));
       if (st.act.kind === 'animal'){ const a = st.act.ref; a.state = 'play'; a.playA = Math.atan2(a.pos.x - st.pos.x, a.pos.z - st.pos.z); }
     } else {
-      const sp = Math.min(1.3 + Math.max(0, len-3)*.3, 2.3, len*2.5)*speedFactor;   // weite Wege etwas schneller
+      const sp = Math.min(1.3 + Math.max(0, len-3)*.3, 2.3, len*2.5)*speedFactor*(ride && worldId !== 'house' ? 1.6 : 1);   // weite Wege etwas schneller, mit Fahrzeug schneller
       st.pos.addScaledVector(d.normalize(), sp*dt);
       st.phase += dt*sp*8.2; walk = Math.min(1, sp/1.1);
       const s = d.dot(camRight()); if (Math.abs(s) > .12) st.face = s > 0 ? 1 : -1;
@@ -521,6 +533,13 @@ function updateGirl(dt, t){
 
   // Pose anwenden
   girl.position.copy(st.pos);
+  { const on = !!ride && worldId !== 'house', riding = on && st.state === 'walk';
+    rideG.visible = on; const up = riding ? ride.lift + ride.float*(1 + Math.sin(t*1.6)*.06) : 0;
+    gBill.position.y = lerp(gBill.position.y, up, 1 - Math.pow(.004, dt));
+    if (on){ const toCam = new V3(Math.sin(az), 0, Math.cos(az));
+      if (riding) rideG.position.set(0, gBill.position.y - ride.lift, 0).addScaledVector(toCam, -.06);   // unter ihr, etwas dahinter
+      else rideG.position.copy(camRight().multiplyScalar(-(ride.w*.5 + .55))).addScaledVector(toCam, -.1); } }   // geparkt daneben
+  if (badgeMesh) badgeMesh.position.y = heroTop - .05 + Math.sin(t*2)*.03;
   if (heroMesh){ heroG.position.y = jump + (st.state === 'walk' ? Math.abs(Math.sin(t*9))*.09 : Math.sin(t*2.2)*.02); heroG.rotation.z = -st.turn*.6; heroG.scale.x = sx; }   // eingescannte Hauptfigur hüpft beim Laufen
   const sm = 1 - Math.pow(.0006, dt), smA = 1 - Math.pow(.003, dt);
   hop.position.y = jump;
@@ -1183,7 +1202,7 @@ function enterWorld(id){
 }
 // für eine zweite Kamera (Fenster im Haus): Bilder zu ihr drehen und nichts ausblenden – das nächste Bild stellt alles wieder her
 function faceOther(yaw){ bills.forEach(b => b.rotation.y = yaw); fadeables.forEach(m => { m.material.opacity = 1; m.visible = true; }); }
-window.RS = {renderer, faceOther, setHero, blobCanvas, get heroId(){ return heroId; }, get heroName(){ return heroName; }, THING_TYPES, THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
+window.RS = {renderer, faceOther, setHero, setBadge, setRide, bills, fadeables, blobCanvas, get heroId(){ return heroId; }, get heroName(){ return heroName; }, THING_TYPES, THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
   addCreature, addWorld, enterWorld, W, st, setStatus, say, hideSay, startActivity, girl, J, K, TP, CX, TOPY, LAYER, idb, $,
   myCreatures: () => idb.all().then(l => l.filter(r => r.mine && (!owner || r.owner === owner)).sort((a,b) => b.created - a.created).map(r => ({...r, inWorld:!!world.get(r.id)}))),
   goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },

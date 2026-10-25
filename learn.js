@@ -45,6 +45,7 @@ const correctIn = wid => Object.entries(P.q).filter(([id, r]) => qById[id] && qB
 const hudStars = $('starsHud'), questChip = $('questChip');
 function renderHud(){
   hudStars.querySelector('b').textContent = P.stars;
+  const lm = hudStars.querySelector('.lm'); if (lm){ lm.hidden = !(P.lm > 0); lm.textContent = ' · 📖 ' + (P.lm || 0); }   // Lese-Münzen
   const w = worlds[RS.worldId];
   const open = w && w.quests ? w.quests.find(q => !P.quests[w.id + ':' + q.id]) : null;
   questChip.hidden = !w || !w.quests;

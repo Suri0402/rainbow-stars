@@ -11,12 +11,23 @@ const profiles = () => (window.Profiles && Profiles.list) || [];
 // ---------- Häuser auf der Wiese ----------
 async function houseRecs(){   // Profil-ID -> neuestes gezeichnetes Haus
   const m = new Map(); (await RS.idb.all()).filter(r => r.kind === 'house' && r.owner).sort((a, b) => a.created - b.created).forEach(r => m.set(r.owner, r)); return m; }
+// Das Haus wächst mit dem Lesen: um die Zeichnung herum kommen Fahne (1 Buch), Blumen (2), Bücherturm (3), Sterne (5) und ein Regenbogen (10)
 async function houseCanvas(p, rec){
-  const [c, x] = cnv(360, 410); let pic;
+  const [c, x] = cnv(480, 500); let pic;
   try { pic = await createImageBitmap(rec.blob); } catch(e){ return null; }
-  const s2 = Math.min(350/pic.width, 340/pic.height), w = pic.width*s2, h = pic.height*s2; x.drawImage(pic, 180 - w/2, 346 - h, w, h);
-  const sign = [[90,360],[270,360],[270,400],[90,400]]; pencil(x, sign, '#fbf7ee', false); ink(x, sign, true, 2);   // Namensschild mit Profilbild
-  x.fillStyle = '#342c3a'; x.font = '24px "Patrick Hand", cursive'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.avatar + ' ' + p.name, 180, 381);
+  const r = window.Rank ? await Rank.of(p.id) : {n:0}, n = r.n;
+  if (n >= 10) RS.RAINBOW.slice().reverse().forEach((col, i) => { x.lineWidth = 16; x.strokeStyle = col; x.globalAlpha = .85; x.beginPath(); x.arc(240, 430, 228 - i*15, Math.PI, 0); x.stroke(); x.globalAlpha = 1; });
+  const s2 = Math.min(330/pic.width, 330/pic.height), w = pic.width*s2, h = pic.height*s2, X0 = 240 - w/2, Y0 = 410 - h;
+  x.drawImage(pic, X0, Y0, w, h);
+  if (n >= 1){ const fx = 240; ink(x, [[fx, Y0 + 8], [fx, Y0 - 62]], false, 4); const fl = [[fx + 2, Y0 - 62], [fx + 52, Y0 - 48], [fx + 2, Y0 - 32]]; pencil(x, fl, '#ff4f7b'); ink(x, fl, true, 2.4); }   // Fahne auf der Dachspitze (meist in der Mitte)
+  if (n >= 2) [[X0 - 6, 412], [X0 + 26, 418], [X0 + w - 24, 418], [X0 + w + 8, 412]].forEach(([a, b], i) => { ink(x, [[a, b], [a, b - 26]], false, 3);
+    for (let k=0;k<5;k++){ const an = k/5*Math.PI*2, q = wob(a + Math.cos(an)*8, b - 30 + Math.sin(an)*8, 7, 7, 12, .05); pencil(x, q, ['#ff8fb1', '#ffe066', '#b49bff', '#7cc4ff'][i], false); ink(x, q, true, 1.2); } });
+  if (n >= 3) ['#7cc4ff', '#ffe066', '#ff8fb1', '#7fdca4', '#b49bff'].forEach((col, i) => { const by = 404 - i*26, bx = 12 + (i % 2)*6, bk = [[bx, by], [bx + 58, by], [bx + 58, by - 24], [bx, by - 24]]; pencil(x, bk, col); ink(x, bk, true, 2); ink(x, [[bx + 8, by - 12], [bx + 50, by - 12]], false, 1.2); });
+  if (n >= 5) [[X0 + w*.15, Y0 - 24, 14], [X0 + w*.32, Y0 - 50, 16], [X0 + w*.75, Y0 - 44, 13], [X0 + w*.9, Y0 - 18, 11], [X0 - 20, Y0 + 20, 10], [X0 + w + 20, Y0 + 30, 11]].forEach(([a, b, rr]) => star(x, a, b, rr, '#ffe066', a));
+  const label = (r.icon ? r.icon + ' ' : '') + p.avatar + ' ' + p.name + (r.title ? ' · ' + r.title : '');
+  x.font = '24px "Patrick Hand", cursive'; const tw = Math.min(460, x.measureText(label).width + 40);
+  const sign = [[240 - tw/2, 446], [240 + tw/2, 446], [240 + tw/2, 492], [240 - tw/2, 492]]; pencil(x, sign, '#fbf7ee', false); ink(x, sign, true, 2);   // Namensschild mit Abzeichen und Titel
+  x.fillStyle = '#342c3a'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(label, 240, 470);
   return c;
 }
 const homeHouses = new Map();   // Profil-ID -> {g, mesh, act}
@@ -32,7 +43,7 @@ async function placeHouses(){
   profiles().filter(p => pics.has(p.id)).forEach(p => {
     const ang = hashIdx(p.id + 'h', 360)/360*Math.PI*2, pos = new V3(Math.cos(ang)*11, 0, Math.sin(ang)*11);
     const g = new THREE.Group(); g.position.copy(pos); W.group.add(g);
-    const m = bill(pics.get(p.id), 3.2, g); shadow(3, g);
+    const m = bill(pics.get(p.id), 4.3, g); shadow(3, g);
     const own = p.id === RS.owner;
     const act = {kind:'sight', ref:{pos:pos.clone(), name:'Haus von ' + p.name}, go: own ? 'läuft nach Hause' : 'läuft zum Haus von ' + p.name, doing: own ? 'schließt die Haustür auf' : 'steht vor dem Haus von ' + p.name,
       marvel:true, off:1.5, fxH:2, onArrive: () => own ? L.travel('house') : knock(p)};
@@ -60,7 +71,7 @@ function askForHouse(){
 }
 addEventListener('rs:profile', () => setTimeout(async () => { await placeHouses(); showGreets();
   if (hasHouse()) RS.enterWorld('house'); else askForHouse(); }, 200));
-['rs:sync', 'rs:painted', 'rs:deleted'].forEach(ev => addEventListener(ev, () => { if (RS.owner) placeHouses(); }));
+['rs:sync', 'rs:painted', 'rs:deleted', 'rs:books', 'rs:bookdone'].forEach(ev => addEventListener(ev, () => { if (RS.owner) placeHouses(); }));
 addEventListener('rs:scanned', async e => { if (!e.detail.house) return; await placeHouses(); clearInterval(askT);
   L.toast('🏠 Dein Haus steht jetzt auf der Wiese!');
   RS.say('Juhu, mein eigenes Haus! 🏠 Komm, wir gehen hinein!', {prio:3, ms:9000});

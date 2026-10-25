@@ -106,7 +106,7 @@ async function showArea(){
         const th = el('div', 'things'); (r.pages || []).forEach(src => { const im = document.createElement('img'); im.src = src; im.className = 'pagethumb'; th.append(im); }); info.append(th);
         const acts = el('div', 'fs-row');
         const decide = async st => { const all = (await RS.idb.getP('parent:reading')) || [], x = all.find(y => y.id === r.id); if (x) x.status = st; await RS.idb.setP('parent:reading', all);
-          if (st === 'ok' && r.kid === RS.owner){ x.claimed = true; await RS.idb.setP('parent:reading', all); if (window.Needs) Needs.change('energie', 60); L.addStars(5, 'Lesezeit bestätigt'); }
+          if (st === 'ok' && r.kid === RS.owner){ x.claimed = true; await RS.idb.setP('parent:reading', all); if (window.Needs) Needs.change('energie', 60); L.addStars(5, 'Lesezeit bestätigt'); if (window.Rank) setTimeout(() => Rank.addLm(1, 'Lesezeit bestätigt'), 2800); }
           L.toast(st === 'ok' ? '✔ Lesezeit bestätigt' : 'Lesezeit abgelehnt'); showArea(); };
         acts.append(btn('✔ Bestätigen', 'small main', () => decide('ok')), btn('Ablehnen', 'small', () => decide('no'))); info.append(acts); card.append(info); body.append(card); }); }
     body.append(el('h3', 'albumh', '📚 Bücher'));

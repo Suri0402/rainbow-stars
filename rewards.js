@@ -39,6 +39,18 @@ const DRAW = {
     [[-1],[1]].forEach(([s]) => { const top = wob(260 + s*125, 120, 120, 95, 36, .05, s*.5), low = wob(260 + s*95, 265, 80, 70, 30, .05, -s*.4);
       [[top,'rgba(196,232,255,.9)'],[low,'rgba(255,214,236,.9)']].forEach(([q, col]) => { pencil(x, q, col, false); ink(x, q, true, 2.6); }); });
     [[150,110],[370,110],[190,270],[330,270]].forEach(([a,b]) => star(x, a, b, 12, '#fff4c2', a)); return c; },
+  // Fahrzeuge (Lese-Belohnung): groß gezeichnet, die Figur steht im Korb bzw. sitzt in der Kutsche
+  'ride-ballon'(){ const [c, x] = cnv(300, 760);
+    const env = wob(150, 175, 135, 165, 40, .02); pencil(x, env, '#ffb3cf'); ink(x, env, true, 3.2);
+    x.save(); trace(x, env, true); x.clip(); ['#ffe066', '#7cc4ff', '#b49bff'].forEach((col, i) => { x.fillStyle = col; x.globalAlpha = .75; x.fillRect(48 + i*78, 0, 34, 360); }); x.restore(); ink(x, env, true, 3.2);
+    x.lineWidth = 3; x.strokeStyle = '#3b2a3a'; [[60,300,95,680],[240,300,205,680],[120,335,125,680],[180,335,175,680]].forEach(([a,b,c2,d]) => { x.beginPath(); x.moveTo(a,b); x.lineTo(c2,d); x.stroke(); });
+    const bk = [[85,680],[215,680],[205,752],[95,752]]; pencil(x, bk, '#c99a76'); ink(x, bk, true, 3); ink(x, [[90,705],[210,705]], false, 2); ink(x, [[93,728],[207,728]], false, 2);
+    star(x, 150, 120, 22, '#fff4c2', 0); return c; },
+  'ride-kutsche'(){ const [c, x] = cnv(560, 330);
+    const body = [[30,120],[270,120],[255,250],[45,250]]; pencil(x, body, '#ffb3cf'); ink(x, body, true, 3);
+    const roof = wob(150, 112, 130, 34, 30, .03); pencil(x, roof, '#b49bff'); ink(x, roof, true, 2.6);
+    [[80,268],[220,268]].forEach(([a,b]) => { const w2 = wob(a, b, 44, 44, 26, .02); pencil(x, w2, '#ffe066'); ink(x, w2, true, 3); for (let k=0;k<4;k++){ const an = k*Math.PI/4; ink(x, [[a - Math.cos(an)*40, b - Math.sin(an)*40], [a + Math.cos(an)*40, b + Math.sin(an)*40]], false, 2); } });
+    ink(x, [[270,200],[340,200]], false, 4); x.drawImage(emojiCanvas('🦄', 250), 300, 60); star(x, 150, 90, 14, '#fff4c2', 0); return c; },
 };
 
 // ---------- Katalog ----------
@@ -70,6 +82,12 @@ const CATALOG = [
   {id:'moebel-buecher', type:'moebel', name:'Bücherregal', emoji:'📚', rarity:'rare', price:30},
   {id:'moebel-bilder', type:'moebel', name:'Bilderwand', emoji:'🖼', rarity:'rare', price:35},
   {id:'moebel-staffelei', type:'moebel', name:'Staffelei zum Einrichten', emoji:'🎨', rarity:'epic', price:40},
+  // Fahrzeuge gibt es nur für Lese-Münzen 📖 (nur fürs Lesen) – man sieht auf der Wiese, wer viel liest
+  {id:'ride-roller', type:'ride', name:'Roller', emoji:'🛴', rarity:'common', currency:'lm', price:2, w:1.1, lift:.22},
+  {id:'ride-fahrrad', type:'ride', name:'Fahrrad', emoji:'🚲', rarity:'common', currency:'lm', price:4, w:1.5, lift:.42},
+  {id:'ride-ballon', type:'ride', name:'Heißluftballon', icon:'🎈', rarity:'rare', currency:'lm', price:8, w:1.7, lift:.42, float:1.1},
+  {id:'ride-kutsche', type:'ride', name:'Einhorn-Kutsche', icon:'🦄', rarity:'rare', currency:'lm', price:12, w:2.4, lift:.45, ox:.62},
+  {id:'ride-rakete', type:'ride', name:'Rakete', emoji:'🚀', rarity:'epic', currency:'lm', price:20, w:1.5, lift:.55, float:.9},
 ];
 const byId = Object.fromEntries(CATALOG.map(it => [it.id, it]));
 const RARITY = {common:'normal', rare:'selten ✦', epic:'sehr selten ✦✦'};
@@ -78,13 +96,14 @@ CATALOG.filter(it => it.type === 'wear').forEach(it => L.ITEMS[it.id] = {name:it
 L.ITEMS.tiara.slot = 'head';
 const P = L.P;
 const owned = id => byId[id] && byId[id].type === 'sticker' ? !!P.stickers[id] : !!P.items[id];
-const preview = it => it.type === 'wear' ? DRAW[it.id]() : emojiCanvas(it.emoji, 160);
+const preview = it => DRAW[it.id] ? DRAW[it.id]() : emojiCanvas(it.emoji, 160);
+const rideCanvas = it => DRAW[it.id] ? DRAW[it.id]() : emojiCanvas(it.emoji, 260);
 const iconOf = it => it.icon || it.emoji;
 
 // ---------- Geschenk ----------
 function rollGift(){
   const r = Math.random(), want = r < .08 ? 'epic' : r < .38 ? 'rare' : 'common';
-  const free = CATALOG.filter(it => !owned(it.id) && it.type !== 'moebel');   // Möbel kauft man selbst
+  const free = CATALOG.filter(it => !owned(it.id) && it.type !== 'moebel' && it.type !== 'ride');   // Möbel und Fahrzeuge kauft man selbst
   const pool = free.filter(it => it.rarity === want), list = pool.length ? pool : free;
   if (!list.length){ const e = STICKERS[Math.floor(Math.random()*STICKERS.length)]; return {it:byId['st-' + e], dup:true}; }
   return {it:list[Math.floor(Math.random()*list.length)], dup:false};
@@ -112,12 +131,13 @@ function actionFor(it){
   if (it.type === 'wear') return {label:'Gleich anziehen', done:'angezogen', run:() => wear(it.id, true)};
   if (it.type === 'pet') return {label:'Mitnehmen', done:'kommt mit', run:() => choosePet(it.id)};
   if (it.type === 'deco') return {label:'Auf die Wiese stellen', done:'steht auf der Wiese', run:() => placeDeco(it.id, true)};
+  if (it.type === 'ride') return {label:'Losfahren', done:'fährt mit', run:() => chooseRide(it.id)};
   return null;
 }
 // ---------- Wunsch der Figur: das nächste Ziel zum Sparen ----------
 const article = it => ({Bett:'ein', Teppich:'einen', Küchentisch:'einen', Brunnen:'einen', Zauberhut:'einen', Blumenkranz:'einen', Glückspilz:'einen'}[it.name.split(' ')[0]] ?? (/^(Goodie-Regal|Bücherregal|Häuschen|Zirkuszelt|Kätzchen|Hündchen|Küken|Mini-Einhorn)/.test(it.name) ? 'ein' : 'eine'));
 function wishItem(){
-  if (P.wish && byId[P.wish] && !owned(P.wish)) return byId[P.wish];
+  if (P.wish && byId[P.wish] && !owned(P.wish) && byId[P.wish].type !== 'ride') return byId[P.wish];
   return CATALOG.find(it => it.type === 'moebel' && !owned(it.id)) || null;   // sonst das nächste Möbelstück
 }
 function setWish(id){ P.wish = id; L.save(); dispatchEvent(new CustomEvent('rs:wish')); }
@@ -143,6 +163,9 @@ function spawnPet(){
   pet.chase = petTarget; pet.chaseT = 1e12; RS.world.set('pet', pet);
 }
 function choosePet(id){ P.pet = id; L.save(); spawnPet(); }
+// Fahrzeug: die Hauptfigur fährt damit (app.js), die Geschwister sehen es auf der Wiese (rank.js)
+function applyRide(){ const it = byId[P.ride]; RS.setRide(it && P.items[it.id] ? rideCanvas(it) : null, it || {}); }
+function chooseRide(id){ P.ride = id; L.save(); applyRide(); dispatchEvent(new CustomEvent('rs:ride')); }
 RS.onTick(() => { if (!pet) return;
   if (!pet.chase && !(pet.manual > performance.now())){ pet.chase = petTarget; pet.chaseT = 1e12; }   // nach dem Steuern wieder mitlaufen
   const side = RS.camRight().multiplyScalar(-(RS.st.face || 1)*1.1); petTarget.pos.copy(RS.st.pos).add(side); petTarget.pos.z += .35;
@@ -161,7 +184,7 @@ function showDeco(id){
   const th = RS.addThing({name:it.name, c:emojiCanvas(it.emoji, 240), type:'deco', pos:new V3(d.x, 0, d.z), wid:'home', appear:0});
   RS.world.set(key, th);
 }
-addEventListener('rs:profile', () => { L.applyWear(); if (P.pet) spawnPet(); Object.keys(P.deco).forEach(showDeco); });
+addEventListener('rs:profile', () => { L.applyWear(); if (P.pet) spawnPet(); Object.keys(P.deco).forEach(showDeco); applyRide(); });
 
 // ---------- Meine Sachen ----------
 function openThings(){
@@ -174,6 +197,7 @@ function openThings(){
     const wearables = [...CATALOG.filter(it => it.type === 'wear' && P.items[it.id]), ...(P.items.tiara ? [{id:'tiara', name:'Sternen-Haarreif', icon:'⭐', slot:'head'}] : [])];
     section('Anziehen', wearables, it => L.btn((P.wear[it.id] ? '✔ ' : '') + iconOf(it) + ' ' + it.name, P.wear[it.id] ? 'small main' : 'small', () => { wear(it.id, !P.wear[it.id]); openThings(); }));
     section('Haustier', CATALOG.filter(it => it.type === 'pet' && P.items[it.id]), it => L.btn((P.pet === it.id ? '✔ ' : '') + it.emoji + ' ' + it.name, P.pet === it.id ? 'small main' : 'small', () => { if (P.pet === it.id){ P.pet = null; L.save(); RS.removeFromWorld('pet'); pet = null; } else choosePet(it.id); openThings(); }));
+    section('Fahrzeug', CATALOG.filter(it => it.type === 'ride' && P.items[it.id]), it => L.btn((P.ride === it.id ? '✔ ' : '') + iconOf(it) + ' ' + it.name, P.ride === it.id ? 'small main' : 'small', () => { chooseRide(P.ride === it.id ? null : it.id); openThings(); }));
     section('Deko auf der Wiese', CATALOG.filter(it => it.type === 'deco' && P.items[it.id]), it => { const on = P.deco[it.id] && P.deco[it.id].on;
       return L.btn((on ? '✔ ' : '') + it.emoji + ' ' + it.name, on ? 'small main' : 'small', () => { placeDeco(it.id, !on); openThings(); }); });
     const have = STICKERS.filter(e => P.stickers['st-' + e]).length;
@@ -188,16 +212,18 @@ function openShop(){
     const w = wishItem();
     body.append(L.el('p', 'tip', `Du hast ★ ${P.stars} Sterne.` + (w ? ` Dein Wunsch: ${w.emoji || w.icon} ${w.name} (★ ${w.price}).` : '')));
     const g = L.el('div', 'shop');
-    const ORDER = {moebel:0, wear:1, pet:2, deco:3, sticker:4};   // Möbel fürs Haus zuerst, Sticker zum Schluss
+    if ((P.lm || 0) > 0 || CATALOG.some(it => it.type === 'ride' && owned(it.id))) body.append(L.el('p', 'tip', `📖 Du hast ${P.lm || 0} Lese-Münzen – die gibt es nur fürs Lesen (Lesezeit 📖 1, gelesenes Buch 📖 5).`));
+    const ORDER = {ride:0, moebel:1, wear:2, pet:3, deco:4, sticker:5};   // Fahrzeuge und Möbel zuerst, Sticker zum Schluss
     CATALOG.filter(it => !owned(it.id)).sort((a, b) => ((w && b.id === w.id) - (w && a.id === w.id)) || (ORDER[a.type] - ORDER[b.type]) || (a.price - b.price)).forEach(it => {
       const card = L.el('div', 'shopitem' + (w && it.id === w.id ? ' wish' : '')), pic = preview(it); pic.className = 'shoppic';
-      card.append(pic, L.el('b', '', it.name), L.el('small', 'rar ' + it.rarity, it.type === 'moebel' ? 'für dein Haus 🏠' : RARITY[it.rarity]));
-      const can = P.stars >= it.price;
+      const lm = it.currency === 'lm', have = lm ? (P.lm || 0) : P.stars, cur = lm ? '📖 ' : '★ ';
+      card.append(pic, L.el('b', '', it.name), L.el('small', 'rar ' + it.rarity, lm ? 'nur fürs Lesen 📖' : it.type === 'moebel' ? 'für dein Haus 🏠' : RARITY[it.rarity]));
+      const can = have >= it.price;
       if (w && it.id === w.id) card.append(L.el('small', 'note', '💖 Dein Wunsch'));
-      else card.append(L.btn('💖 wünschen', 'small', () => { setWish(it.id); openShop(); }));
-      card.append(L.btn('★ ' + it.price + (can ? ' · kaufen' : ''), can ? 'small main' : 'small', () => {
-        if (P.stars < it.price){ L.toast('Dafür fehlen dir noch ' + (it.price - P.stars) + ' Sterne – löse ein paar Rätsel!'); return; }
-        P.stars -= it.price; if (P.wish === it.id) P.wish = null; grant(it); L.save(); L.renderHud(); L.toast('🛍 ' + it.name + ' gekauft ✦' + (it.type === 'moebel' ? ' – steht jetzt in deinem Haus 🏠' : ''));
+      else if (!lm) card.append(L.btn('💖 wünschen', 'small', () => { setWish(it.id); openShop(); }));
+      card.append(L.btn(cur + it.price + (can ? ' · kaufen' : ''), can ? 'small main' : 'small', () => {
+        if (have < it.price){ L.toast(lm ? `Dafür fehlen dir noch ${it.price - have} Lese-Münzen 📖 – lies weiter in deinem Buch!` : 'Dafür fehlen dir noch ' + (it.price - P.stars) + ' Sterne – löse ein paar Rätsel!'); return; }
+        if (lm) P.lm -= it.price; else P.stars -= it.price; if (P.wish === it.id) P.wish = null; grant(it); L.save(); L.renderHud(); L.toast('🛍 ' + it.name + ' gekauft ✦' + (it.type === 'moebel' ? ' – steht jetzt in deinem Haus 🏠' : ''));
         const act = actionFor(it); if (act) act.run(); openShop(); }));
       g.append(card); });
     if (!g.children.length) g.append(L.el('p', 'cardtext', 'Wow – du hast schon alles! ✦'));
@@ -207,5 +233,5 @@ function openShop(){
 RS.$('thingsBtn').onclick = openThings;
 // Haar-Auswahl gehört jetzt zu "Meine Sachen": nach dem Schließen wieder verstecken
 new MutationObserver(() => { const sw = RS.$('swatches'); if (RS.$('learn').hidden && sw.parentElement !== RS.$('swatchHome')){ RS.$('swatchHome').append(sw); sw.hidden = true; } }).observe(RS.$('learn'), {attributes:true, attributeFilter:['hidden']});
-window.Rewards = {solved, CATALOG, giftInto, openThings, openShop, emojiCanvas, rollGift, wishItem, setWish, owned, article, grant, byId};
+window.Rewards = {rideCanvas, chooseRide, solved, CATALOG, giftInto, openThings, openShop, emojiCanvas, rollGift, wishItem, setWish, owned, article, grant, byId};
 })();

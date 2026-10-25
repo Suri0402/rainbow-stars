@@ -35,7 +35,7 @@ function chooser(){
   view(b => {
     b.append(el('h2', '', 'Wer spielt heute?'));
     const g = el('div', 'profgrid');
-    profiles.forEach(p => g.append(btn(p.avatar + '\n' + p.name, 'profbtn', () => askPin(p))));
+    profiles.forEach(p => { const b = btn(p.avatar + '\n' + p.name, 'profbtn', () => askPin(p)); b.dataset.pid = p.id; g.append(b); });   // rank.js hängt das Lese-Abzeichen an
     g.append(btn('＋\nNeues Profil', 'profbtn new', () => create()));
     b.append(g);
     L.row(b, [btn('👪 Eltern', 'small', () => window.Parents && Parents.openArea({fromLogin:true})),
