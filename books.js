@@ -169,7 +169,7 @@ function readingBox(body, mine){
   body.append(el('h3', 'albumh', '⏱ Lesezeit'));
   const r = P.reading, box = el('div', 'readbox'); body.append(box);
   if (!r){
-    box.append(el('p', 'cardtext', 'Lies mindestens 30 Minuten in deinem Buch. Danach fotografierst du 2–3 Seiten, die du gelesen hast, und beantwortest eine Frage dazu. Das vertreibt die Langeweile! 📚'));
+    box.append(el('p', 'cardtext', 'Lies mindestens 30 Minuten in deinem Buch. Danach fotografierst du 2–3 Seiten, die du gelesen hast, und beantwortest eine Frage dazu. Das gibt deiner Figur Energie! 😴→⚡'));
     const pickRow = el('div', 'things');
     mine.forEach(b => pickRow.append(btn('▶ ' + b.title, 'small main', () => startReading(b.id, b.title))));
     pickRow.append(btn('▶ anderes Buch', 'small', () => { const t = prompt('Wie heißt dein Buch?'); if (t && t.trim()) startReading(null, t.trim().slice(0, 60)); }));
@@ -217,9 +217,9 @@ async function askReading(){
 function done(ok, minutes){
   const r = P.reading; pages.length = 0;
   P.readLog = (P.readLog || []).concat([{title:r.title, minutes, at:Date.now(), ok}]).slice(-50);
-  if (ok){ P.reading = null; L.save(); if (window.Needs) Needs.change('spass', 60); L.addStars(5, 'Lesezeit');
+  if (ok){ P.reading = null; L.save(); if (window.Needs) Needs.change('energie', 60); L.addStars(5, 'Lesezeit');
     if (window.Needs) P.food.brezel = (P.food.brezel || 0) + 1;
-    L.openSheet('📚 Super gelesen!', b2 => { b2.append(el('div', 'stamp big', '📚'), el('p', 'cardtext', `${minutes} Minuten gelesen und die Frage richtig beantwortet! Dir ist jetzt gar nicht mehr langweilig. 📚 +60 Spaß · 🥨 +1 Brezel`)); row(b2, [btn('Juhu ✦', 'main', L.closeSheet)]); }); }
+    L.openSheet('📚 Super gelesen!', b2 => { b2.append(el('div', 'stamp big', '📚'), el('p', 'cardtext', `${minutes} Minuten gelesen und die Frage richtig beantwortet! Deine Figur ist wieder munter. 😴 +60 Energie · 🥨 +1 Brezel`)); row(b2, [btn('Juhu ✦', 'main', L.closeSheet)]); }); }
   else { L.save(); L.openSheet('Noch einmal lesen', b2 => { b2.append(el('p', 'cardtext', 'Die Fragen waren diesmal nicht richtig. Lies den Abschnitt noch einmal genau – dann fotografiere die Seiten neu.')); row(b2, [btn('📷 Neue Fotos', 'main', photoPages), btn('Später', '', L.closeSheet)]); }); }
 }
 // ohne KI: einen Satz schreiben, ein Erwachsener bestätigt später im Eltern-Bereich
@@ -234,14 +234,14 @@ function writeSummary(minutes){
       const list = (await RS.idb.getP('parent:reading')) || [];
       list.push({id:RS.uuid(), kid:RS.owner, title:r.title, minutes, text:t.value.trim(), at:Date.now(), status:'pending', pages:pages.slice(0, 3).map(c => c.toDataURL('image/jpeg', .5))});
       await RS.idb.setP('parent:reading', list.slice(-30)); P.reading = null; pages.length = 0; L.save();
-      L.openSheet('✔ Abgeschickt', b2 => { b2.append(el('p', 'cardtext', 'Super! Sobald ein Erwachsener deine Lesezeit bestätigt, ist dir nicht mehr langweilig. 📚')); row(b2, [btn('OK', 'main', L.closeSheet)]); }); })]);
+      L.openSheet('✔ Abgeschickt', b2 => { b2.append(el('p', 'cardtext', 'Super! Sobald ein Erwachsener deine Lesezeit bestätigt, bekommt deine Figur wieder Energie. 📚')); row(b2, [btn('OK', 'main', L.closeSheet)]); }); })]);
   });
 }
 // bestätigte Lesezeiten beim Anmelden gutschreiben
 addEventListener('rs:profile', async () => { const list = (await RS.idb.getP('parent:reading')) || []; let n = 0;
   list.forEach(x => { if (x.kid === RS.owner && x.status === 'ok' && !x.claimed){ x.claimed = true; n++; } });
   if (!n) return; await RS.idb.setP('parent:reading', list);
-  setTimeout(() => { if (window.Needs) Needs.change('spass', 60*n); L.addStars(5*n, 'Lesezeit bestätigt'); L.toast('📚 Deine Lesezeit wurde bestätigt – kein bisschen langweilig mehr!'); }, 3000); });
+  setTimeout(() => { if (window.Needs) Needs.change('energie', 60*n); L.addStars(5*n, 'Lesezeit bestätigt'); L.toast('📚 Deine Lesezeit wurde bestätigt – deine Figur hat wieder Energie!'); }, 3000); });
 
 $('readBtn').onclick = openRead;
 window.Books = {get count(){ return count; }, all: load, edit, talk, openRead, decodeISBN, lookup, isbnOk};

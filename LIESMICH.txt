@@ -10,13 +10,13 @@ Inhalt
   books.js                Bücher: Strichcode scannen, Buch-Quiz, Bild, Lesegespräch
   worlds/time.js          die Zeitmaschine (Dino-Tal, Ägypten, Ritterburg)
   worlds/house.js         das eigene Haus (Zimmer mit Regal, Bett, Rätsel-Tisch …)
-  needs.js                Bedürfnisse der Figur (Wissen, Hunger, Spaß, Energie)
+  needs.js                Bedürfnisse der Figur (Wissen, Hunger, Energie) und ihre Bitten
   friends.js              Freundschaften zwischen Profilen
   sync.js                 Familien-Konto: Abgleich zwischen Handy und iPad (Supabase)
   supabase/functions/…    KI-Funktion für die Lese-Fragen (Gemini), siehe SUPABASE-EINRICHTEN.txt
   content/time.json       Wissenskarten und Fragen der Zeitmaschine
-  raetsel.js, math.js     Rätsel-Zeit: Wissens-Quiz und Rechen-Geschichten
-  rewards.js              Geschenke, Laden, Meine Sachen (Sticker, Anziehsachen, Haustiere, Deko)
+  raetsel.js, math.js     Rätsel-Eule (Wissens-Quiz) und Rätsel-Tisch (Rechen-Geschichten)
+  rewards.js              Laden (Möbel, Anziehsachen, Haustiere, Deko, Sticker), Wunsch, Meine Sachen
   content/quiz.json       Fragen für das Wissens-Quiz (Natur, Mensch, Geschichte)
   worlds/space.js         die Sternenwelt mit Minispielen
   content/space.json      Wissenskarten und Fragen der Sternenwelt (hier kann man Texte ändern)
@@ -69,16 +69,14 @@ Inhalt
    - Das Regenbogen-Tor auf der Wiese (oder der Knopf "Reisepass") bringt
      dich in andere Welten. Zuerst gibt es die Sternenwelt.
    - Tippe auf Sonne, Planeten, Mond, Komet oder ISS: Das Mädchen läuft hin
-     und du bekommst eine Wissenskarte, danach eine kurze Frage.
+     und du bekommst eine Wissenskarte, danach ein Rätsel zu diesem Ort.
    - Sternenfee Luna verteilt Aufträge, z. B. Planeten ordnen, Sternbilder
      verbinden, Mondsprung testen und einen eigenen Planeten malen.
    - Für Karten, richtige Antworten und Aufträge gibt es Regenbogensterne.
      Wer alle Aufträge einer Welt schafft, bekommt einen Stempel im
      Reisepass und eine Belohnung (Sternen-Haarreif).
-   - Rätselfragen kommen immer zu etwas, das man FRÜHER entdeckt hat – nicht
-     zur Karte, die man gerade gelesen hat. Bei Luna gibt es das "Quiz mit Luna".
-   - Falsch beantwortete Fragen kommen später noch einmal – ohne Strafe.
-   - "Album" zeigt alle gesammelten Wissenskarten. "🔊 Vorlesen" liest vor.
+   - Falsch beantwortete Fragen kommen am selben Ort später noch einmal – ohne Strafe.
+   - "Album" zeigt alle gesammelten Wissenskarten zum Nachlesen. "🔊 Vorlesen" liest vor.
    - Der Fortschritt wird auf dem Gerät gespeichert.
 
 6) Profile
@@ -91,25 +89,38 @@ Inhalt
    - Profil wechseln oder löschen: oben rechts auf den Namen tippen.
    - Hinweis: Die Profile liegen nur auf diesem Gerät (kein Online-Konto).
 
-7) Rätsel-Zeit (Knopf "🧠 Rätsel")
-   - Wissens-Quiz: Wetter & Natur, Mensch & Körper, Geschichte, Weltall oder
-     bunt gemischt – je 5 Fragen.
-   - Rechen-Geschichten: Sachaufgaben zum Lesen in 4 Stufen (etwa 1./2. bis
-     5./6. Klasse). Die Stufe startet nach der Klasse im Profil und passt sich an:
-     4 richtige hintereinander -> schwerer, 2 falsche -> leichter.
-     Bei einem Fehler gibt es erst einen Lese-Tipp, dann den Rechenweg.
-   - Nach jeder richtigen Lösung: Sterne und ein Überraschungsgeschenk 🎁.
+7) Das Spiel in einem Satz
+   Lesen gibt der Figur Energie -> an Rätsel-Orten Rätsel lösen -> Sterne
+   sammeln -> im Laden Möbel, Kleidung, Haustiere und Deko kaufen -> Haus und
+   Figur gestalten -> die Figur ist glücklich und wünscht sich das Nächste.
 
-8) Goodies (Knopf "🎒 Sachen")
-   - Sticker-Album, Anziehsachen (Krone, Zauberhut, Sonnenbrille, Blumenkranz,
-     Schleife, Feenflügel), Haustiere, die mitlaufen, und Deko für die Wiese.
-   - Im Regenbogen-Laden kann man sich Sachen mit Sternen kaufen.
-   - Haarfarbe ändern: ebenfalls unter "Meine Sachen".
+   Rätsel gibt es nur an Orten (es gibt keinen Rätsel-Knopf):
+   - 🦉 Rätsel-Eule auf der Heimatwiese: Wissens-Quiz (Wetter & Natur, Mensch &
+     Körper, Geschichte, Weltall, bunt gemischt) – je 5 Fragen.
+   - 🧠 Rätsel-Tisch im eigenen Haus: Rechen-Geschichten (Sachaufgaben zum
+     Lesen, 4 Stufen). Die Stufe passt sich an: 4 richtig -> schwerer,
+     2 falsch -> leichter.
+   - An Planeten und Stationen: erst die Wissenskarte lesen, dann das Rätsel.
+   Schwierigkeit nach der Klasse im Profil: Klasse 1–2 leichte Fragen,
+   Klasse 3–4 leichte und mittlere, ab Klasse 5 mittlere und schwere.
+
+8) Sterne, Laden und Wunsch (Knopf "🎒 Sachen" -> "🛍 Zum Laden")
+   - Sterne: 2 pro gelöstem Rätsel (1 im zweiten Versuch), 1 pro neuer
+     Wissenskarte, 5 pro Lesezeit, 20 pro gelesenem Buch, 3 pro Auftrag.
+   - Im Laden kostet alles 10–40 Sterne – man spart also mehrere Rätsel lang.
+     Möbel fürs Haus: Bett, Küchentisch, Teppich, Goodie-Regal, Bücherregal,
+     Bilderwand, Staffelei. Dazu Anziehsachen, Haustiere, Deko und Sticker.
+   - Die Figur hat immer einen Wunsch (zuerst das nächste Möbelstück, mit
+     "💖 wünschen" im Laden selbst wählbar). Nach jedem Rätsel steht der Stand
+     da, z. B. "⭐ 12/20 für 🛏 Bett".
+   - Überraschungsgeschenke gibt es nur bei großen Erfolgen: Buch gelesen,
+     alle Aufträge einer Welt geschafft.
+   - Haarfarbe ändern: unter "Meine Sachen".
 
 9) Steuern und Sicht
    - Auf den Boden tippen: Die Figur läuft genau dorthin (kleiner Sternenkranz
      zeigt das Ziel). Danach spielt sie 20 Sekunden nicht von selbst weiter.
-   - Knopf "👁 Sicht": Figur wählen (Mädchen, Tiere, eigene Figuren). Die Kamera
+   - Knopf "👁 Sicht": Figur wählen (Mädchen, Tiere, nur die EIGENEN Figuren). Die Kamera
      folgt ihr, und sie wird per Tippen gesteuert. "Übersicht" zeigt die ganze Welt.
 
 10) Lesen schaltet Welten frei
@@ -128,14 +139,17 @@ Inhalt
    Freischaltung: 1. Buch -> Zeitmaschine Dino-Tal, 2. -> Altes Ägypten,
    3. -> Ritterburg. Jedes Kind schaltet für sich selbst frei.
 
-11) Die Figur hat Bedürfnisse (oben rechts, vier Balken)
-   - 🧠 Wissen, 🍎 Satt, 📚 Spaß, 😴 Energie – sie sinken gemütlich über den Tag,
+11) Die Figur hat Bedürfnisse (oben rechts, drei Balken)
+   - 🧠 Wissen, 🍎 Satt, 😴 Energie – sie sinken gemütlich über den Tag,
      auch wenn die App zu ist. Die Figur wird nie krank, sie ist höchstens
-     traurig oder müde und sagt, was ihr fehlt.
+     traurig oder müde und sagt in einer Sprechblase, was ihr fehlt.
    - Rätsel: +Wissen und ein Essen für den Vorrat. Füttern: "Wie geht's dir?"
-     oder am Küchentisch im Haus. Schlafen: im Bett im eigenen Haus.
-   - Gegen Langeweile hilft Lesen (siehe 12).
-   - Ein Geschenk gibt es nach je 3 gelösten Rätseln (🎁 1/3).
+     oder am Küchentisch im Haus.
+   - Energie gibt es nur durchs Lesen (siehe 12): Lesezeit +60, gelesenes Buch
+     = voll. Ohne Lesen wird die Figur müde, läuft langsamer und nickt bei sehr
+     wenig Energie zwischendurch kurz ein. Das Bett im Haus ist der Lese-Ort.
+   - Die Figur führt: 1. müde -> "Liest du mir ein Buch vor?", 2. Hunger,
+     3. Wissen, 4. ihr Wunsch ("Dafür fehlen noch 8 Sterne – zur Eule?").
 
 12) Lesezeit
    - "📚 Lesen" -> Lesezeit starten. Nach mindestens 30 Minuten 2–3 Seiten
@@ -151,15 +165,12 @@ Inhalt
      Haus ersetzt das alte.
    - Wer ein Haus hat, startet nach dem Anmelden immer im eigenen Haus.
      Hinein darf nur, wem es gehört.
-   - Möbel gibt es für Rätsel: Anfangs steht nur der Rätsel-Tisch da. Alle 2
-     gelösten Rätsel kommt etwas dazu, in dieser Reihenfolge: Bett,
-     Küchentisch, Goodie-Regal, Teppich, Bücherregal, Bilderwand, Staffelei
-     zum Einrichten.
+   - Anfangs steht nur der Rätsel-Tisch im Zimmer. Weitere Möbel kauft man mit
+     Sternen im Laden (siehe 8). Knopf "🏠 Nach Hause" bringt einen zurück.
    - Auf der Wiese sehen sich alle Profile: alle Häuser und alle Figuren.
-     Ausmalen und löschen kann ein Bild nur das Profil, dem es gehört.
-   - Die Figur sagt in Sprechblasen, was ihr fehlt (z. B. "Mir ist
-     langweilig! Wann liest du ein Buch mit mir?"), mit passendem Knopf.
-   - Auf der Wiese gibt es außerdem die Rätsel-Eule.
+     Ausmalen, löschen und steuern kann eine Figur nur das Profil, dem sie
+     gehört. Eltern-Bereich -> "🧩 Figuren zuordnen": Figuren (und Häuser)
+     einem anderen Kind zuordnen.
    - Profil-Menü -> "👫 Freunde": Freundschaftsanfragen zwischen Profilen.
 
 14) Handy und iPad (Familien-Konto)

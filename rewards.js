@@ -1,5 +1,5 @@
-// Rainbow Stars – Goodies: Überraschungsgeschenk nach jeder Lösung, Laden, "Meine Sachen"
-// Sticker (Album), Anziehsachen (am Mädchen), Haustiere (laufen mit), Deko (steht auf der Wiese)
+// Rainbow Stars – Goodies: Sterne sind das Geld. Im Laden gibt es Möbel (fürs eigene Haus), Anziehsachen, Haustiere, Deko und Sticker.
+// Überraschungsgeschenke nur bei großen Erfolgen (Buch gelesen, alle Aufträge einer Welt). Die Figur hat immer einen Wunsch (P.wish).
 (() => {
 const RS = window.RS, L = window.Learn, { V3 } = RS;
 
@@ -45,23 +45,31 @@ const DRAW = {
 const STICKERS = ['🐸','🐧','🐙','🍉','🌵','🍭','🎨','🎵','🐞','🌼','🍀','🐳','🦔','🍒','🪐','🧁'];
 const CATALOG = [
   ...STICKERS.map(e => ({id:'st-' + e, type:'sticker', name:'Sticker ' + e, emoji:e, rarity:'common', price:10})),
-  {id:'krone', type:'wear', slot:'head', name:'Krone', icon:'👑', rarity:'epic', price:80, w:.62, y:150},
-  {id:'zauberhut', type:'wear', slot:'head', name:'Zauberhut', icon:'🧙', rarity:'rare', price:55, w:.95, y:330},
-  {id:'blumenkranz', type:'wear', slot:'head', name:'Blumenkranz', icon:'🌼', rarity:'rare', price:45, w:1.08, y:75},
-  {id:'schleife', type:'wear', slot:'head', name:'Schleife', icon:'🎀', rarity:'common', price:30, w:.55, y:110},
-  {id:'sonnenbrille', type:'wear', slot:'eyes', name:'Sonnenbrille', icon:'🕶', rarity:'rare', price:50, w:1.0, y:0},
-  {id:'fluegel', type:'wear', slot:'back', name:'Feenflügel', icon:'🧚', rarity:'epic', price:90, w:1.6, y:40},
-  {id:'pet-katze', type:'pet', name:'Kätzchen Mia', emoji:'🐱', rarity:'rare', price:60},
-  {id:'pet-hund', type:'pet', name:'Hündchen Bello', emoji:'🐶', rarity:'rare', price:60},
-  {id:'pet-kueken', type:'pet', name:'Küken Piep', emoji:'🐥', rarity:'common', price:40},
-  {id:'pet-hamster', type:'pet', name:'Hamster Krümel', emoji:'🐹', rarity:'common', price:40},
-  {id:'pet-einhorn', type:'pet', name:'Mini-Einhorn Glitzer', emoji:'🦄', rarity:'epic', price:100},
-  {id:'deko-sonnenblume', type:'deco', name:'Sonnenblume', emoji:'🌻', rarity:'common', price:25},
-  {id:'deko-pilz', type:'deco', name:'Glückspilz', emoji:'🍄', rarity:'common', price:25},
-  {id:'deko-brunnen', type:'deco', name:'Brunnen', emoji:'⛲', rarity:'rare', price:45},
-  {id:'deko-haus', type:'deco', name:'Häuschen', emoji:'🏡', rarity:'rare', price:50},
-  {id:'deko-zelt', type:'deco', name:'Zirkuszelt', emoji:'🎪', rarity:'rare', price:50},
-  {id:'deko-rakete', type:'deco', name:'Rakete', emoji:'🚀', rarity:'epic', price:70},
+  {id:'krone', type:'wear', slot:'head', name:'Krone', icon:'👑', rarity:'epic', price:30, w:.62, y:150},
+  {id:'zauberhut', type:'wear', slot:'head', name:'Zauberhut', icon:'🧙', rarity:'rare', price:25, w:.95, y:330},
+  {id:'blumenkranz', type:'wear', slot:'head', name:'Blumenkranz', icon:'🌼', rarity:'rare', price:25, w:1.08, y:75},
+  {id:'schleife', type:'wear', slot:'head', name:'Schleife', icon:'🎀', rarity:'common', price:20, w:.55, y:110},
+  {id:'sonnenbrille', type:'wear', slot:'eyes', name:'Sonnenbrille', icon:'🕶', rarity:'rare', price:25, w:1.0, y:0},
+  {id:'fluegel', type:'wear', slot:'back', name:'Feenflügel', icon:'🧚', rarity:'epic', price:30, w:1.6, y:40},
+  {id:'pet-katze', type:'pet', name:'Kätzchen Mia', emoji:'🐱', rarity:'rare', price:25},
+  {id:'pet-hund', type:'pet', name:'Hündchen Bello', emoji:'🐶', rarity:'rare', price:25},
+  {id:'pet-kueken', type:'pet', name:'Küken Piep', emoji:'🐥', rarity:'common', price:20},
+  {id:'pet-hamster', type:'pet', name:'Hamster Krümel', emoji:'🐹', rarity:'common', price:20},
+  {id:'pet-einhorn', type:'pet', name:'Mini-Einhorn Glitzer', emoji:'🦄', rarity:'epic', price:30},
+  {id:'deko-sonnenblume', type:'deco', name:'Sonnenblume', emoji:'🌻', rarity:'common', price:15},
+  {id:'deko-pilz', type:'deco', name:'Glückspilz', emoji:'🍄', rarity:'common', price:15},
+  {id:'deko-brunnen', type:'deco', name:'Brunnen', emoji:'⛲', rarity:'rare', price:20},
+  {id:'deko-haus', type:'deco', name:'Häuschen', emoji:'🏡', rarity:'rare', price:25},
+  {id:'deko-zelt', type:'deco', name:'Zirkuszelt', emoji:'🎪', rarity:'rare', price:25},
+  {id:'deko-rakete', type:'deco', name:'Rakete', emoji:'🚀', rarity:'epic', price:30},
+  // Möbel fürs eigene Haus – in dieser Reihenfolge wünscht sich die Figur sie (der Rätsel-Tisch ist von Anfang an da)
+  {id:'moebel-bett', type:'moebel', name:'Bett', emoji:'🛏', rarity:'common', price:20},
+  {id:'moebel-kueche', type:'moebel', name:'Küchentisch', emoji:'🍽', rarity:'common', price:20},
+  {id:'moebel-teppich', type:'moebel', name:'Teppich', emoji:'🧶', rarity:'common', price:15},
+  {id:'moebel-regal', type:'moebel', name:'Goodie-Regal', emoji:'🧸', rarity:'rare', price:30},
+  {id:'moebel-buecher', type:'moebel', name:'Bücherregal', emoji:'📚', rarity:'rare', price:30},
+  {id:'moebel-bilder', type:'moebel', name:'Bilderwand', emoji:'🖼', rarity:'rare', price:35},
+  {id:'moebel-staffelei', type:'moebel', name:'Staffelei zum Einrichten', emoji:'🎨', rarity:'epic', price:40},
 ];
 const byId = Object.fromEntries(CATALOG.map(it => [it.id, it]));
 const RARITY = {common:'normal', rare:'selten ✦', epic:'sehr selten ✦✦'};
@@ -76,7 +84,7 @@ const iconOf = it => it.icon || it.emoji;
 // ---------- Geschenk ----------
 function rollGift(){
   const r = Math.random(), want = r < .08 ? 'epic' : r < .38 ? 'rare' : 'common';
-  const free = CATALOG.filter(it => !owned(it.id));
+  const free = CATALOG.filter(it => !owned(it.id) && it.type !== 'moebel');   // Möbel kauft man selbst
   const pool = free.filter(it => it.rarity === want), list = pool.length ? pool : free;
   if (!list.length){ const e = STICKERS[Math.floor(Math.random()*STICKERS.length)]; return {it:byId['st-' + e], dup:true}; }
   return {it:list[Math.floor(Math.random()*list.length)], dup:false};
@@ -106,18 +114,20 @@ function actionFor(it){
   if (it.type === 'deco') return {label:'Auf die Wiese stellen', done:'steht auf der Wiese', run:() => placeDeco(it.id, true)};
   return null;
 }
-// Geschenk erst nach 3 gelösten Rätseln – dazwischen zeigt eine Anzeige den Fortschritt
-const GIFT_EVERY = 3;
-function renderGiftHud(){ const g = RS.$('giftHud'); if (!g) return; g.textContent = '🎁 ' + (P.giftCount || 0) + '/' + GIFT_EVERY; g.hidden = !L.profileId; }
+// ---------- Wunsch der Figur: das nächste Ziel zum Sparen ----------
+const article = it => ({Bett:'ein', Teppich:'einen', Küchentisch:'einen', Brunnen:'einen', Zauberhut:'einen', Blumenkranz:'einen', Glückspilz:'einen'}[it.name.split(' ')[0]] ?? (/^(Goodie-Regal|Bücherregal|Häuschen|Zirkuszelt|Kätzchen|Hündchen|Küken|Mini-Einhorn)/.test(it.name) ? 'ein' : 'eine'));
+function wishItem(){
+  if (P.wish && byId[P.wish] && !owned(P.wish)) return byId[P.wish];
+  return CATALOG.find(it => it.type === 'moebel' && !owned(it.id)) || null;   // sonst das nächste Möbelstück
+}
+function setWish(id){ P.wish = id; L.save(); dispatchEvent(new CustomEvent('rs:wish')); }
+// nach jedem gelösten Rätsel: Essen (needs.js) und der Stand zum Wunsch
 function solved(container){
-  dispatchEvent(new CustomEvent('rs:solved', {detail:{container}}));   // needs.js: Wissen + Essen
-  P.giftCount = (P.giftCount || 0) + 1;
-  if (P.giftCount >= GIFT_EVERY){ P.giftCount = 0; L.save(); renderGiftHud(); giftInto(container); return; }
-  L.save(); renderGiftHud(); const left = GIFT_EVERY - P.giftCount;
-  container.append(L.el('p', 'giftprog', `🎁 ${P.giftCount}/${GIFT_EVERY} – noch ${left} ${left === 1 ? 'Rätsel' : 'Rätsel'} bis zum Geschenk`));
+  dispatchEvent(new CustomEvent('rs:solved', {detail:{container}}));
+  const w = wishItem(); if (!w || !container) return;
+  container.append(L.el('p', 'giftprog', P.stars >= w.price ? `🛍 Du hast genug Sterne für ${w.emoji || w.icon} ${w.name}! Schau in den Laden.` : `⭐ ${P.stars}/${w.price} für ${w.emoji || w.icon} ${w.name}`));
 }
 L.setGift(solved);
-addEventListener('rs:profile', renderGiftHud);
 
 // ---------- Anziehen, Haustier, Deko ----------
 function wear(id, on){
@@ -156,10 +166,10 @@ addEventListener('rs:profile', () => { L.applyWear(); if (P.pet) spawnPet(); Obj
 // ---------- Meine Sachen ----------
 function openThings(){
   L.openSheet('🎒 Meine Sachen', body => {
-    body.append(L.el('p', 'tip', `Du hast ★ ${P.stars} Sterne. Neue Sachen gibt es als Geschenk für jede gelöste Aufgabe – oder im Laden.`));
+    body.append(L.el('p', 'tip', `Du hast ★ ${P.stars} Sterne. Neue Sachen gibt es im Laden – Sterne bekommst du für Rätsel bei der Eule, am Rätsel-Tisch und an den Planeten.`));
     // Haare
     const sw = RS.$('swatches'); sw.hidden = false; body.append(sw);
-    const section = (title, items, render) => { body.append(L.el('h3', 'albumh', title)); const g = L.el('div', 'things'); if (!items.length) g.append(L.el('p', 'note', 'Noch nichts – sammle Geschenke oder schau in den Laden.')); items.forEach(it => g.append(render(it))); body.append(g); };
+    const section = (title, items, render) => { body.append(L.el('h3', 'albumh', title)); const g = L.el('div', 'things'); if (!items.length) g.append(L.el('p', 'note', 'Noch nichts – schau in den Laden.')); items.forEach(it => g.append(render(it))); body.append(g); };
     const wearables = [...CATALOG.filter(it => it.type === 'wear' && P.items[it.id]), ...(P.items.tiara ? [{id:'tiara', name:'Sternen-Haarreif', icon:'⭐', slot:'head'}] : [])];
     section('Anziehen', wearables, it => L.btn((P.wear[it.id] ? '✔ ' : '') + iconOf(it) + ' ' + it.name, P.wear[it.id] ? 'small main' : 'small', () => { wear(it.id, !P.wear[it.id]); openThings(); }));
     section('Haustier', CATALOG.filter(it => it.type === 'pet' && P.items[it.id]), it => L.btn((P.pet === it.id ? '✔ ' : '') + it.emoji + ' ' + it.name, P.pet === it.id ? 'small main' : 'small', () => { if (P.pet === it.id){ P.pet = null; L.save(); RS.removeFromWorld('pet'); pet = null; } else choosePet(it.id); openThings(); }));
@@ -174,15 +184,19 @@ function openThings(){
 // ---------- Laden ----------
 function openShop(){
   L.openSheet('🛍 Regenbogen-Laden', body => {
-    body.append(L.el('p', 'tip', `Du hast ★ ${P.stars} Sterne.`));
+    const w = wishItem();
+    body.append(L.el('p', 'tip', `Du hast ★ ${P.stars} Sterne.` + (w ? ` Dein Wunsch: ${w.emoji || w.icon} ${w.name} (★ ${w.price}).` : '')));
     const g = L.el('div', 'shop');
-    const ORDER = {wear:0, pet:1, deco:2, sticker:3};   // spannende Sachen zuerst, Sticker zum Schluss
-    CATALOG.filter(it => !owned(it.id)).sort((a, b) => (ORDER[a.type] - ORDER[b.type]) || (a.price - b.price)).forEach(it => {
-      const card = L.el('div', 'shopitem'), pic = preview(it); pic.className = 'shoppic'; card.append(pic, L.el('b', '', it.name), L.el('small', 'rar ' + it.rarity, RARITY[it.rarity]));
+    const ORDER = {moebel:0, wear:1, pet:2, deco:3, sticker:4};   // Möbel fürs Haus zuerst, Sticker zum Schluss
+    CATALOG.filter(it => !owned(it.id)).sort((a, b) => ((w && b.id === w.id) - (w && a.id === w.id)) || (ORDER[a.type] - ORDER[b.type]) || (a.price - b.price)).forEach(it => {
+      const card = L.el('div', 'shopitem' + (w && it.id === w.id ? ' wish' : '')), pic = preview(it); pic.className = 'shoppic';
+      card.append(pic, L.el('b', '', it.name), L.el('small', 'rar ' + it.rarity, it.type === 'moebel' ? 'für dein Haus 🏠' : RARITY[it.rarity]));
       const can = P.stars >= it.price;
+      if (w && it.id === w.id) card.append(L.el('small', 'note', '💖 Dein Wunsch'));
+      else card.append(L.btn('💖 wünschen', 'small', () => { setWish(it.id); openShop(); }));
       card.append(L.btn('★ ' + it.price + (can ? ' · kaufen' : ''), can ? 'small main' : 'small', () => {
         if (P.stars < it.price){ L.toast('Dafür fehlen dir noch ' + (it.price - P.stars) + ' Sterne – löse ein paar Rätsel!'); return; }
-        P.stars -= it.price; grant(it); L.save(); L.renderHud(); L.toast('🛍 ' + it.name + ' gekauft ✦');
+        P.stars -= it.price; if (P.wish === it.id) P.wish = null; grant(it); L.save(); L.renderHud(); L.toast('🛍 ' + it.name + ' gekauft ✦' + (it.type === 'moebel' ? ' – steht jetzt in deinem Haus 🏠' : ''));
         const act = actionFor(it); if (act) act.run(); openShop(); }));
       g.append(card); });
     if (!g.children.length) g.append(L.el('p', 'cardtext', 'Wow – du hast schon alles! ✦'));
@@ -192,5 +206,5 @@ function openShop(){
 RS.$('thingsBtn').onclick = openThings;
 // Haar-Auswahl gehört jetzt zu "Meine Sachen": nach dem Schließen wieder verstecken
 new MutationObserver(() => { const sw = RS.$('swatches'); if (RS.$('learn').hidden && sw.parentElement !== RS.$('swatchHome')){ RS.$('swatchHome').append(sw); sw.hidden = true; } }).observe(RS.$('learn'), {attributes:true, attributeFilter:['hidden']});
-window.Rewards = {solved, CATALOG, giftInto, openThings, openShop, emojiCanvas, rollGift};
+window.Rewards = {solved, CATALOG, giftInto, openThings, openShop, emojiCanvas, rollGift, wishItem, setWish, owned, article, grant, byId};
 })();

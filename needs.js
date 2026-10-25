@@ -1,45 +1,44 @@
-// Rainbow Stars – Bedürfnisse der Figur: Wissen, Hunger (Sattheit), Spaß (gegen Langeweile), Energie.
+// Rainbow Stars – Bedürfnisse der Figur: Wissen (Rätsel), Hunger/Sattheit (Essen aus Rätseln), Energie (nur durchs Lesen).
 // Sie ändern sich gemütlich über den Tag – auch bei geschlossener App, berechnet aus der vergangenen Zeit.
-// Nie bestrafend: Die Figur wird höchstens traurig oder müde und sagt, was ihr fehlt.
+// Nie bestrafend: Die Figur wird höchstens traurig oder müde und sagt, was ihr fehlt – und führt so durchs Spiel.
 (() => {
 const RS = window.RS, L = window.Learn, { el, btn, row } = L, $ = RS.$;
 const H = 3600e3;
 const NEEDS = [
-  {id:'wissen', icon:'🧠', name:'Wissen', per:100/36, low:'Ich möchte etwas Neues lernen – lösen wir ein Rätsel?', act:'rätseln'},
-  {id:'hunger', icon:'🍎', name:'Satt', per:100/24, low:'Ich hab Hunger! Für jedes gelöste Rätsel gibt es etwas zu essen.', act:'füttern'},
-  {id:'spass', icon:'📚', name:'Spaß', per:100/48, low:'Mir ist langweilig! Wann liest du ein Buch mit mir? 📚', act:'lesen'},
-  {id:'energie', icon:'😴', name:'Energie', per:0, low:'Ich bin so müde … ich möchte in meinem Bett schlafen.', act:'schlafen'},
+  {id:'wissen', icon:'🧠', name:'Wissen', per:100/36, low:'Ich möchte etwas Neues lernen – gehen wir zur Rätsel-Eule? 🦉'},
+  {id:'hunger', icon:'🍎', name:'Satt', per:100/24, low:'Ich hab Hunger! Für jedes gelöste Rätsel gibt es etwas zu essen.'},
+  {id:'energie', icon:'😴', name:'Energie', per:100/36, low:'Ich bin so müde … Liest du mir ein Buch vor? 📚'},
 ];
 const FOOD = {apfel:{icon:'🍎', name:'Apfel', v:15, w:45}, brezel:{icon:'🥨', name:'Brezel', v:20, w:25}, erdbeere:{icon:'🍓', name:'Erdbeeren', v:20, w:22}, kuchen:{icon:'🍰', name:'Kuchen', v:35, w:8}};
 const P = L.P;
-const N = () => P.needs || (P.needs = {wissen:80, hunger:80, spass:80, energie:90, at:Date.now()});
+const N = () => { const n = P.needs || (P.needs = {wissen:80, hunger:80, energie:80, at:Date.now()});
+  if (n.spass !== undefined){ n.energie = Math.min(n.energie ?? 80, n.spass); delete n.spass; }   // früher: Spaß + Energie -> jetzt nur Energie (vom Lesen)
+  return n; };
 const clamp = v => Math.max(0, Math.min(100, v));
-// Zeit seit dem letzten Mal nachholen: Wissen/Hunger/Spaß sinken, Energie erholt sich (+5 pro Std.), solange die App zu war
-function catchUp(now = Date.now(), closed = false){
+// Zeit seit dem letzten Mal nachholen: alles sinkt langsam – Energie füllt nur das Lesen wieder auf
+function catchUp(now = Date.now()){
   const n = N(), h = Math.max(0, (now - n.at)/H);
-  NEEDS.forEach(d => { if (d.per) n[d.id] = clamp(n[d.id] - d.per*h); });
-  if (closed) n.energie = clamp(n.energie + 5*h);
+  NEEDS.forEach(d => { n[d.id] = clamp(n[d.id] - d.per*h); });
   n.at = now;
 }
 let ready = false, lastSave = 0;
-addEventListener('rs:profile', () => { catchUp(Date.now(), true); ready = true; P.food = P.food || {apfel:2}; L.save(); render(); mood(); });
-document.addEventListener('visibilitychange', () => { if (!ready) return; if (document.visibilityState === 'visible'){ catchUp(Date.now(), true); render(); } else { catchUp(); L.save(); } });
+addEventListener('rs:profile', () => { catchUp(); ready = true; P.food = P.food || {apfel:2}; L.save(); render(); mood(); });
+document.addEventListener('visibilitychange', () => { if (!ready) return; if (document.visibilityState === 'visible'){ catchUp(); render(); } else { catchUp(); L.save(); } });
 RS.onTick(dt => {
   if (!ready || RS.paused) return;
   const n = N(), now = Date.now();
-  // beim Herumlaufen und Spielen sinkt die Energie (etwa 2 Std. aktives Spielen); im Haus-Bett steigt sie
-  if (sleeping) n.energie = clamp(sleepFrom + (now - sleepStart)/60e3*100);   // nach der Uhr, nicht nach Bildern – auch auf langsamen Geräten in 1 Minute voll
-  else if (RS.st.state === 'walk' || RS.st.state === 'act') n.energie = clamp(n.energie - dt*100/(2*3600));
+  // beim Herumlaufen und Spielen sinkt die Energie zusätzlich ein wenig (etwa 4 Std. aktives Spielen)
+  if (RS.st.state === 'walk' || RS.st.state === 'act') n.energie = clamp(n.energie - dt*100/(4*3600));
   if (now - n.at > 5000){ catchUp(now); render(); mood(); }
   if (now - lastSave > 30000){ lastSave = now; L.save(); }
 });
 // ---------- Auffüllen ----------
-const change = (id, v) => { const n = N(); n[id] = clamp(n[id] + v); L.save(); render(); mood(); };
+const change = (id, v) => { if (id === 'spass') id = 'energie'; const n = N(); n[id] = clamp(n[id] + v); L.save(); render(); mood(); };
 function pickFood(){ const tot = Object.values(FOOD).reduce((s, f) => s + f.w, 0); let r = Math.random()*tot; for (const [k, f] of Object.entries(FOOD)){ r -= f.w; if (r <= 0) return k; } return 'apfel'; }
 addEventListener('rs:solved', e => { if (!ready) return; change('wissen', 15); const k = pickFood(); P.food[k] = (P.food[k] || 0) + 1; L.save();
   const c = e.detail && e.detail.container; if (c) c.append(el('p', 'needgain', `🧠 +15 Wissen · ${FOOD[k].icon} +1 ${FOOD[k].name} für den Vorrat`)); });
 addEventListener('rs:card', () => { if (ready) change('wissen', 5); });
-addEventListener('rs:bookdone', () => { if (ready){ const n = N(); n.spass = 100; L.save(); render(); mood(); } });
+addEventListener('rs:bookdone', () => { if (ready){ const n = N(); n.energie = 100; L.save(); render(); mood(); } });   // Buch fertig: Energie voll
 function feed(k){
   if (!(P.food[k] > 0)) return;
   P.food[k]--; change('hunger', FOOD[k].v);
@@ -47,11 +46,11 @@ function feed(k){
   RS.setStatus && RS.setStatus('mampft ' + FOOD[k].name + ' – lecker! ' + FOOD[k].icon);
   L.toast(FOOD[k].icon + ' Lecker! Satt +' + FOOD[k].v);
 }
-let sleeping = false, sleepT = 0, sleepStart = 0, sleepFrom = 0;
-function sleep(){ sleeping = true; sleepStart = Date.now(); sleepFrom = N().energie; clearTimeout(sleepT); RS.setStatus('schläft … Zzz 💤'); sleepT = setTimeout(() => { sleeping = false; N().energie = 100; L.save(); render(); RS.setStatus('ist ausgeschlafen ✦'); L.toast('😴 Ausgeschlafen – Energie voll!'); mood(); }, 60e3); }
-function wake(){ if (!sleeping) return; sleeping = false; clearTimeout(sleepT); }
-addEventListener('rs:world', () => { if (RS.worldId !== 'house') wake(); });
-
+// sehr müde: zwischendurch kurz einnicken (Zzz) – nie bestrafend, Rätsel gehen weiter
+let napAt = 0, napping = false;
+const zTex = (() => { let t; return () => t || (t = (() => { const [c, x] = RS.cnv(80, 80); x.font = '56px "Patrick Hand", cursive'; x.fillStyle = '#7d6f80'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Z', 40, 42); return RS.tex(c); })()); })();
+function nap(){ napping = true; napAt = Date.now(); RS.setStatus('nickt vor Müdigkeit kurz ein … Zzz 💤');
+  let k = 0; const iv = setInterval(() => { RS.spawn(zTex(), RS.st.pos.clone().add(new RS.V3(.2 + Math.random()*.3, 1.9, 0)), new RS.V3(.15, .45, 0), 2.2, .25); if (++k > 6){ clearInterval(iv); napping = false; RS.setStatus('gähnt und reibt sich die Augen …'); } }, 700); }
 // ---------- Anzeige ----------
 function render(){
   const hud = $('needsHud'); if (!hud) return; hud.hidden = !ready;
@@ -70,23 +69,34 @@ function openNeeds(){
     if (!have.length) box.append(el('p', 'note', 'Leer – löse ein Rätsel, dann gibt es etwas zu essen.'));
     have.forEach(([k, f]) => box.append(btn(`${f.icon} ${f.name} ×${P.food[k]} · füttern`, 'small main', () => { feed(k); openNeeds(); })));
     body.append(box);
-    row(body, [btn('🧠 Rätsel lösen', '', () => window.Raetsel && Raetsel.openHub()), btn('📚 Lesen', '', () => window.Books && Books.openRead()),
-               btn('😴 Schlafen gehen', '', () => { L.closeSheet(); if (window.House) House.goToBed(); else sleep(); })]);
+    body.append(el('p', 'tip', '🦉 Rätsel-Eule und 🧠 Rätsel-Tisch: Wissen, Sterne und Essen · 📚 Lesen: Energie'));
+    row(body, [btn('🦉 Zur Eule', '', () => window.Raetsel && Raetsel.goToOwl()), btn('🧠 Zum Rätsel-Tisch', '', () => window.House && House.goToDesk()), btn('📚 Lesen', 'main', () => window.Books && Books.openRead())]);
     row(body, [btn('Schließen', '', L.closeSheet)]);
   });
 }
-// ---------- Stimmung und Wünsche ----------
+// ---------- Stimmung und Wünsche: die Figur führt durchs Spiel ----------
 let wishAt = 0;
-function lowest(){ const n = N(); return NEEDS.map(d => [d, n[d.id]]).sort((a, b) => a[1] - b[1])[0]; }
-function mood(){
-  const n = N(), tired = n.energie < 20, sad = Math.min(n.wissen, n.hunger, n.spass) < 20;
-  RS.setMood(sleeping ? null : tired ? 'tired' : sad ? 'sad' : null, tired ? .6 : 1);
-  const chip = $('wishChip'), [d, v] = lowest();
-  if (v >= 30 || sleeping){ chip.hidden = true; return; }
-  chip.hidden = false; chip.querySelector('span').textContent = d.icon + ' ' + d.low; chip.onclick = () => {
-    if (d.id === 'spass') window.Books && Books.openRead(); else if (d.id === 'energie') openNeeds(); else if (d.id === 'hunger' && Object.values(P.food || {}).some(x => x > 0)) openNeeds(); else window.Raetsel && Raetsel.openHub(); };
-  if (Date.now() - wishAt > 180e3 && RS.st.state === 'idle' && !RS.paused){ wishAt = Date.now();   // als Sprechblase über dem Kopf, mit passendem Knopf
-    RS.say(d.low, {label:{wissen:'🧠 Rätsel lösen', hunger:'🍎 Essen geben', spass:'📚 Lesen', energie:'😴 Schlafen gehen'}[d.id], onClick:chip.onclick}); }
+const toOwl = () => window.Raetsel && Raetsel.goToOwl();
+// Was ist gerade am wichtigsten? 1. Energie (lesen) 2. Hunger 3. Wissen 4. der Wunsch aus dem Laden
+function guide(){
+  const n = N(), food = Object.values(P.food || {}).some(x => x > 0);
+  if (n.energie < 30) return {icon:'😴', text:NEEDS[2].low, label:'📚 Lesen', run: () => window.Books && Books.openRead()};
+  if (n.hunger < 30) return food ? {icon:'🍎', text:'Ich hab Hunger! Gibst du mir etwas zu essen? 🍎', label:'🍎 Essen geben', run:openNeeds}
+                                 : {icon:'🍎', text:'Ich hab Hunger … Bei der Rätsel-Eule gibt es Rätsel – und dafür etwas zu essen! 🦉', label:'🦉 Zur Eule', run:toOwl};
+  if (n.wissen < 30) return {icon:'🧠', text:NEEDS[0].low, label:'🦉 Zur Eule', run:toOwl};
+  const w = window.Rewards && Rewards.wishItem(); if (!w) return null;
+  return P.stars >= w.price ? {icon:'💖', text:`Wir haben genug Sterne für ${Rewards.article(w)} ${w.name}! ${w.emoji || w.icon} Kaufen wir es?`, label:'🛍 Zum Laden', run: () => Rewards.openShop(), wish:true}
+                            : {icon:'💖', text:`Ich wünsche mir ${Rewards.article(w)} ${w.name}! ${w.emoji || w.icon} Dafür fehlen noch ${w.price - P.stars} Sterne – lösen wir Rätsel?`, label:'🦉 Zur Eule', run:toOwl, wish:true};
 }
-window.Needs = {get values(){ return {...N()}; }, change, feed, sleep, wake, open:openNeeds, catchUp, FOOD, get sleeping(){ return sleeping; }};
+function mood(){
+  const n = N(), tired = n.energie < 30, sad = Math.min(n.wissen, n.hunger) < 20;
+  RS.setMood(tired ? 'tired' : sad ? 'sad' : null, n.energie < 10 ? .5 : tired ? .7 : 1);
+  if (n.energie < 10 && !napping && Date.now() - napAt > 150e3 && RS.st.state === 'idle' && !RS.paused) nap();
+  const chip = $('wishChip'), g = guide();
+  chip.hidden = !g || g.wish; if (g && !g.wish){ chip.querySelector('span').textContent = g.icon + ' ' + g.text; chip.onclick = g.run; }
+  if (g && Date.now() - wishAt > 180e3 && RS.st.state === 'idle' && !RS.paused && !napping){ wishAt = Date.now();   // als Sprechblase über dem Kopf, mit passendem Knopf
+    RS.say(g.text, {label:g.label, onClick:g.run}); }
+}
+addEventListener('rs:wish', () => { wishAt = 0; mood(); });
+window.Needs = {get values(){ return {...N()}; }, change, feed, open:openNeeds, catchUp, FOOD, mood, guide};
 })();

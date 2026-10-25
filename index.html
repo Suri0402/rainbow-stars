@@ -262,6 +262,8 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 @keyframes sayIn{from{opacity:0;margin-top:10px}to{opacity:1;margin-top:0}}
 @media (prefers-reduced-motion:reduce){.say{animation:none}}
 @media (max-width:560px){.say{max-width:calc(100% - 136px);font-size:16px}}
+body.saying #wishChip{visibility:hidden}
+.shopitem.wish{outline:3px solid #ff7aa8;outline-offset:2px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -276,7 +278,6 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
 </div>
 <button type="button" id="starsHud" class="stars-hud" aria-label="Regenbogensterne – Album öffnen">★ <b>0</b></button>
 <button type="button" id="profileChip" class="profile-chip" hidden aria-label="Profil"></button>
-<button type="button" id="giftHud" class="gift-hud" hidden aria-label="Fortschritt bis zum nächsten Geschenk">🎁 0/3</button>
 <button type="button" id="needsHud" class="needs-hud" hidden aria-label="Wie geht es deiner Figur?"></button>
 <div id="login" class="login" role="dialog" aria-modal="true" aria-label="Anmelden"><div class="sheet" id="loginBox"><h2>Rainbow Stars lädt …</h2></div></div>
 <div id="toast" class="toast" hidden aria-live="polite"></div>
@@ -289,7 +290,7 @@ body{margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-u
     <button id="next" type="button" hidden>Nächstes Abenteuer</button>
     <button id="pause" type="button">Pause</button>
     <label id="scanBtn" for="scanFile" class="btn main" role="button" tabindex="0">✎ Figur scannen</label>
-    <button id="raetselBtn" type="button" class="main">🧠 Rätsel</button>
+    <button id="homeBtn" type="button" class="main">🏠 Nach Hause</button>
     <button id="thingsBtn" type="button">🎒 Sachen</button>
     <button id="viewBtn" type="button">👁 Mädchen</button>
     <button id="readBtn" type="button">📚 Lesen</button>

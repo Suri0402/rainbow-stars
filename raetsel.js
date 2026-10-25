@@ -1,4 +1,5 @@
-// Rainbow Stars – Rätsel-Zeit: Wissens-Quiz (Kategorien) und Rechen-Geschichten (Sachaufgaben zum Lesen)
+// Rainbow Stars – Rätsel gibt es nur an Orten: Die Rätsel-Eule auf der Wiese stellt das Wissens-Quiz,
+// am Rätsel-Tisch im eigenen Haus gibt es Rechen-Geschichten (Sachaufgaben zum Lesen). Schwierigkeit nach der Klasse im Profil.
 (() => {
 const RS = window.RS, L = window.Learn, M = window.RSMath, { el, btn, row } = L;
 let bank = {categories:[], questions:[]};
@@ -7,10 +8,11 @@ const shuffle = a => { const b = a.slice(); for (let i=b.length-1;i>0;i--){ cons
 
 // ---------- Wissens-Quiz ----------
 function questionsOf(cat){
-  const space = ((L.worldOf('space') || {}).content || {questions:[]}).questions;
-  if (cat === 'weltall') return space;
-  if (cat === 'mix') return [...bank.questions, ...space];
-  return bank.questions.filter(q => q.cat === cat);
+  const space = ((L.worldOf('space') || {}).content || {questions:[]}).questions, ok = q => L.levelOk(q.level || 1);
+  const pick = list => { const f = list.filter(ok); return f.length >= 3 ? f : list; };   // zu wenige passende? dann alle
+  if (cat === 'weltall') return pick(space);
+  if (cat === 'mix') return pick([...bank.questions, ...space]);
+  return pick(bank.questions.filter(q => q.cat === cat));
 }
 function pickQ(list, skip){
   const fresh = list.filter(q => !skip.includes(q.id) && !(L.P.q[q.id] && L.P.q[q.id].ok));   // erst die, die noch nicht richtig waren
@@ -25,7 +27,7 @@ function knowledgeQuiz(cat, n = 5){
     if (!q) return L.openSheet('Quiz geschafft!', body => {
       body.append(el('div', 'stamp big', right === done ? '★' : '✦'));
       body.append(el('p', 'cardtext', `${name}: Du hast ${right} von ${done} Fragen richtig beantwortet.`));
-      row(body, [btn('Noch ein Quiz', '', () => knowledgeQuiz(cat, n)), btn('Zur Rätsel-Zeit', 'main', openHub)]); });
+      row(body, [btn('Noch ein Quiz', 'main', () => knowledgeQuiz(cat, n)), btn('Andere Kategorie', '', openQuiz), btn('Fertig', '', L.closeSheet)]); });
     asked.push(q.id); done++;
     L.ask(q, ok => { if (ok) right++; }, {next:step, label:`${name} · Frage ${done} von ${n}`});
   };
@@ -66,7 +68,7 @@ function mathTask(round){
       if (ok){
         checkB.disabled = true; round.right++;
         res.append(el('b', '', ['Super gerechnet!', 'Richtig!', 'Klasse!', 'Spitze!'][Math.floor(Math.random()*4)]), el('p', 'cardtext', 'Rechenweg: ' + way() + '.'));
-        L.addStars(tries === 1 ? t.level + 1 : 1, 'Rechen-Geschichte'); adapt(tries === 1);
+        L.addStars(tries === 1 ? 2 : 1, 'Rechen-Geschichte'); adapt(tries === 1);
         if (window.Rewards) window.Rewards.solved(res);
         res.append(nextRow());
       } else if (tries === 1){
@@ -83,30 +85,34 @@ function mathTask(round){
       r.append(round.i < round.n ? btn('Nächste Geschichte →', 'main', () => mathTask(round)) : btn('Fertig ✦', 'main', () => L.openSheet('Rechen-Runde geschafft!', b2 => {
         b2.append(el('div', 'stamp big', round.right === round.n ? '★' : '✦'));
         b2.append(el('p', 'cardtext', `Du hast ${round.right} von ${round.n} Rechen-Geschichten gelöst.`), el('p', 'note', 'Deine Stufe: ' + M.levelName(mstate().level)));
-        row(b2, [btn('Noch eine Runde', '', () => mathRound()), btn('Zur Rätsel-Zeit', 'main', openHub)]); })));
+        row(b2, [btn('Noch eine Runde', 'main', () => mathRound()), btn('Fertig', '', L.closeSheet)]); })));
       return r; }
   });
 }
 
-// ---------- Rätsel-Zeit (Übersicht) ----------
-function openHub(){
-  L.openSheet('🧠 Rätsel-Zeit', body => {
-    body.append(el('p', 'tip', 'Für jede richtige Lösung gibt es Sterne und ein Überraschungsgeschenk 🎁'));
-    body.append(el('h3', 'albumh', '📚 Wissens-Quiz'));
+// ---------- Rätsel-Eule: Wissens-Quiz ----------
+function openQuiz(){
+  L.openSheet('🦉 Rätsel-Eule', body => {
+    body.append(el('p', 'tip', 'Hu-huu! Wähle ein Thema. Für jede richtige Antwort gibt es ★ Sterne – und etwas zu essen für deine Figur.'));
     const cats = el('div', 'hubgrid');
     [...bank.categories, {id:'mix', name:'Bunt gemischt', icon:'🌈'}].forEach(c => cats.append(btn(c.icon + ' ' + c.name, 'hubbtn', () => knowledgeQuiz(c.id))));
-    body.append(cats);
-    body.append(el('h3', 'albumh', '🔢 Rechen-Geschichten'));
+    body.append(cats); row(body, [btn('Schließen', '', L.closeSheet)]);
+  });
+}
+// ---------- Rätsel-Tisch: Rechen-Geschichten ----------
+function openMath(){
+  L.openSheet('🧠 Rätsel-Tisch', body => {
     const m = mstate();
-    body.append(el('p', 'cardtext', 'Kurze Geschichten zum Lesen und Rechnen. ' + M.levelName(m.level) + ' – die Stufe passt sich an, wie gut es klappt.'));
-    row(body, [btn('➖ leichter', 'small', () => { if (m.level > 1){ m.level--; m.ok = m.bad = 0; L.save(); } openHub(); }),
+    body.append(el('p', 'tip', 'Rechen-Geschichten: Lies genau – die Zahlen stecken im Text. Für jede gelöste Geschichte gibt es ★ Sterne.'));
+    body.append(el('p', 'cardtext', M.levelName(m.level) + ' – die Stufe passt sich an, wie gut es klappt.'));
+    row(body, [btn('➖ leichter', 'small', () => { if (m.level > 1){ m.level--; m.ok = m.bad = 0; L.save(); } openMath(); }),
                btn('Los geht’s ✦', 'main', () => mathRound()),
-               btn('➕ schwerer', 'small', () => { if (m.level < 4){ m.level++; m.ok = m.bad = 0; L.save(); } openHub(); })]);
+               btn('➕ schwerer', 'small', () => { if (m.level < 4){ m.level++; m.ok = m.bad = 0; L.save(); } openMath(); })]);
     row(body, [btn('Schließen', '', L.closeSheet)]);
   });
 }
-RS.$('raetselBtn').onclick = openHub;
 // Rätsel-Eule auf der Heimatwiese: ein fester Ort zum Rätseln
+let owlAct = null;
 { const [c, x] = RS.cnv(260, 330);
   const top = [[30,150],[230,150],[210,190],[50,190]]; RS.pencil(x, top, '#c99a76'); RS.ink(x, top, true, 3);
   const leg = [[110,190],[150,190],[156,320],[104,320]]; RS.pencil(x, leg, '#b98866'); RS.ink(x, leg, true, 3);
@@ -115,7 +121,9 @@ RS.$('raetselBtn').onclick = openHub;
   x.drawImage(window.Rewards.emojiCanvas('🦉', 150), 55, 0);
   const W = RS.W.home, g = new RS.THREE.Group(); g.position.set(5, 0, .5); W.group.add(g);
   const m = RS.bill(c, 1.3, g); RS.shadow(1.2, g);
-  const act = {kind:'sight', ref:{pos:g.position.clone(), name:'Rätsel-Eule'}, go:'läuft zur Rätsel-Eule', doing:'spricht mit der Rätsel-Eule', mark:' 🦉', marvel:true, off:.95, fxH:1.6, onArrive: openHub};
-  m.userData.act = act; W.acts.push(act); W.picks.push(m); }
-window.Raetsel = {openHub, knowledgeQuiz, mathRound};
+  const act = {kind:'sight', ref:{pos:g.position.clone(), name:'Rätsel-Eule'}, go:'läuft zur Rätsel-Eule', doing:'spricht mit der Rätsel-Eule', mark:' 🦉', marvel:true, off:.95, fxH:1.6, onArrive: openQuiz};
+  m.userData.act = act; W.acts.push(act); W.picks.push(m); owlAct = act; }
+// Zur Eule laufen (von überall: erst nach Hause auf die Wiese reisen)
+function goToOwl(){ L.closeSheet(); if (RS.worldId !== 'home'){ L.travel('home'); setTimeout(() => RS.walkTo(owlAct), 1800); } else RS.walkTo(owlAct); }
+window.Raetsel = {openQuiz, openMath, openHub:openQuiz, goToOwl, knowledgeQuiz, mathRound};
 })();

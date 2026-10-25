@@ -172,7 +172,7 @@ addEventListener('rs:scanned', e => { if (e.detail.world === 'space'){ L.P.games
 const quests = [
   {id:'luna', text:'Sprich mit Sternenfee Luna', goal: P => [P.flags['space:talked'] ? 1 : 0, 1]},
   {id:'discover4', text:'Entdecke 4 Himmelskörper', goal: () => [L.discoveredObjects('space'), 4]},
-  {id:'answer5', text:'Beantworte 5 Rätselfragen richtig', goal: () => [L.correctIn('space'), 5], action:{label:'Quiz mit Luna', run:() => L.quiz(5), again:true}},
+  {id:'answer5', text:'Löse 5 Rätsel an den Planeten', goal: () => [L.correctIn('space'), 5]},
   {id:'planets', text:'Bring die Planeten in die richtige Reihenfolge', goal: P => [P.games.planets ? 1 : 0, 1], action:{label:'Spielen', run:planetsGame}},
   {id:'stars', text:'Verbinde ein Sternbild', goal: P => [['grosser-wagen','kassiopeia','orion'].some(k => P.games['sb-' + k]) ? 1 : 0, 1], action:{label:'Spielen', run:() => starGame(), again:true}},
   {id:'jump', text:'Finde heraus, wie hoch du auf dem Mond springst', goal: P => [P.games.jump ? 1 : 0, 1], action:{label:'Testen', run:jumpGame}},
@@ -181,7 +181,7 @@ const quests = [
 ];
 
 fetch('content/space.json').then(r => r.json()).then(content => L.registerWorld({id:'space', name:'Sternenwelt', content, quests, names:Object.fromEntries([...BODIES.map(b => [b[0], b[2]]), ['luna', 'von Luna']]), guide:'Sternenfee Luna', stampIcon:'☾',
-  guideText:'Willkommen in der Sternenwelt! Tippe auf die Sonne, die Planeten und alles, was leuchtet. Für jede Entdeckung und jede richtige Antwort bekommst du Regenbogensterne.',
+  guideText:'Willkommen in der Sternenwelt! Tippe auf die Sonne, die Planeten und alles, was leuchtet. Lies die Wissenskarte – danach gibt es dort ein Rätsel. Für jede Entdeckung und jede richtige Antwort bekommst du Regenbogensterne.',
   reward:{id:'tiara', name:'der Sternen-Haarreif'}})).catch(e => console.warn('Inhalte der Sternenwelt fehlen', e));
 
 world.update = (dt, t) => {

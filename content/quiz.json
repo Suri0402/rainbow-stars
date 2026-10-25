@@ -1,55 +1,859 @@
 {
-  "categories": [
-    {"id": "natur", "name": "Wetter & Natur", "icon": "🌦"},
-    {"id": "mensch", "name": "Mensch & Körper", "icon": "🫀"},
-    {"id": "geschichte", "name": "Geschichte", "icon": "🏰"},
-    {"id": "weltall", "name": "Weltall", "icon": "🪐", "from": "space"}
-  ],
-  "questions": [
-    {"id": "n-regenbogen-1", "cat": "natur", "type": "mc", "q": "Ein Regenbogen entsteht, wenn Sonnenlicht auf etwas trifft. Worauf?", "options": ["Auf Regentropfen", "Auf Schneeflocken", "Auf Sandkörner"], "answer": 0, "explain": "Auf Regentropfen. Das Licht wird darin gebrochen und in seine Farben zerlegt. Deshalb steht die Sonne beim Regenbogen immer in deinem Rücken."},
-    {"id": "n-regenbogen-2", "cat": "natur", "type": "mc", "q": "Welche Farbe ist bei einem Regenbogen ganz außen am Bogen?", "options": ["Blau", "Grün", "Rot"], "answer": 2, "explain": "Rot ist außen, Violett ist innen. Dazwischen liegen Orange, Gelb, Grün und Blau."},
-    {"id": "n-gewitter", "cat": "natur", "type": "mc", "q": "Du siehst einen Blitz und zählst bis zum Donner 6 Sekunden. Wie weit ist das Gewitter ungefähr weg?", "options": ["Etwa 2 Kilometer", "Etwa 6 Kilometer", "Etwa 18 Kilometer"], "answer": 0, "explain": "Der Schall braucht für einen Kilometer etwa 3 Sekunden. 6 Sekunden geteilt durch 3 sind 2 Kilometer."},
-    {"id": "n-wolken", "cat": "natur", "type": "mc", "q": "Woraus bestehen Wolken?", "options": ["Aus Rauch", "Aus winzigen Wassertröpfchen oder Eiskristallen", "Aus Watte"], "answer": 1, "explain": "Aus winzigen Wassertröpfchen oder Eiskristallen. Werden die Tropfen zu schwer, fallen sie als Regen herunter."},
-    {"id": "n-gefrieren", "cat": "natur", "type": "mc", "q": "Bei welcher Temperatur gefriert Wasser zu Eis?", "options": ["Bei 0 °C", "Bei 10 °C", "Bei 100 °C"], "answer": 0, "explain": "Bei 0 °C wird Wasser zu Eis. Bei 100 °C kocht es."},
-    {"id": "n-pflanzen", "cat": "natur", "type": "mc", "q": "Pflanzen brauchen zum Wachsen Wasser, Luft und noch etwas ganz Wichtiges. Was?", "options": ["Musik", "Sonnenlicht", "Dunkelheit"], "answer": 1, "explain": "Sonnenlicht. Damit stellen Pflanzen ihre eigene Nahrung her und geben dabei Sauerstoff ab, den wir zum Atmen brauchen."},
-    {"id": "n-zugspitze", "cat": "natur", "type": "mc", "q": "Wie heißt der höchste Berg Deutschlands?", "options": ["Brocken", "Zugspitze", "Feldberg"], "answer": 1, "explain": "Die Zugspitze in Bayern. Sie ist fast 3.000 Meter hoch."},
-    {"id": "n-rhein", "cat": "natur", "type": "mc", "q": "Welcher Fluss ist der längste, der durch Deutschland fließt?", "options": ["Der Rhein", "Die Elbe", "Der Main"], "answer": 0, "explain": "Der Rhein. In Deutschland ist er etwa 865 Kilometer lang."},
-    {"id": "n-insekt", "cat": "natur", "type": "mc", "q": "Wie viele Beine hat ein Insekt, zum Beispiel eine Biene?", "options": ["Vier", "Sechs", "Acht"], "answer": 1, "explain": "Sechs Beine. Spinnen haben acht Beine – darum sind sie keine Insekten."},
-    {"id": "n-spinne", "cat": "natur", "type": "tf", "q": "Spinnen gehören zu den Insekten.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Spinnen haben acht Beine und gehören zu den Spinnentieren. Insekten haben sechs Beine."},
-    {"id": "n-herbst", "cat": "natur", "type": "mc", "q": "Warum werden die Blätter im Herbst gelb und rot?", "options": ["Weil sie angemalt werden", "Weil der Baum den grünen Farbstoff abbaut", "Weil es mehr regnet"], "answer": 1, "explain": "Der Baum baut den grünen Farbstoff ab und holt sich die Nährstoffe zurück. Dann sieht man die gelben und roten Farben, die vorher verdeckt waren."},
-    {"id": "n-igel", "cat": "natur", "type": "tf", "q": "Igel halten im Winter einen Winterschlaf.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Igel schlafen den ganzen Winter in einem warmen Nest aus Laub. Dabei schlägt ihr Herz ganz langsam."},
-    {"id": "n-schnee", "cat": "natur", "type": "mc", "q": "Schau dir eine Schneeflocke unter der Lupe an. Wie viele Arme hat sie meistens?", "options": ["Vier", "Sechs", "Zehn"], "answer": 1, "explain": "Sechs Arme. Das liegt daran, wie sich die winzigen Wasserteilchen beim Gefrieren aneinanderreihen."},
-    {"id": "n-wal", "cat": "natur", "type": "tf", "q": "Wale sind Fische.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Wale sind Säugetiere. Sie atmen Luft und füttern ihre Babys mit Milch."},
-    {"id": "n-wind", "cat": "natur", "type": "mc", "q": "Wie entsteht Wind?", "options": ["Bäume wedeln mit ihren Ästen", "Warme und kalte Luft gleichen sich aus", "Die Wolken pusten"], "answer": 1, "explain": "Warme Luft steigt auf, kalte Luft strömt nach. Diese Luftbewegung spüren wir als Wind."},
-    {"id": "m-knochen", "cat": "mensch", "type": "mc", "q": "Wie viele Knochen hat ein erwachsener Mensch ungefähr?", "options": ["Etwa 20", "Etwa 206", "Etwa 2.000"], "answer": 1, "explain": "Etwa 206 Knochen. Babys haben sogar mehr – manche Knochen wachsen später zusammen."},
-    {"id": "m-haut", "cat": "mensch", "type": "mc", "q": "Welches ist das größte Organ des Menschen?", "options": ["Das Herz", "Die Haut", "Das Gehirn"], "answer": 1, "explain": "Die Haut! Sie schützt den ganzen Körper wie ein Mantel."},
-    {"id": "m-herz", "cat": "mensch", "type": "mc", "q": "Welche Aufgabe hat das Herz?", "options": ["Es denkt nach", "Es pumpt Blut durch den Körper", "Es verdaut das Essen"], "answer": 1, "explain": "Es pumpt Blut durch den ganzen Körper. So kommen Sauerstoff und Nährstoffe überall hin."},
-    {"id": "m-lunge", "cat": "mensch", "type": "mc", "q": "Was holt die Lunge beim Einatmen aus der Luft?", "options": ["Sauerstoff", "Zucker", "Wasser"], "answer": 0, "explain": "Sauerstoff. Das Blut bringt ihn von der Lunge in den ganzen Körper."},
-    {"id": "m-milchzaehne", "cat": "mensch", "type": "mc", "q": "Wie viele Milchzähne hat ein Kind?", "options": ["10", "20", "32"], "answer": 1, "explain": "20 Milchzähne. Ein Erwachsener hat später bis zu 32 Zähne."},
-    {"id": "m-sinne", "cat": "mensch", "type": "mc", "q": "Sehen, Hören, Riechen und Schmecken sind vier Sinne. Welcher fünfte Sinn fehlt noch?", "options": ["Tasten", "Laufen", "Schlafen"], "answer": 0, "explain": "Tasten – mit der Haut fühlen wir, ob etwas warm, kalt, weich oder rau ist."},
-    {"id": "m-steigbuegel", "cat": "mensch", "type": "mc", "q": "Wo sitzt der kleinste Knochen des Menschen?", "options": ["Im kleinen Zeh", "Im Ohr", "In der Nase"], "answer": 1, "explain": "Im Ohr. Er heißt Steigbügel und ist nur etwa so groß wie ein Reiskorn."},
-    {"id": "m-schwitzen", "cat": "mensch", "type": "mc", "q": "Warum schwitzen wir, wenn uns heiß ist?", "options": ["Damit der Körper abkühlt", "Damit wir schneller wachsen", "Damit wir besser riechen"], "answer": 0, "explain": "Damit der Körper abkühlt. Wenn der Schweiß auf der Haut verdunstet, wird es kühler."},
-    {"id": "m-wasser", "cat": "mensch", "type": "tf", "q": "Unser Körper besteht zu mehr als der Hälfte aus Wasser.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Darum ist es so wichtig, genug zu trinken."},
-    {"id": "m-muskeln", "cat": "mensch", "type": "mc", "q": "Wie viele Muskeln hat ein Mensch ungefähr?", "options": ["Etwa 6", "Etwa 60", "Über 600"], "answer": 2, "explain": "Über 600 Muskeln! Allein beim Lächeln bewegst du eine ganze Menge davon."},
-    {"id": "m-gehirn", "cat": "mensch", "type": "mc", "q": "Welches Organ steuert den ganzen Körper?", "options": ["Der Magen", "Das Gehirn", "Die Leber"], "answer": 1, "explain": "Das Gehirn. Über die Nerven schickt es Nachrichten an alle Teile des Körpers – blitzschnell."},
-    {"id": "m-verdauung", "cat": "mensch", "type": "mc", "q": "Wo beginnt die Verdauung des Essens?", "options": ["Im Mund", "Im Magen", "Im Darm"], "answer": 0, "explain": "Schon im Mund: Beim Kauen wird das Essen zerkleinert, und der Speichel beginnt mit der Verdauung."},
-    {"id": "m-naegel", "cat": "mensch", "type": "tf", "q": "Fingernägel wachsen schneller als Fußnägel.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Fingernägel wachsen etwa doppelt so schnell wie Fußnägel."},
-    {"id": "m-pupille", "cat": "mensch", "type": "tf", "q": "Im Dunkeln wird die Pupille in deinem Auge kleiner.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Im Dunkeln wird sie größer, damit mehr Licht ins Auge fällt."},
-    {"id": "m-blut", "cat": "mensch", "type": "mc", "q": "Warum ist unser Blut rot?", "options": ["Wegen eines roten Farbstoffs im Blut", "Weil wir Tomaten essen", "Weil es warm ist"], "answer": 0, "explain": "Im Blut steckt ein roter Farbstoff. Er transportiert den Sauerstoff durch den Körper."},
-    {"id": "g-pyramiden", "cat": "geschichte", "type": "mc", "q": "In welchem Land stehen die berühmten Pyramiden von Gizeh?", "options": ["In Ägypten", "In Italien", "In China"], "answer": 0, "explain": "In Ägypten. Die größte Pyramide wurde vor etwa 4.500 Jahren gebaut."},
-    {"id": "g-pharao", "cat": "geschichte", "type": "mc", "q": "Wie nannte man den König im alten Ägypten?", "options": ["Kaiser", "Pharao", "Sultan"], "answer": 1, "explain": "Pharao. Manche Pharaonen ließen sich in Pyramiden begraben."},
-    {"id": "g-hieroglyphen", "cat": "geschichte", "type": "mc", "q": "Die alten Ägypter schrieben mit Bildzeichen. Wie heißen diese Zeichen?", "options": ["Runen", "Hieroglyphen", "Emojis"], "answer": 1, "explain": "Hieroglyphen. Ein Zeichen konnte für ein Wort oder für einen Laut stehen."},
-    {"id": "g-mumie", "cat": "geschichte", "type": "tf", "q": "Die alten Ägypter haben ihre Toten oft als Mumien aufbewahrt.", "options": ["Stimmt", "Stimmt nicht"], "answer": 0, "explain": "Stimmt! Sie glaubten an ein Leben nach dem Tod und wollten den Körper dafür erhalten."},
-    {"id": "g-dinos", "cat": "geschichte", "type": "tf", "q": "Die ersten Menschen haben noch mit den Dinosauriern zusammen gelebt.", "options": ["Stimmt", "Stimmt nicht"], "answer": 1, "explain": "Stimmt nicht! Die Dinosaurier sind vor etwa 66 Millionen Jahren ausgestorben – lange bevor es Menschen gab."},
-    {"id": "g-ritter", "cat": "geschichte", "type": "mc", "q": "In welcher Zeit lebten die Ritter auf ihren Burgen?", "options": ["In der Steinzeit", "Im Mittelalter", "Heute"], "answer": 1, "explain": "Im Mittelalter. Das war vor etwa 500 bis 1.500 Jahren."},
-    {"id": "g-gutenberg", "cat": "geschichte", "type": "mc", "q": "Johannes Gutenberg hat um das Jahr 1450 eine wichtige Erfindung gemacht. Welche?", "options": ["Das Fahrrad", "Den Buchdruck mit beweglichen Buchstaben", "Das Telefon"], "answer": 1, "explain": "Den Buchdruck mit beweglichen Buchstaben. Dadurch konnten Bücher viel schneller hergestellt werden."},
-    {"id": "g-steinzeit", "cat": "geschichte", "type": "mc", "q": "Wie lebten die Menschen in der Steinzeit?", "options": ["Als Jäger und Sammler", "In Hochhäusern", "Als Ritter"], "answer": 0, "explain": "Als Jäger und Sammler. Sie jagten Tiere und sammelten Beeren, Nüsse und Pflanzen."},
-    {"id": "g-roemer", "cat": "geschichte", "type": "mc", "q": "Welche heutige deutsche Stadt wurde von den Römern gegründet?", "options": ["Trier", "Hamburg", "Wolfsburg"], "answer": 0, "explain": "Trier. Die Römer gründeten sie vor über 2.000 Jahren. Auch Köln war eine römische Stadt."},
-    {"id": "g-mauer", "cat": "geschichte", "type": "mc", "q": "In welchem Jahr fiel die Berliner Mauer?", "options": ["1949", "1989", "2009"], "answer": 1, "explain": "1989, am 9. November. Ein Jahr später, 1990, wurde Deutschland wiedervereinigt."},
-    {"id": "g-kolumbus", "cat": "geschichte", "type": "mc", "q": "Christoph Kolumbus segelte 1492 über den Atlantik. Wo kam er an?", "options": ["In Amerika", "In Australien", "Am Nordpol"], "answer": 0, "explain": "In Amerika – genauer gesagt auf Inseln in der Karibik. Er dachte allerdings, er sei in Indien angekommen."},
-    {"id": "g-olympia", "cat": "geschichte", "type": "mc", "q": "Aus welchem Land kommen die Olympischen Spiele ursprünglich?", "options": ["Aus Griechenland", "Aus Amerika", "Aus Japan"], "answer": 0, "explain": "Aus Griechenland. Dort fanden sie schon vor fast 3.000 Jahren statt."},
-    {"id": "g-wikinger", "cat": "geschichte", "type": "mc", "q": "Woher kamen die Wikinger?", "options": ["Aus Nordeuropa (Skandinavien)", "Aus Afrika", "Aus Südamerika"], "answer": 0, "explain": "Aus Nordeuropa, dem heutigen Norwegen, Schweden und Dänemark. Sie waren berühmte Seefahrer."},
-    {"id": "g-papier", "cat": "geschichte", "type": "mc", "q": "In welchem Land wurde das Papier erfunden?", "options": ["In China", "In Deutschland", "In Frankreich"], "answer": 0, "explain": "In China, vor fast 2.000 Jahren. Vorher schrieb man zum Beispiel auf Tontafeln oder Tierhaut."},
-    {"id": "g-mondlandung", "cat": "geschichte", "type": "mc", "q": "In welchem Jahr landeten zum ersten Mal Menschen auf dem Mond?", "options": ["1969", "1999", "1919"], "answer": 0, "explain": "1969. Neil Armstrong war der erste Mensch, der den Mond betrat."}
-  ]
+ "categories": [
+  {
+   "id": "natur",
+   "name": "Wetter & Natur",
+   "icon": "🌦"
+  },
+  {
+   "id": "mensch",
+   "name": "Mensch & Körper",
+   "icon": "🫀"
+  },
+  {
+   "id": "geschichte",
+   "name": "Geschichte",
+   "icon": "🏰"
+  },
+  {
+   "id": "weltall",
+   "name": "Weltall",
+   "icon": "🪐",
+   "from": "space"
+  }
+ ],
+ "questions": [
+  {
+   "id": "n-regenbogen-1",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Ein Regenbogen entsteht, wenn Sonnenlicht auf etwas trifft. Worauf?",
+   "options": [
+    "Auf Regentropfen",
+    "Auf Schneeflocken",
+    "Auf Sandkörner"
+   ],
+   "answer": 0,
+   "explain": "Auf Regentropfen. Das Licht wird darin gebrochen und in seine Farben zerlegt. Deshalb steht die Sonne beim Regenbogen immer in deinem Rücken.",
+   "level": 1
+  },
+  {
+   "id": "n-regenbogen-2",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Welche Farbe ist bei einem Regenbogen ganz außen am Bogen?",
+   "options": [
+    "Blau",
+    "Grün",
+    "Rot"
+   ],
+   "answer": 2,
+   "explain": "Rot ist außen, Violett ist innen. Dazwischen liegen Orange, Gelb, Grün und Blau.",
+   "level": 2
+  },
+  {
+   "id": "n-gewitter",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Du siehst einen Blitz und zählst bis zum Donner 6 Sekunden. Wie weit ist das Gewitter ungefähr weg?",
+   "options": [
+    "Etwa 2 Kilometer",
+    "Etwa 6 Kilometer",
+    "Etwa 18 Kilometer"
+   ],
+   "answer": 0,
+   "explain": "Der Schall braucht für einen Kilometer etwa 3 Sekunden. 6 Sekunden geteilt durch 3 sind 2 Kilometer.",
+   "level": 2
+  },
+  {
+   "id": "n-wolken",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Woraus bestehen Wolken?",
+   "options": [
+    "Aus Rauch",
+    "Aus winzigen Wassertröpfchen oder Eiskristallen",
+    "Aus Watte"
+   ],
+   "answer": 1,
+   "explain": "Aus winzigen Wassertröpfchen oder Eiskristallen. Werden die Tropfen zu schwer, fallen sie als Regen herunter.",
+   "level": 2
+  },
+  {
+   "id": "n-gefrieren",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Bei welcher Temperatur gefriert Wasser zu Eis?",
+   "options": [
+    "Bei 0 °C",
+    "Bei 10 °C",
+    "Bei 100 °C"
+   ],
+   "answer": 0,
+   "explain": "Bei 0 °C wird Wasser zu Eis. Bei 100 °C kocht es.",
+   "level": 1
+  },
+  {
+   "id": "n-pflanzen",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Pflanzen brauchen zum Wachsen Wasser, Luft und noch etwas ganz Wichtiges. Was?",
+   "options": [
+    "Musik",
+    "Sonnenlicht",
+    "Dunkelheit"
+   ],
+   "answer": 1,
+   "explain": "Sonnenlicht. Damit stellen Pflanzen ihre eigene Nahrung her und geben dabei Sauerstoff ab, den wir zum Atmen brauchen.",
+   "level": 1
+  },
+  {
+   "id": "n-zugspitze",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Wie heißt der höchste Berg Deutschlands?",
+   "options": [
+    "Brocken",
+    "Zugspitze",
+    "Feldberg"
+   ],
+   "answer": 1,
+   "explain": "Die Zugspitze in Bayern. Sie ist fast 3.000 Meter hoch.",
+   "level": 1
+  },
+  {
+   "id": "n-rhein",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Welcher Fluss ist der längste, der durch Deutschland fließt?",
+   "options": [
+    "Der Rhein",
+    "Die Elbe",
+    "Der Main"
+   ],
+   "answer": 0,
+   "explain": "Der Rhein. In Deutschland ist er etwa 865 Kilometer lang.",
+   "level": 2
+  },
+  {
+   "id": "n-insekt",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Wie viele Beine hat ein Insekt, zum Beispiel eine Biene?",
+   "options": [
+    "Vier",
+    "Sechs",
+    "Acht"
+   ],
+   "answer": 1,
+   "explain": "Sechs Beine. Spinnen haben acht Beine – darum sind sie keine Insekten.",
+   "level": 1
+  },
+  {
+   "id": "n-spinne",
+   "cat": "natur",
+   "type": "tf",
+   "q": "Spinnen gehören zu den Insekten.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 1,
+   "explain": "Stimmt nicht! Spinnen haben acht Beine und gehören zu den Spinnentieren. Insekten haben sechs Beine.",
+   "level": 1
+  },
+  {
+   "id": "n-herbst",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Warum werden die Blätter im Herbst gelb und rot?",
+   "options": [
+    "Weil sie angemalt werden",
+    "Weil der Baum den grünen Farbstoff abbaut",
+    "Weil es mehr regnet"
+   ],
+   "answer": 1,
+   "explain": "Der Baum baut den grünen Farbstoff ab und holt sich die Nährstoffe zurück. Dann sieht man die gelben und roten Farben, die vorher verdeckt waren.",
+   "level": 2
+  },
+  {
+   "id": "n-igel",
+   "cat": "natur",
+   "type": "tf",
+   "q": "Igel halten im Winter einen Winterschlaf.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 0,
+   "explain": "Stimmt! Igel schlafen den ganzen Winter in einem warmen Nest aus Laub. Dabei schlägt ihr Herz ganz langsam.",
+   "level": 1
+  },
+  {
+   "id": "n-schnee",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Schau dir eine Schneeflocke unter der Lupe an. Wie viele Arme hat sie meistens?",
+   "options": [
+    "Vier",
+    "Sechs",
+    "Zehn"
+   ],
+   "answer": 1,
+   "explain": "Sechs Arme. Das liegt daran, wie sich die winzigen Wasserteilchen beim Gefrieren aneinanderreihen.",
+   "level": 1
+  },
+  {
+   "id": "n-wal",
+   "cat": "natur",
+   "type": "tf",
+   "q": "Wale sind Fische.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 1,
+   "explain": "Stimmt nicht! Wale sind Säugetiere. Sie atmen Luft und füttern ihre Babys mit Milch.",
+   "level": 1
+  },
+  {
+   "id": "n-wind",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Wie entsteht Wind?",
+   "options": [
+    "Bäume wedeln mit ihren Ästen",
+    "Warme und kalte Luft gleichen sich aus",
+    "Die Wolken pusten"
+   ],
+   "answer": 1,
+   "explain": "Warme Luft steigt auf, kalte Luft strömt nach. Diese Luftbewegung spüren wir als Wind.",
+   "level": 2
+  },
+  {
+   "id": "m-knochen",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wie viele Knochen hat ein erwachsener Mensch ungefähr?",
+   "options": [
+    "Etwa 20",
+    "Etwa 206",
+    "Etwa 2.000"
+   ],
+   "answer": 1,
+   "explain": "Etwa 206 Knochen. Babys haben sogar mehr – manche Knochen wachsen später zusammen.",
+   "level": 2
+  },
+  {
+   "id": "m-haut",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Welches ist das größte Organ des Menschen?",
+   "options": [
+    "Das Herz",
+    "Die Haut",
+    "Das Gehirn"
+   ],
+   "answer": 1,
+   "explain": "Die Haut! Sie schützt den ganzen Körper wie ein Mantel.",
+   "level": 2
+  },
+  {
+   "id": "m-herz",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Welche Aufgabe hat das Herz?",
+   "options": [
+    "Es denkt nach",
+    "Es pumpt Blut durch den Körper",
+    "Es verdaut das Essen"
+   ],
+   "answer": 1,
+   "explain": "Es pumpt Blut durch den ganzen Körper. So kommen Sauerstoff und Nährstoffe überall hin.",
+   "level": 1
+  },
+  {
+   "id": "m-lunge",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Was holt die Lunge beim Einatmen aus der Luft?",
+   "options": [
+    "Sauerstoff",
+    "Zucker",
+    "Wasser"
+   ],
+   "answer": 0,
+   "explain": "Sauerstoff. Das Blut bringt ihn von der Lunge in den ganzen Körper.",
+   "level": 2
+  },
+  {
+   "id": "m-milchzaehne",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wie viele Milchzähne hat ein Kind?",
+   "options": [
+    "10",
+    "20",
+    "32"
+   ],
+   "answer": 1,
+   "explain": "20 Milchzähne. Ein Erwachsener hat später bis zu 32 Zähne.",
+   "level": 1
+  },
+  {
+   "id": "m-sinne",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Sehen, Hören, Riechen und Schmecken sind vier Sinne. Welcher fünfte Sinn fehlt noch?",
+   "options": [
+    "Tasten",
+    "Laufen",
+    "Schlafen"
+   ],
+   "answer": 0,
+   "explain": "Tasten – mit der Haut fühlen wir, ob etwas warm, kalt, weich oder rau ist.",
+   "level": 1
+  },
+  {
+   "id": "m-steigbuegel",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wo sitzt der kleinste Knochen des Menschen?",
+   "options": [
+    "Im kleinen Zeh",
+    "Im Ohr",
+    "In der Nase"
+   ],
+   "answer": 1,
+   "explain": "Im Ohr. Er heißt Steigbügel und ist nur etwa so groß wie ein Reiskorn.",
+   "level": 2
+  },
+  {
+   "id": "m-schwitzen",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Warum schwitzen wir, wenn uns heiß ist?",
+   "options": [
+    "Damit der Körper abkühlt",
+    "Damit wir schneller wachsen",
+    "Damit wir besser riechen"
+   ],
+   "answer": 0,
+   "explain": "Damit der Körper abkühlt. Wenn der Schweiß auf der Haut verdunstet, wird es kühler.",
+   "level": 2
+  },
+  {
+   "id": "m-wasser",
+   "cat": "mensch",
+   "type": "tf",
+   "q": "Unser Körper besteht zu mehr als der Hälfte aus Wasser.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 0,
+   "explain": "Stimmt! Darum ist es so wichtig, genug zu trinken.",
+   "level": 2
+  },
+  {
+   "id": "m-muskeln",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wie viele Muskeln hat ein Mensch ungefähr?",
+   "options": [
+    "Etwa 6",
+    "Etwa 60",
+    "Über 600"
+   ],
+   "answer": 2,
+   "explain": "Über 600 Muskeln! Allein beim Lächeln bewegst du eine ganze Menge davon.",
+   "level": 2
+  },
+  {
+   "id": "m-gehirn",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Welches Organ steuert den ganzen Körper?",
+   "options": [
+    "Der Magen",
+    "Das Gehirn",
+    "Die Leber"
+   ],
+   "answer": 1,
+   "explain": "Das Gehirn. Über die Nerven schickt es Nachrichten an alle Teile des Körpers – blitzschnell.",
+   "level": 1
+  },
+  {
+   "id": "m-verdauung",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wo beginnt die Verdauung des Essens?",
+   "options": [
+    "Im Mund",
+    "Im Magen",
+    "Im Darm"
+   ],
+   "answer": 0,
+   "explain": "Schon im Mund: Beim Kauen wird das Essen zerkleinert, und der Speichel beginnt mit der Verdauung.",
+   "level": 1
+  },
+  {
+   "id": "m-naegel",
+   "cat": "mensch",
+   "type": "tf",
+   "q": "Fingernägel wachsen schneller als Fußnägel.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 0,
+   "explain": "Stimmt! Fingernägel wachsen etwa doppelt so schnell wie Fußnägel.",
+   "level": 2
+  },
+  {
+   "id": "m-pupille",
+   "cat": "mensch",
+   "type": "tf",
+   "q": "Im Dunkeln wird die Pupille in deinem Auge kleiner.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 1,
+   "explain": "Stimmt nicht! Im Dunkeln wird sie größer, damit mehr Licht ins Auge fällt.",
+   "level": 2
+  },
+  {
+   "id": "m-blut",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Warum ist unser Blut rot?",
+   "options": [
+    "Wegen eines roten Farbstoffs im Blut",
+    "Weil wir Tomaten essen",
+    "Weil es warm ist"
+   ],
+   "answer": 0,
+   "explain": "Im Blut steckt ein roter Farbstoff. Er transportiert den Sauerstoff durch den Körper.",
+   "level": 3
+  },
+  {
+   "id": "g-pyramiden",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "In welchem Land stehen die berühmten Pyramiden von Gizeh?",
+   "options": [
+    "In Ägypten",
+    "In Italien",
+    "In China"
+   ],
+   "answer": 0,
+   "explain": "In Ägypten. Die größte Pyramide wurde vor etwa 4.500 Jahren gebaut.",
+   "level": 1
+  },
+  {
+   "id": "g-pharao",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Wie nannte man den König im alten Ägypten?",
+   "options": [
+    "Kaiser",
+    "Pharao",
+    "Sultan"
+   ],
+   "answer": 1,
+   "explain": "Pharao. Manche Pharaonen ließen sich in Pyramiden begraben.",
+   "level": 1
+  },
+  {
+   "id": "g-hieroglyphen",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Die alten Ägypter schrieben mit Bildzeichen. Wie heißen diese Zeichen?",
+   "options": [
+    "Runen",
+    "Hieroglyphen",
+    "Emojis"
+   ],
+   "answer": 1,
+   "explain": "Hieroglyphen. Ein Zeichen konnte für ein Wort oder für einen Laut stehen.",
+   "level": 2
+  },
+  {
+   "id": "g-mumie",
+   "cat": "geschichte",
+   "type": "tf",
+   "q": "Die alten Ägypter haben ihre Toten oft als Mumien aufbewahrt.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 0,
+   "explain": "Stimmt! Sie glaubten an ein Leben nach dem Tod und wollten den Körper dafür erhalten.",
+   "level": 1
+  },
+  {
+   "id": "g-dinos",
+   "cat": "geschichte",
+   "type": "tf",
+   "q": "Die ersten Menschen haben noch mit den Dinosauriern zusammen gelebt.",
+   "options": [
+    "Stimmt",
+    "Stimmt nicht"
+   ],
+   "answer": 1,
+   "explain": "Stimmt nicht! Die Dinosaurier sind vor etwa 66 Millionen Jahren ausgestorben – lange bevor es Menschen gab.",
+   "level": 1
+  },
+  {
+   "id": "g-ritter",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "In welcher Zeit lebten die Ritter auf ihren Burgen?",
+   "options": [
+    "In der Steinzeit",
+    "Im Mittelalter",
+    "Heute"
+   ],
+   "answer": 1,
+   "explain": "Im Mittelalter. Das war vor etwa 500 bis 1.500 Jahren.",
+   "level": 1
+  },
+  {
+   "id": "g-gutenberg",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Johannes Gutenberg hat um das Jahr 1450 eine wichtige Erfindung gemacht. Welche?",
+   "options": [
+    "Das Fahrrad",
+    "Den Buchdruck mit beweglichen Buchstaben",
+    "Das Telefon"
+   ],
+   "answer": 1,
+   "explain": "Den Buchdruck mit beweglichen Buchstaben. Dadurch konnten Bücher viel schneller hergestellt werden.",
+   "level": 2
+  },
+  {
+   "id": "g-steinzeit",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Wie lebten die Menschen in der Steinzeit?",
+   "options": [
+    "Als Jäger und Sammler",
+    "In Hochhäusern",
+    "Als Ritter"
+   ],
+   "answer": 0,
+   "explain": "Als Jäger und Sammler. Sie jagten Tiere und sammelten Beeren, Nüsse und Pflanzen.",
+   "level": 1
+  },
+  {
+   "id": "g-roemer",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Welche heutige deutsche Stadt wurde von den Römern gegründet?",
+   "options": [
+    "Trier",
+    "Hamburg",
+    "Wolfsburg"
+   ],
+   "answer": 0,
+   "explain": "Trier. Die Römer gründeten sie vor über 2.000 Jahren. Auch Köln war eine römische Stadt.",
+   "level": 3
+  },
+  {
+   "id": "g-mauer",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "In welchem Jahr fiel die Berliner Mauer?",
+   "options": [
+    "1949",
+    "1989",
+    "2009"
+   ],
+   "answer": 1,
+   "explain": "1989, am 9. November. Ein Jahr später, 1990, wurde Deutschland wiedervereinigt.",
+   "level": 3
+  },
+  {
+   "id": "g-kolumbus",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Christoph Kolumbus segelte 1492 über den Atlantik. Wo kam er an?",
+   "options": [
+    "In Amerika",
+    "In Australien",
+    "Am Nordpol"
+   ],
+   "answer": 0,
+   "explain": "In Amerika – genauer gesagt auf Inseln in der Karibik. Er dachte allerdings, er sei in Indien angekommen.",
+   "level": 2
+  },
+  {
+   "id": "g-olympia",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Aus welchem Land kommen die Olympischen Spiele ursprünglich?",
+   "options": [
+    "Aus Griechenland",
+    "Aus Amerika",
+    "Aus Japan"
+   ],
+   "answer": 0,
+   "explain": "Aus Griechenland. Dort fanden sie schon vor fast 3.000 Jahren statt.",
+   "level": 2
+  },
+  {
+   "id": "g-wikinger",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Woher kamen die Wikinger?",
+   "options": [
+    "Aus Nordeuropa (Skandinavien)",
+    "Aus Afrika",
+    "Aus Südamerika"
+   ],
+   "answer": 0,
+   "explain": "Aus Nordeuropa, dem heutigen Norwegen, Schweden und Dänemark. Sie waren berühmte Seefahrer.",
+   "level": 2
+  },
+  {
+   "id": "g-papier",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "In welchem Land wurde das Papier erfunden?",
+   "options": [
+    "In China",
+    "In Deutschland",
+    "In Frankreich"
+   ],
+   "answer": 0,
+   "explain": "In China, vor fast 2.000 Jahren. Vorher schrieb man zum Beispiel auf Tontafeln oder Tierhaut.",
+   "level": 2
+  },
+  {
+   "id": "g-mondlandung",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "In welchem Jahr landeten zum ersten Mal Menschen auf dem Mond?",
+   "options": [
+    "1969",
+    "1999",
+    "1919"
+   ],
+   "answer": 0,
+   "explain": "1969. Neil Armstrong war der erste Mensch, der den Mond betrat.",
+   "level": 3
+  },
+  {
+   "id": "n-photosynthese",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Bei der Photosynthese stellen Pflanzen aus Licht, Wasser und Kohlendioxid Zucker her. Welches Gas geben sie dabei ab?",
+   "options": [
+    "Sauerstoff",
+    "Stickstoff",
+    "Helium"
+   ],
+   "answer": 0,
+   "explain": "Sauerstoff. Den brauchen Menschen und Tiere zum Atmen – Pflanzen sind also unsere Luftfabrik.",
+   "level": 3
+  },
+  {
+   "id": "n-verdunsten",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Wie nennt man es, wenn Wasser durch Wärme zu Wasserdampf wird?",
+   "options": [
+    "Verdunsten",
+    "Kondensieren",
+    "Gefrieren"
+   ],
+   "answer": 0,
+   "explain": "Verdunsten. Der Wasserdampf steigt auf, kühlt ab und kondensiert zu Wolken – das ist der Wasserkreislauf.",
+   "level": 3
+  },
+  {
+   "id": "n-lava",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Wie nennt man das geschmolzene Gestein, das aus einem Vulkan herausfließt?",
+   "options": [
+    "Lava",
+    "Granit",
+    "Kalk"
+   ],
+   "answer": 0,
+   "explain": "Lava. Solange das flüssige Gestein noch tief in der Erde ist, heißt es Magma.",
+   "level": 3
+  },
+  {
+   "id": "n-erdkruste",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Wie heißt die äußerste feste Schicht der Erde, auf der wir leben?",
+   "options": [
+    "Erdkruste",
+    "Erdkern",
+    "Erdmantel"
+   ],
+   "answer": 0,
+   "explain": "Die Erdkruste. Darunter liegen der Erdmantel und ganz innen der heiße Erdkern.",
+   "level": 3
+  },
+  {
+   "id": "n-schall",
+   "cat": "natur",
+   "type": "mc",
+   "q": "Was ist schneller: Licht oder Schall?",
+   "options": [
+    "Licht",
+    "Schall",
+    "Beide sind gleich schnell"
+   ],
+   "answer": 0,
+   "explain": "Licht – viel schneller! Deshalb siehst du beim Gewitter erst den Blitz und hörst danach den Donner.",
+   "level": 3
+  },
+  {
+   "id": "m-arterien",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wie heißen die Blutgefäße, die das Blut vom Herzen weg in den Körper bringen?",
+   "options": [
+    "Arterien",
+    "Venen",
+    "Nerven"
+   ],
+   "answer": 0,
+   "explain": "Arterien (Schlagadern). Venen bringen das Blut zurück zum Herzen.",
+   "level": 3
+  },
+  {
+   "id": "m-zellen",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Woraus sind alle Lebewesen aufgebaut – Menschen, Tiere und Pflanzen?",
+   "options": [
+    "Aus Zellen",
+    "Aus Kristallen",
+    "Aus Fasern"
+   ],
+   "answer": 0,
+   "explain": "Aus Zellen. Ein Mensch besteht aus vielen Billionen davon.",
+   "level": 3
+  },
+  {
+   "id": "m-zellkern",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wo in der Zelle ist der Bauplan des Körpers, die Erbinformation (DNA), gespeichert?",
+   "options": [
+    "Im Zellkern",
+    "In der Zellwand",
+    "Im Blutplasma"
+   ],
+   "answer": 0,
+   "explain": "Im Zellkern. Dort liegt die DNA, die bestimmt, wie ein Lebewesen aussieht und funktioniert.",
+   "level": 3
+  },
+  {
+   "id": "m-impfung",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Wozu ist eine Impfung gut?",
+   "options": [
+    "Der Körper lernt, eine Krankheit abzuwehren",
+    "Sie macht die Knochen stärker",
+    "Sie ersetzt den Schlaf"
+   ],
+   "answer": 0,
+   "explain": "Bei einer Impfung lernt das Abwehrsystem einen Krankheitserreger kennen und kann ihn später schnell bekämpfen.",
+   "level": 3
+  },
+  {
+   "id": "m-vitamin-d",
+   "cat": "mensch",
+   "type": "mc",
+   "q": "Welches Vitamin bildet unser Körper mithilfe von Sonnenlicht in der Haut?",
+   "options": [
+    "Vitamin D",
+    "Vitamin C",
+    "Vitamin A"
+   ],
+   "answer": 0,
+   "explain": "Vitamin D. Es ist wichtig für starke Knochen.",
+   "level": 3
+  },
+  {
+   "id": "g-karl",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Welcher Herrscher wurde im Jahr 800 in Rom zum Kaiser gekrönt?",
+   "options": [
+    "Karl der Große",
+    "Julius Caesar",
+    "Napoleon"
+   ],
+   "answer": 0,
+   "explain": "Karl der Große. Sein Reich umfasste große Teile des heutigen Frankreichs und Deutschlands.",
+   "level": 3
+  },
+  {
+   "id": "g-einheit",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "In welchem Jahr wurde Deutschland wiedervereinigt?",
+   "options": [
+    "1990",
+    "1989",
+    "1949"
+   ],
+   "answer": 0,
+   "explain": "Am 3. Oktober 1990 – ein Jahr nach dem Fall der Berliner Mauer. Deshalb ist der 3. Oktober ein Feiertag.",
+   "level": 3
+  },
+  {
+   "id": "g-demokratie",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "In welcher Stadt der Antike entstand die erste Demokratie?",
+   "options": [
+    "In Athen",
+    "In Rom",
+    "In Kairo"
+   ],
+   "answer": 0,
+   "explain": "In Athen im alten Griechenland. „Demokratie“ heißt „Herrschaft des Volkes“.",
+   "level": 3
+  },
+  {
+   "id": "g-luther",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Wer veröffentlichte 1517 seine Thesen und übersetzte später die Bibel ins Deutsche?",
+   "options": [
+    "Martin Luther",
+    "Johannes Gutenberg",
+    "Karl der Große"
+   ],
+   "answer": 0,
+   "explain": "Martin Luther. Damit begann die Reformation.",
+   "level": 3
+  },
+  {
+   "id": "g-dampfmaschine",
+   "cat": "geschichte",
+   "type": "mc",
+   "q": "Welche Erfindung trieb vor etwa 250 Jahren die Industrialisierung voran?",
+   "options": [
+    "Die Dampfmaschine",
+    "Das Smartphone",
+    "Das Flugzeug"
+   ],
+   "answer": 0,
+   "explain": "Die Dampfmaschine. Sie trieb Fabriken, Schiffe und später Eisenbahnen an.",
+   "level": 3
+  }
+ ]
 }

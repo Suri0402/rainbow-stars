@@ -1,6 +1,6 @@
 // Rainbow Stars – Eigenes Haus: Jedes Profil zeichnet sein Haus selbst auf Papier und scannt es ein. Es steht dann auf der Wiese
 // (alle Profile sehen alle Häuser), hinein darf nur, wem es gehört. Nach dem Anmelden startet man im eigenen Haus.
-// Innen gibt es anfangs nur den Rätsel-Tisch – weitere Möbel bekommt man für gelöste Rätsel.
+// Innen gibt es anfangs nur den Rätsel-Tisch (Rechen-Geschichten) – weitere Möbel kauft man mit Sternen im Laden.
 (() => {
 const RS = window.RS, L = window.Learn, { THREE, V3, cnv, wob, pencil, ink, star, bill, shadow, tex } = RS;
 const P = L.P, E = (e, s = 160) => window.Rewards.emojiCanvas(e, s);
@@ -94,18 +94,12 @@ function buildRoom(){
   if (!has('teppich')){ rugM = null; return; }
   rugM = new THREE.Mesh(new THREE.CircleGeometry(1.5, 40), new THREE.MeshBasicMaterial({map:tex(rc), transparent:true})); rugM.rotation.x = -Math.PI/2; rugM.position.set(0, .006, .7); G.add(rugM);
 }
-// Möbel: gezeichnete Billboards, Inhalt aus dem Besitz. Anfangs nur der Rätsel-Tisch, alle 2 gelösten Rätsel kommt ein Möbelstück dazu.
-const FURN = [['tisch', '🧠 Rätsel-Tisch'], ['bett', '🛏 Bett'], ['kueche', '🍽 Küchentisch'], ['regal', '🧸 Goodie-Regal'], ['teppich', '🟢 Teppich'], ['buecher', '📚 Bücherregal'], ['bilder', '🖼 Bilderwand'], ['staffelei', '🎨 Staffelei zum Einrichten']];
-const PER = 2;
-const unlockedN = () => Math.min(FURN.length, 1 + Math.floor((P.furnPts || 0)/PER));
-const has = key => FURN.findIndex(f => f[0] === key) < unlockedN();
-addEventListener('rs:solved', e => {
-  const before = unlockedN(); P.furnPts = (P.furnPts || 0) + 1; L.save(); const now = unlockedN(), c = e.detail && e.detail.container;
-  if (now > before){ const f = FURN[now - 1][1]; if (c) c.append(L.el('p', 'needgain', '🎉 Neues Möbelstück für dein Haus: ' + f + '!'));
-    setTimeout(() => RS.say('Juhu, neu in meinem Zimmer: ' + f + '! Danke! 💖', {prio:2, ms:8000}), 1200);
-    if (RS.worldId === 'house') furnish(); }
-  else if (now < FURN.length && c){ const left = PER - (P.furnPts % PER); c.append(L.el('p', 'needgain', `🪑 Noch ${left} Rätsel bis: ${FURN[now][1]}`)); }
-});
+// Möbel: gezeichnete Billboards, Inhalt aus dem Besitz. Der Rätsel-Tisch ist immer da, alles andere kauft man im Laden (Rewards: 'moebel-…').
+const has = key => key === 'tisch' || !!(P.items || {})['moebel-' + key];
+const MOEBEL = () => window.Rewards ? Rewards.CATALOG.filter(it => it.type === 'moebel') : [];
+// Früher gab es Möbel automatisch alle 2 Rätsel: schon freigeschaltete bleiben erhalten
+addEventListener('rs:profile', () => { if (!P.furnPts) return;
+  ['bett', 'kueche', 'regal', 'teppich', 'buecher', 'bilder', 'staffelei'].slice(0, Math.floor(P.furnPts/2)).forEach(k => P.items['moebel-' + k] = true); P.furnPts = 0; L.save(); });
 const furn = {};
 function unplace(key){ const f = furn[key]; if (!f) return; G.remove(f.g || f.mesh); const i = world.picks.indexOf(f.mesh); if (i >= 0) world.picks.splice(i, 1); if (f.act){ const j = world.acts.indexOf(f.act); if (j >= 0) world.acts.splice(j, 1); } delete furn[key]; }
 function place(key, canvas, w, x, z, act){
@@ -157,8 +151,8 @@ async function furnish(){
   buildRoom();
   const put = async (key, mk, w, x, z, act) => { if (has(key)) place(key, await mk(), w, x, z, act); else unplace(key); };
   await put('regal', shelfCanvas, 2.0, -2.7, -2.1, {name:'Goodie-Regal', go:'läuft zum Goodie-Regal', doing:'schaut sich ihre Schätze an', onArrive: () => window.Rewards && Rewards.openThings()});
-  await put('tisch', deskCanvas, 1.8, -.5, -2.1, {name:'Rätsel-Tisch', go:'setzt sich an den Rätsel-Tisch', doing:'denkt nach', mark:' 🧠', onArrive: () => window.Raetsel && Raetsel.openHub()});
-  await put('bett', bedCanvas, 2.3, 2.7, -1.9, {name:'Bett', go:'geht ins Bett', doing:'kuschelt sich ins Bett', mark:' 💤', onArrive: () => goToBed(true)});
+  await put('tisch', deskCanvas, 1.8, -.5, -2.1, {name:'Rätsel-Tisch', go:'setzt sich an den Rätsel-Tisch', doing:'denkt nach', mark:' 🧠', onArrive: () => window.Raetsel && Raetsel.openMath()});
+  await put('bett', bedCanvas, 2.3, 2.7, -1.9, {name:'Bett', go:'geht zum Bett', doing:'kuschelt sich zum Lesen ins Bett', mark:' 📚', onArrive: () => window.Books && Books.openRead()});
   await put('kueche', kitchenCanvas, 1.5, 3.2, 1.0, {name:'Küchentisch', go:'läuft zum Küchentisch', doing:'schaut, was es zu essen gibt', mark:' 🍎', onArrive: () => window.Needs && Needs.open()});
   await put('buecher', booksCanvas, 1.4, -3.7, .2, {name:'Bücherregal', go:'läuft zum Bücherregal', doing:'stöbert im Bücherregal', mark:' 📚', onArrive: () => window.Books && Books.openRead()});
   place('tuer', doorCanvas(), 1.0, -3.6, 2.2, {name:'Tür', go:'läuft zur Haustür', doing:'öffnet die Tür', onArrive: () => { const h = homeHouses.get(RS.owner); if (h) RS.W.home.spawn = h.g.position.clone().multiplyScalar(.82); L.travel('home'); }});
@@ -172,22 +166,24 @@ async function furnish(){
 }
 let emptyAt = 0;
 world.onEnter = () => { furnish();
-  if (unlockedN() < FURN.length && Date.now() - emptyAt > 3*60e3){ emptyAt = Date.now(); const next = FURN[unlockedN()][1];
-    setTimeout(() => RS.say((unlockedN() <= 2 ? 'Mein Zimmer ist noch so leer … ' : '') + 'Löst du ein paar Rätsel mit mir? Als Nächstes bekomme ich: ' + next + ' 🪑', {label:'🧠 Rätsel lösen', prio:2, ms:20000, onClick: () => window.Raetsel && Raetsel.openHub()}), 2500); } };
+  const w = window.Rewards && Rewards.wishItem(), few = MOEBEL().filter(it => P.items[it.id]).length < 2;
+  if (w && w.type === 'moebel' && Date.now() - emptyAt > 3*60e3){ emptyAt = Date.now();
+    setTimeout(() => P.stars >= w.price
+      ? RS.say(`Wir haben genug Sterne für ${Rewards.article(w)} ${w.name}! ${w.emoji} Kaufen wir es im Laden?`, {label:'🛍 Zum Laden', prio:2, ms:20000, onClick: () => Rewards.openShop()})
+      : RS.say((few ? 'Mein Zimmer ist noch so leer … ' : '') + `Ich wünsche mir ${Rewards.article(w)} ${w.name}! ${w.emoji} Dafür fehlen noch ${w.price - P.stars} Sterne. Lösen wir Rätsel am Rätsel-Tisch?`, {label:'🧠 Zum Rätsel-Tisch', prio:2, ms:20000, onClick: goToDesk}), 2500); } };
 addEventListener('rs:world', () => { if (RS.worldId === 'home') RS.W.home.spawn = undefined; });   // nur einmal vor der Haustür ankommen
 ['rs:goodie', 'rs:scanned', 'rs:books', 'rs:painted'].forEach(ev => addEventListener(ev, () => { if (RS.worldId === 'house') furnish(); }));
-let zzzT = 0;
-function goToBed(arrived){
-  if (!arrived){
-    if (!hasHouse()){ RS.say('Ich habe noch kein Haus … Zeichnest du mir eins? 🏠', {prio:2}); return false; }
-    if (!has('bett')){ RS.say('Ich habe noch kein Bett 🛏 … Löst du ein paar Rätsel? Dann bekomme ich eins!', {label:'🧠 Rätsel lösen', prio:2, onClick: () => window.Raetsel && Raetsel.openHub()}); if (RS.worldId !== 'house') L.travel('house'); return false; }
-    if (RS.worldId !== 'house'){ L.travel('house'); setTimeout(() => goToBed(false), 1800); return true; }
-    const b = furn.bett; if (b) RS.walkTo(b.act); return true; }
-  if (window.Needs) Needs.sleep(); clearInterval(zzzT);
-  const zC = (() => { const [c, x] = cnv(80, 80); x.font = '56px "Patrick Hand", cursive'; x.fillStyle = '#7d6f80'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Z', 40, 42); return tex(c); })();
-  zzzT = setInterval(() => { if (!(window.Needs && Needs.sleeping) || RS.worldId !== 'house'){ clearInterval(zzzT); return; }
-    RS.spawn(zC, RS.st.pos.clone().add(new V3(.2 + Math.random()*.3, 1.9, 0)), new V3(.15, .45, 0), 2.2, .25); }, 700);
+// Zum Rätsel-Tisch laufen (von überall: erst nach Hause reisen)
+function goToDesk(){
+  L.closeSheet();
+  if (!hasHouse()){ RS.say('Ich habe noch kein Haus … Zeichnest du mir eins? 🏠', {label:'✎ Haus scannen', labelFor:'scanFile', prio:3, onClick: () => RS.setScanContext({house:true})}); return; }
+  if (RS.worldId !== 'house'){ L.travel('house'); setTimeout(() => furn.tisch && RS.walkTo(furn.tisch.act), 2200); } else if (furn.tisch) RS.walkTo(furn.tisch.act);
 }
+RS.$('homeBtn').onclick = () => {
+  if (!hasHouse()) return RS.say('Ich habe noch kein Haus … Zeichnest du mir eins? 🏠', {label:'✎ Haus scannen', labelFor:'scanFile', prio:3, onClick: () => RS.setScanContext({house:true})});
+  if (RS.worldId === 'house') return L.toast('🏠 Du bist schon zu Hause');
+  L.travel('house');
+};
 // ---------- Zimmer einrichten ----------
 function openDecorate(){
   const r = ROOM();
@@ -203,5 +199,5 @@ function openDecorate(){
     L.row(body, [L.btn('Fertig ✦', 'main', L.closeSheet)]);
   });
 }
-window.House = {goToBed: () => goToBed(false), furnish, placeHouses, openDecorate, get hasHouse(){ return hasHouse(); }, get furniture(){ return FURN.slice(0, unlockedN()).map(f => f[0]); }, FURN};
+window.House = {goToDesk, furnish, placeHouses, openDecorate, get hasHouse(){ return hasHouse(); }, get furniture(){ return ['tisch', 'bett', 'kueche', 'regal', 'teppich', 'buecher', 'bilder', 'staffelei'].filter(has); }};
 })();

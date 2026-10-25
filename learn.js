@@ -79,6 +79,7 @@ function showStamp(w){
     const st = el('div', 'stamp big'); st.textContent = w.stampIcon || '✦'; body.append(st);
     body.append(el('p', 'cardtext', `Du hast alle Aufträge in der ${w.name} geschafft.`));
     if (w.reward) body.append(el('p', 'cardtext', `Belohnung: ${w.reward.name}! Du trägst ihn jetzt – im Reisepass kannst du ihn an- und ausziehen.`));
+    if (window.Rewards) Rewards.giftInto(body);   // großer Erfolg: dazu ein Überraschungsgeschenk
     row(body, [btn('Juhu! ✦', 'main', closeSheet)]);
   });
   applyWear();
@@ -115,8 +116,12 @@ function discover(wid, key, extra){
   showCard(id, {isNew:!!fresh, extra, wid, key});
 }
 // Rätsel zum Ort, an dem man steht: erst zu einer früher gelesenen Karte dieses Objekts, sonst als Lese-Check zur eben gelesenen
+// Schwierigkeit nach Klasse: Klasse 1–2 nur Stufe 1, Klasse 3–4 Stufe 1–2, ab Klasse 5 Stufe 2–3
+const grade = () => (window.Profiles && Profiles.current && Profiles.current.grade) || 4;
+function levelOk(level){ const g = grade(); return g <= 2 ? level <= 1 : g <= 4 ? level <= 2 : level >= 2; }
 function objectQuestion(wid, key, current){
-  const ids = (worlds[wid].content.objects[key] || []), open = q => !(P.q[q.id] && P.q[q.id].ok), all = Object.values(qById);
+  const ids = (worlds[wid].content.objects[key] || []), all0 = Object.values(qById), fit = all0.filter(q => levelOk(q.level || 1) && ids.includes(q.card));
+  const open = q => !(P.q[q.id] && P.q[q.id].ok), all = fit.length ? fit : all0;   // keine passende Stufe zu diesem Objekt? dann alle
   const earlier = ids.filter(i => i !== current && P.cards[i]);
   const pick = list => list.find(q => q.level === 1) || list[0] || null;
   return pick(all.filter(q => earlier.includes(q.card) && open(q))) || pick(all.filter(q => q.card === current && open(q)))
@@ -128,10 +133,10 @@ function showCard(id, {isNew=false, extra, wid, key}={}){
     const card = el('div', 'kcard'); card.append(el('div', 'ktitle', c.title), el('p', 'cardtext', c.text)); body.append(card);
     const items = [];
     if (canSpeak) items.push(speakBtn(c.title + '. ' + c.text));
-    // am Objekt: Rätsel genau dazu; im Album: ein Wiederholungs-Rätsel zu früher Entdecktem
+    // Rätsel gibt es nur am Ort (am Planeten, an der Station) – im Album wird nur gelesen
     const place = key && worlds[wid] && worlds[wid].names && worlds[wid].names[key];
-    const q = key ? objectQuestion(wid, key, c.id) : nextQuestion(c);
-    if (q) items.push(btn(place ? 'Rätsel ' + place + ' ✦' : key ? 'Rätsel dazu ✦' : 'Wiederholungs-Rätsel ✦', 'main', () => ask(q)));
+    const q = key ? objectQuestion(wid, key, c.id) : null;
+    if (q) items.push(btn(place ? 'Rätsel ' + place + ' ✦' : 'Rätsel dazu ✦', 'main', () => ask(q)));
     else if (extra) items.push(btn(extra.label, 'main', extra.run));
     else items.push(btn('Weiter', 'main', closeSheet));
     row(body, items);
@@ -182,8 +187,8 @@ function ask(q, onDone, opts = {}){
       if (resultText && !opts.noReveal) res.append(el('p', 'cardtext', resultText));
       if (!opts.noReveal) res.append(el('p', 'cardtext', q.explain)); else if (!ok) res.append(el('p', 'cardtext', 'Weiter zur nächsten Frage.'));
       body.append(res);
-      if (ok) addStars(q.type === 'order' ? 3 : first ? 2 : 1);
-      if (ok && giftHook && opts.gift !== false) giftHook(res);   // nach jeder richtigen Lösung ein Überraschungsgeschenk
+      if (ok) addStars(first ? 2 : 1);
+      if (ok && giftHook && opts.gift !== false) giftHook(res);   // Rewards.solved: Essen, Fortschritt zum Wunsch
       checkQuests(); if (onDone) onDone(ok);
       row(body, [btn(opts.next ? 'Nächste Frage →' : 'Weiter', 'main', opts.next || closeSheet)]);
       res.scrollIntoView({block:'nearest', behavior:'smooth'});
@@ -337,14 +342,14 @@ function applyWear(){
 // ---------- Sicht wechseln: welcher Figur folgt die Kamera, wer wird per Tippen gesteuert? ----------
 function openView(){
   openSheet('👁 Sicht wählen', body => {
-    body.append(el('p', 'tip', 'Wähle eine Figur: Die Kamera folgt ihr, und wenn du auf den Boden tippst, läuft sie dorthin.'));
+    body.append(el('p', 'tip', 'Wähle eine deiner Figuren oder ein Tier: Die Kamera folgt ihr, und wenn du auf den Boden tippst, läuft sie dorthin.'));
     const list = el('div', 'viewlist'), cur = RS.ctrl, over = RS.view === 'overview';
     const opt = (name, canvas, active, run) => { const b = btn('', 'viewopt' + (active ? ' on' : ''), () => { run(); closeSheet(); });
       if (canvas){ const t = document.createElement('canvas'), k = Math.min(56/canvas.width, 56/canvas.height); t.width = Math.round(canvas.width*k); t.height = Math.round(canvas.height*k); t.getContext('2d').drawImage(canvas, 0, 0, t.width, t.height); b.append(t); }
       else b.append(el('span', 'vicon', '👧'));
       b.append(el('span', '', name + (active ? ' ✔' : ''))); list.append(b); };
     opt('Das Mädchen', null, !cur && !over, () => RS.setView({figure:null}));
-    RS.animals.filter(a => a.wid === RS.worldId).forEach(a => opt(a.name, a.mesh.material.map.image, cur === a && !over, () => RS.setView({figure:a})));
+    RS.animals.filter(a => a.wid === RS.worldId && (!a.owner || a.owner === RS.owner)).forEach(a => opt(a.name, a.mesh.material.map.image, cur === a && !over, () => RS.setView({figure:a})));   // fremde Figuren steuert nur ihr Profil
     body.append(list);
     body.append(el('h3', 'albumh', 'Kamera'));
     row(body, [btn('🗺 Übersicht – die ganze Welt' + (over ? ' ✔' : ''), over ? 'main' : '', () => { RS.setView({overview:!over}); closeSheet(); })]);
@@ -448,6 +453,6 @@ function openMine(){
     const revoke = () => { if (sheetEl.hidden){ urls.forEach(URL.revokeObjectURL); obs.disconnect(); } }, obs = new MutationObserver(revoke); obs.observe(sheetEl, {attributes:true, attributeFilter:['hidden']});
   }));
 }
-window.Learn = {renderHud, setGift: f => { giftHook = f; }, ITEMS, applyWear, loadProfile, get profileId(){ return profileId; }, quiz, openMine, registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
+window.Learn = {levelOk, grade, renderHud, setGift: f => { giftHook = f; }, ITEMS, applyWear, loadProfile, get profileId(){ return profileId; }, quiz, openMine, registerWorld, discover, showCard, unlockCard, ask, askById, openQuests, openSheet, closeSheet, openAlbum, openPassport, addPortal, travel,
   addStars, toast, checkQuests, el, btn, row, P, save, discoveredObjects, correctIn, ready, speak, canSpeak, worldOf};
 })();

@@ -360,9 +360,9 @@ let ctrl = null, view = 'follow', manualUntil = 0;
 let mood = null, speedFactor = 1;   // von needs.js gesetzt: müde -> langsamer
 const statusEl = $('status');
 const setStatus = t => { if (statusEl.textContent !== t) statusEl.textContent = t; };
-// Sprechblase über dem Kopf der Figur: Wünsche und Bitten („Mir ist langweilig …“), auf Wunsch mit Knopf
+// Sprechblase über dem Kopf der Figur: Wünsche und Bitten („Liest du mir ein Buch vor?“), auf Wunsch mit Knopf
 const sayEl = $('say'); let sayUntil = 0, sayPrio = 0;
-const hideSay = () => { sayEl.hidden = true; sayPrio = 0; };
+const hideSay = () => { sayEl.hidden = true; sayPrio = 0; document.body.classList.remove('saying'); };
 function say(text, {label, onClick, labelFor, ms = 15000, prio = 1} = {}){
   if (!sayEl.hidden && prio < sayPrio && Date.now() < sayUntil) return false;   // Wichtigeres steht gerade da
   sayPrio = prio; sayUntil = Date.now() + ms;
@@ -370,7 +370,7 @@ function say(text, {label, onClick, labelFor, ms = 15000, prio = 1} = {}){
   if (label){ const b = document.createElement(labelFor ? 'label' : 'button'); b.className = 'btn small main'; b.textContent = label;
     if (labelFor) b.htmlFor = labelFor; else b.type = 'button'; b.onclick = () => { hideSay(); if (onClick) onClick(); }; sayEl.append(b); }
   const x = document.createElement('button'); x.type = 'button'; x.className = 'sayx'; x.textContent = '×'; x.setAttribute('aria-label', 'Sprechblase schließen'); x.onclick = hideSay; sayEl.append(x);
-  sayEl.hidden = false; return true;
+  sayEl.hidden = false; document.body.classList.add('saying'); return true;   // solange sie spricht, ist der Wunsch-Hinweis oben ausgeblendet
 }
 const camRight = () => new V3(Math.cos(az), 0, -Math.sin(az));
 function startActivity(act){
@@ -611,6 +611,7 @@ function steerTo(a, p, what){
   setStatus(a.name + (what ? ' läuft zu ' + what : ' läuft dorthin') + ' …');
 }
 function setView({figure, overview} = {}){
+  if (figure && figure.owner && figure.owner !== owner) figure = null;   // fremde Figur: nicht steuern
   if (figure !== undefined) ctrl = figure;
   view = overview ? 'overview' : 'follow';
   tDist = overview ? 24 : (camera.aspect < .8 ? 6.2 : 5.6); tEl = overview ? 1.0 : .22;
@@ -676,6 +677,7 @@ async function showCreature(rec, {near=false, arrive=false}={}){
   const wid = W[rec.world] ? rec.world : 'home';
   const a = THING_TYPES.includes(rec.kind) ? addThing({name:rec.name, c, type:rec.kind, pos, wid, appear: arrive ? 0 : undefined})
                                          : addCreature({name:rec.name, c, w, kind:rec.kind, pos, rnd:Math.random, appear: arrive ? 0 : undefined, wid});
+  a.owner = rec.owner;   // gesteuert werden darf eine Figur nur von ihrem Profil
   world.set(rec.id, a);
   if (arrive && wid === worldId){ arrivalFx(a); setStatus(rec.name + ' ist angekommen! ✦'); setTimeout(() => { if (W[a.wid].acts.includes(a.act)) startActivity(a.act); }, 2400); }
   return a;

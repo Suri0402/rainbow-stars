@@ -72,6 +72,23 @@ function recover(){
 // ---------- Eltern-Bereich ----------
 // jedes Öffnen verlangt die Eltern-PIN – sonst könnte das Kind kurz danach selbst hinein
 function openArea(){ reload().then(() => { if (!cfg) return setup(); verify(showArea, {reason:'Willkommen im Eltern-Bereich. Bitte die Eltern-PIN eingeben.'}); }); }
+// Jede gescannte Figur (und jedes Haus) gehört genau einem Kind – hier können Eltern das ändern
+async function assignFigures(){
+  const kids = PR.list || [], recs = (await RS.idb.all()).filter(r => r.mine !== false && r.blob).sort((a, b) => a.created - b.created);
+  L.openSheet('🧩 Figuren zuordnen', body => {
+    body.append(el('p', 'tip', 'Jede Figur gehört einem Kind. Nur dieses Kind kann sie ausmalen, löschen und steuern. Sehen können sie alle auf der Wiese.'));
+    if (!recs.length) body.append(el('p', 'note', 'Es gibt noch keine gescannten Figuren.'));
+    recs.forEach(r => { const card = el('div', 'bookrow'), im = document.createElement('img'); im.src = URL.createObjectURL(r.blob); im.alt = ''; im.className = 'bookcover small';
+      const info = el('div', 'bookinfo'); info.append(el('b', '', (r.kind === 'house' ? '🏠 ' : '') + r.name));
+      const sel = document.createElement('select'); sel.className = 'ownersel'; sel.setAttribute('aria-label', 'Gehört zu');
+      if (!kids.some(k => k.id === r.owner)){ const o = document.createElement('option'); o.value = ''; o.textContent = '– niemandem –'; sel.append(o); }
+      kids.forEach(k => { const o = document.createElement('option'); o.value = k.id; o.textContent = k.avatar + ' ' + k.name; o.selected = k.id === r.owner; sel.append(o); });
+      sel.onchange = async () => { if (!sel.value) return; r.owner = sel.value; await RS.idb.put(r); RS.removeFromWorld(r.id); await RS.refreshVisibility(); if (window.House) House.placeHouses();
+        L.toast('✔ „' + r.name + '“ gehört jetzt ' + (kids.find(k => k.id === r.owner) || {}).name); };
+      const lab = el('label', 'note', 'Gehört zu: '); lab.append(sel); info.append(lab); card.append(im, info); body.append(card); });
+    row(body, [btn('← Zurück', 'main', showArea)]);
+  });
+}
 async function showArea(){
   const books = window.Books ? await Books.all() : [], kids = PR.list || [], reads = (await RS.idb.getP('parent:reading')) || [];
   const kidName = id => (kids.find(k => k.id === id) || {}).name || '?';
@@ -89,7 +106,7 @@ async function showArea(){
         const th = el('div', 'things'); (r.pages || []).forEach(src => { const im = document.createElement('img'); im.src = src; im.className = 'pagethumb'; th.append(im); }); info.append(th);
         const acts = el('div', 'fs-row');
         const decide = async st => { const all = (await RS.idb.getP('parent:reading')) || [], x = all.find(y => y.id === r.id); if (x) x.status = st; await RS.idb.setP('parent:reading', all);
-          if (st === 'ok' && r.kid === RS.owner){ x.claimed = true; await RS.idb.setP('parent:reading', all); if (window.Needs) Needs.change('spass', 60); L.addStars(5, 'Lesezeit bestätigt'); }
+          if (st === 'ok' && r.kid === RS.owner){ x.claimed = true; await RS.idb.setP('parent:reading', all); if (window.Needs) Needs.change('energie', 60); L.addStars(5, 'Lesezeit bestätigt'); }
           L.toast(st === 'ok' ? '✔ Lesezeit bestätigt' : 'Lesezeit abgelehnt'); showArea(); };
         acts.append(btn('✔ Bestätigen', 'small main', () => decide('ok')), btn('Ablehnen', 'small', () => decide('no'))); info.append(acts); card.append(info); body.append(card); }); }
     body.append(el('h3', 'albumh', '📚 Bücher'));
@@ -103,6 +120,7 @@ async function showArea(){
     body.append(el('h3', 'albumh', '👧 Kinder'));
     if (!kids.length) body.append(el('p', 'note', 'Noch kein Kinderprofil.'));
     kids.forEach(k => row(body, [el('span', 'cardtext', k.avatar + ' ' + k.name), btn('PIN zurücksetzen', 'small', () => PR.setPin(k, () => { L.toast('PIN von ' + k.name + ' geändert ✔'); showArea(); }))]));
+    if (kids.length) row(body, [btn('🧩 Figuren zuordnen', 'small', assignFigures)]);
     if (window.Sync) Sync.accountBox(body, {after: showArea});
     body.append(el('h3', 'albumh', '🔑 Eltern-PIN'));
     row(body, [btn('Eltern-PIN ändern', 'small', () => { cfg = null; save().then(() => setup()); }), btn('Bereich schließen', '', L.closeSheet)]);
