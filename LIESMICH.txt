@@ -164,7 +164,7 @@ Inhalt
      malen, "✎ Haus scannen" (oder beim Scannen "ein Haus" wählen). Ein neues
      Haus ersetzt das alte.
    - Wer ein Haus hat, startet nach dem Anmelden immer im eigenen Haus.
-     Hinein darf nur, wem es gehört.
+     Hinein darf nur, wem es gehört. Durchs Fenster sieht man live die Wiese.
    - Anfangs steht nur der Rätsel-Tisch im Zimmer. Weitere Möbel kauft man mit
      Sternen im Laden (siehe 8). Knopf "🏠 Nach Hause" bringt einen zurück.
    - Auf der Wiese sehen sich alle Profile: alle Häuser und alle Figuren.

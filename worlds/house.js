@@ -165,7 +165,30 @@ async function furnish(){
   world.picks.push(pm); furn.bilder = {mesh:pm};
 }
 let emptyAt = 0;
-world.onEnter = () => { furnish();
+// ---------- Fenster: live hinaus auf die Wiese, gesehen vom eigenen Haus aus ----------
+let winRT = null, winCam = null, winT = 0;
+function buildWindow(){
+  if (winRT) return;
+  winRT = new THREE.WebGLRenderTarget(512, 384); winCam = new THREE.PerspectiveCamera(55, 512/384, .1, 80);
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.2), new THREE.MeshBasicMaterial({map:winRT.texture})); glass.position.set(-1.2, 2.4, -2.585); G.add(glass);
+  const [c, x] = cnv(400, 310), fr = [[10,10],[390,10],[390,300],[10,300]];   // gezeichneter Rahmen mit Fensterkreuz, Mitte durchsichtig
+  x.lineJoin = 'round'; x.strokeStyle = '#b98866'; x.lineWidth = 26; x.strokeRect(14, 14, 372, 282); x.lineWidth = 12; x.beginPath(); x.moveTo(200, 14); x.lineTo(200, 296); x.moveTo(14, 155); x.lineTo(386, 155); x.stroke();
+  ink(x, fr, true, 3); ink(x, [[28,28],[372,28],[372,282],[28,282]], true, 2);
+  const sill = [[0,292],[400,292],[400,310],[0,310]]; pencil(x, sill, '#c99a76'); ink(x, sill, true, 2.4);
+  const frame = new THREE.Mesh(new THREE.PlaneGeometry(1.6*400/372, 1.2*310/282), new THREE.MeshBasicMaterial({map:tex(c), transparent:true})); frame.position.set(-1.2, 2.38, -2.58); G.add(frame);
+}
+RS.onTick(() => {
+  if (RS.worldId !== 'house' || !winRT || performance.now() - winT < 400) return; winT = performance.now();
+  const h = homeHouses.get(RS.owner); if (!h) return;
+  const home = RS.W.home, p = h.g.position, R2 = RS.renderer, sc = RS.scene, fogCol = sc.fog.color.getHex();
+  winCam.position.set(p.x*.86, 1.5, p.z*.86); winCam.lookAt(0, 1.2, 0);   // aus der Haustür hinaus zur Mitte der Wiese
+  home.group.visible = true; G.visible = false; RS.girl.visible = false; sc.fog.color.setHex(home.fog ?? 0xfbeef0);
+  RS.faceOther(Math.atan2(p.x, p.z)); h.g.visible = false;   // das eigene Haus nicht von innen sehen
+  R2.setRenderTarget(winRT); R2.setClearColor(0xcfe9ff, 1); R2.clear(); R2.render(sc, winCam);
+  R2.setRenderTarget(null); R2.setClearColor(0x000000, 0);
+  h.g.visible = true; home.group.visible = false; G.visible = true; RS.girl.visible = true; sc.fog.color.setHex(fogCol);
+});
+world.onEnter = () => { furnish(); buildWindow(); winT = 0;
   const w = window.Rewards && Rewards.wishItem(), few = MOEBEL().filter(it => P.items[it.id]).length < 2;
   if (w && w.type === 'moebel' && Date.now() - emptyAt > 3*60e3){ emptyAt = Date.now();
     setTimeout(() => P.stars >= w.price

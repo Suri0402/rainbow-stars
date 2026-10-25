@@ -1158,7 +1158,9 @@ function enterWorld(id){
   if (w.onEnter) w.onEnter();
   dispatchEvent(new CustomEvent('rs:world', {detail:{id}}));
 }
-window.RS = {THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
+// für eine zweite Kamera (Fenster im Haus): Bilder zu ihr drehen und nichts ausblenden – das nächste Bild stellt alles wieder her
+function faceOther(yaw){ bills.forEach(b => b.rotation.y = yaw); fadeables.forEach(m => { m.material.opacity = 1; m.visible = true; }); }
+window.RS = {renderer, faceOther, THREE, V3, scene, camera, R, cnv, wob, trace, ink, pencil, blob, star, bill, shadow, tex, spawn, fxTex, starCs, RAINBOW, OUTL,
   addCreature, addWorld, enterWorld, W, st, setStatus, say, hideSay, startActivity, girl, J, K, TP, CX, TOPY, LAYER, idb, $,
   myCreatures: () => idb.all().then(l => l.filter(r => r.mine && (!owner || r.owner === owner)).sort((a,b) => b.created - a.created).map(r => ({...r, inWorld:!!world.get(r.id)}))),
   goToCreature: id => { const a = world.get(id); if (a && a.wid === worldId){ userPick = null; startActivity(a.act); return true; } return a ? a.wid : false; },
